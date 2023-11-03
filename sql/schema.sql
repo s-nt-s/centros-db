@@ -1,41 +1,51 @@
 CREATE TABLE TIPO (
-    id TEXT PRIMARY KEY,
+    id  TEXT NOT NULL PRIMARY KEY,
     txt TEXT NOT NULL,
-    abbr TEXT UNIQUE
+    abr TEXT UNIQUE
 );
 
 CREATE TABLE ETAPA (
-    id TEXT PRIMARY KEY,
+    id  TEXT NOT NULL PRIMARY KEY,
+    txt TEXT NOT NULL
+);
+
+CREATE TABLE AREA (
+    id  TEXT NOT NULL PRIMARY KEY,
+    txt TEXT NOT NULL
+);
+
+CREATE TABLE TITULARIDAD (
+    id  TEXT NOT NULL PRIMARY KEY,
     txt TEXT NOT NULL
 );
 
 CREATE TABLE CENTRO (
-    id INTEGER PRIMARY KEY,
-    area TEXT,
-    tipo TEXT,
-    nombre TEXT,
-    domicilio TEXT,
-    municipio TEXT,
-    distrito TEXT,
-    cp INTEGER,
-    telefono TEXT,
+    id          INTEGER NOT NULL PRIMARY KEY,
+    area        TEXT REFERENCES AREA(id),
+    tipo        TEXT NOT NULL,
+    nombre      TEXT NOT NULL,
+    domicilio   TEXT,
+    municipio   TEXT,
+    distrito    TEXT,
+    cp          INTEGER,
+    telefono    TEXT,
+    email       TEXT,
+    titularidad TEXT NOT NULL REFERENCES TITULARIDAD(id),
     -- fax TEXT,
-    email TEXT,
-    titularidad TEXT NOT NULL,
     CONSTRAINT fk_centro_tipo
         FOREIGN KEY (tipo)
-        REFERENCES TIPO(abbr)
+        REFERENCES TIPO(id)
         ON DELETE CASCADE
 );
 
 CREATE TABLE QUERY (
-    id TEXT PRIMARY KEY,
+    id  TEXT NOT NULL PRIMARY KEY,
     txt TEXT
 );
 
 CREATE TABLE QUERY_CENTRO (
-    centro INTEGER,
-    query TEXT,
+    centro INTEGER NOT NULL,
+    query  TEXT NOT NULL,
     PRIMARY KEY (centro, query),
     CONSTRAINT fk_query_centro_centro
         FOREIGN KEY (centro)
@@ -48,8 +58,8 @@ CREATE TABLE QUERY_CENTRO (
 );
 
 CREATE TABLE ETAPA_CENTRO (
-    centro INTEGER,
-    etapa TEXT,
+    centro INTEGER NOT NULL,
+    etapa  TEXT NOT NULL,
     PRIMARY KEY (centro, etapa),
     CONSTRAINT fk_etapa_centro_centro
         FOREIGN KEY (centro)
@@ -60,3 +70,16 @@ CREATE TABLE ETAPA_CENTRO (
         REFERENCES ETAPA(id)
         ON DELETE CASCADE
 );
+
+INSERT INTO AREA VALUES
+('E', 'Madrid-Este'),
+('S', 'Madrid-Sur'),
+('N', 'Madrid-Norte'),
+('O', 'Madrid-Oeste'),
+('C', 'Madrid-Capital');
+
+INSERT INTO TITULARIDAD VALUES
+('PUB', 'Público'),
+('CON', 'Privado Concertado'),
+('PRI', 'Privado');
+

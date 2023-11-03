@@ -1,1 +1,3 @@
-Convertir [gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.ic](https://gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.icm) a una base de datos para poder analizarlo mejor.
+Convierte [gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.icm](https://gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.icm) a una base de datos `sqlite3`.
+
+![diagrama](out/db.png)

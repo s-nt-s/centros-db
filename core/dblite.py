@@ -4,7 +4,6 @@ import logging
 import errno
 from os.path import isfile
 from functools import cache
-from textwrap import dedent
 import re
 
 
@@ -199,7 +198,7 @@ class DBLite:
             return r[0]
         return r
 
-    def iter_sql_backup(self, width_values=100, multiple_limit=-1):
+    def iter_sql_backup(self, width_values=-1, multiple_limit=-1):
         re_insert = re.compile(r'^INSERT\s+INTO\s+(.+)\s+VALUES\s*\((.*)\);$')
         yield 'PRAGMA foreign_keys=OFF;'
         yield 'BEGIN TRANSACTION;'
@@ -234,7 +233,7 @@ class DBLite:
                 yield f"INSERT INTO {table} VALUES"
                 count = multiple_limit
             values.append("("+m.group(2)+")")
-            if len(",".join(values)) > width_values:
+            if len(values) > 1 and len(",".join(values)) > width_values:
                 yield val_to_str(values[:-1], ",")
                 values = [values[-1]]
             count = count - 1

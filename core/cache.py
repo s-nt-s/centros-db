@@ -1,16 +1,20 @@
 import functools
 import os
 import time
+import logging
 
 from .filemanager import FM
 
+logger = logging.getLogger(__name__)
+
 
 class Cache:
-    def __init__(self, file: str, *args, reload=False, maxOld=1, **kargs):
+    def __init__(self, file: str, *args, reload=False, maxOld=1, loglevel=logging.DEBUG, **kargs):
         self.file = file
         self.func = None
         self.reload = reload
         self.maxOld = maxOld
+        self.loglevel = loglevel
         if maxOld is not None:
             self.maxOld = time.time() - (maxOld * 86400)
         self._kargs = kargs
@@ -40,10 +44,12 @@ class Cache:
     def callCache(self, slf, *args, _avoid_save=False, **kargs):
         fl = self.parse_file_name(*args, **kargs)
         if not self.tooOld(fl):
+            logger.log(self.loglevel, f"Cache.read({fl})")
             data = self.read(fl, *args, **kargs)
             return data
         data = self.func(slf, *args, **kargs)
         if not _avoid_save and data is not None:
+            logger.log(self.loglevel, f"Cache.save({fl})")
             self.save(fl, data, *args, **kargs)
         return data
 

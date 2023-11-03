@@ -153,7 +153,6 @@ class Api():
             return ""
         content = self.__get_content(w, url, codCentrosExp=codCentrosExp)
         self.__check_csv_content(content, codCentrosExp.split(";"))
-
         return content
 
     def __check_inputs(self, data: dict, soup: BeautifulSoup):
@@ -212,24 +211,18 @@ class Api():
         return Web().get(Api.URL)
 
     @cache
-    @Cache("data/form.json")
+    @Cache("data/form.json", loglevel=logging.INFO)
     def get_form(self) -> Dict[str, Dict[str, str]]:
-        def is_needed(name: str):
-            if name in ('comboMunicipios', 'comboDistritos'):
-                return False
-            return not name.startswith("checkSubdir")
         logger.info("get form inputs")
         form = {}
         for name, val, txt in self.iter_inputs(self.id_form):
-            if not is_needed(name):
-                continue
             if name not in form:
                 form[name] = {}
             form[name][val] = txt
         return form
 
     @cache
-    @Cache("data/etapas.json")
+    @Cache("data/etapas.json", loglevel=logging.INFO)
     def get_etapas(self) -> Dict[str, Dict]:
         logger.info("get form etapas")
         with Driver(wait=10) as w:

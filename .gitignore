@@ -4,6 +4,7 @@
 *.csv
 *.txt
 !requirements.txt
+sql/subset
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
