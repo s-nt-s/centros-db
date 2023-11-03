@@ -24,8 +24,7 @@ class Cache:
         return FM.load(file, **self._kargs)
 
     def save(self, file, data, *args, **kargs):
-        if data is not None:
-            FM.dump(file, data, **self._kargs)
+        FM.dump(file, data, **self._kargs)
 
     def tooOld(self, fl):
         if not os.path.isfile(fl):
@@ -38,13 +37,14 @@ class Cache:
             return True
         return False
 
-    def callCache(self, slf, *args, **kargs):
+    def callCache(self, slf, *args, _avoid_save=False, **kargs):
         fl = self.parse_file_name(*args, **kargs)
         if not self.tooOld(fl):
             data = self.read(fl, *args, **kargs)
             return data
         data = self.func(slf, *args, **kargs)
-        self.save(fl, data, *args, **kargs)
+        if not _avoid_save and data is not None:
+            self.save(fl, data, *args, **kargs)
         return data
 
     def __call__(self, func):

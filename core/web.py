@@ -1,9 +1,28 @@
 import os
 import re
+import time
 from urllib.parse import parse_qsl, urljoin, urlsplit
 
 import requests
 from bs4 import BeautifulSoup, Tag
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.chrome import ChromeType
+from webdriver_manager.core.utils import read_version_from_cmd 
+from webdriver_manager.core.os_manager import PATTERN
+from selenium import webdriver
+from selenium.common.exceptions import (ElementNotInteractableException,
+                                        ElementNotVisibleException,
+                                        StaleElementReferenceException,
+                                        TimeoutException, WebDriverException)
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.chrome.options import Options as CMoptions
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.proxy import Proxy, ProxyType
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.remote.webelement import WebElement
 import logging
 
 logger = logging.getLogger(__name__)
@@ -37,7 +56,7 @@ def get_query(url):
     return q
 
 
-def iterhref(soup: Tag):
+def iterhref(soup):
     """Recorre los atriburos href o src de los tags"""
     n: Tag
     for n in soup.findAll(["img", "form", "a", "iframe", "frame", "link", "script", "input"]):
@@ -152,3 +171,253 @@ class Web:
         if r.status_code in (302, 301):
             return r.headers['location']
 
+
+class Driver:
+    DRIVER_PATH = None
+
+    @staticmethod
+    def find_driver_path():
+        if Driver.DRIVER_PATH is None:
+            def get_version(path):
+                if os.path.isfile(path):
+                    return read_version_from_cmd(
+                        path+" --version",
+                        PATTERN[ChromeType.CHROMIUM]
+                    )
+            Driver.DRIVER_PATH = ChromeDriverManager(
+                driver_version=get_version("/usr/bin/chromium"),
+                chrome_type=ChromeType.CHROMIUM
+            ).install()
+        return Driver.DRIVER_PATH
+
+    def __init__(self, wait=60, useragent=None):
+        Driver.find_driver_path()
+        self._driver: WebDriver = None
+        self.visible = (os.environ.get("DRIVER_VISIBLE") == "1")
+        self._wait = wait
+        self.useragent = useragent
+
+    def __enter__(self, *args, **kwargs):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self.close()
+
+    def __create_chrome(self):
+        options = CMoptions()
+        if not self.visible:
+            options.add_argument('headless')
+        if self.useragent:
+            options.add_argument('user-agent=' + self.useragent)
+        options.add_argument("start-maximized")
+        options.add_argument("--disable-extensions")
+        options.add_argument('--disable-blink-features=AutomationControlled')
+        options.add_argument("--lang=es-ES")
+        options.add_experimental_option(
+            'excludeSwitches', ['enable-automation'])
+        options.add_experimental_option('useAutomationExtension', False)
+
+        if is_s5h:
+            prox = Proxy()
+            prox.proxy_type = ProxyType.MANUAL
+            prox.socks_proxy = "{}:{}".format(proxy_ip, proxy_port)
+            prox.socksVersion = 5
+            capabilities = webdriver.DesiredCapabilities.CHROME
+            prox.add_to_capabilities(capabilities)
+            driver = webdriver.Chrome(
+                Driver.find_driver_path(),
+                options=options,
+                desired_capabilities=capabilities
+            )
+        else:
+            driver = webdriver.Chrome(
+                Driver.find_driver_path(),
+                options=options
+            )
+        driver.maximize_window()
+        driver.implicitly_wait(5)
+        return driver
+
+    def get_dirver(self) -> WebDriver:
+        if self._driver is None:
+            self._driver = self.__create_chrome()
+        return self._driver
+
+    @property
+    def driver(self) -> WebDriver:
+        return self.get_dirver()
+
+    def close(self, *windows):
+        if self._driver:
+            sz = len(self._driver.window_handles)
+            if len(windows) in (0, sz):
+                self._driver.quit()
+                self._driver = None
+                return
+            for w in reversed(windows):
+                self._driver.switch_to.window(w)
+                self._driver.close()
+            self._driver.switch_to.window(self._driver.window_handles[0])
+
+    def close_others(self, current=None):
+        if self._driver:
+            if current is None:
+                current = self._driver.current_window_handle
+            elif isinstance(current, int):
+                current = self._driver.window_handles[current]
+            windows = [w for w in self._driver.window_handles if w != current]
+            if windows:
+                self.close(*windows)
+
+    def switch(self, window):
+        if isinstance(window, int):
+            window = self._driver.window_handles[window]
+        self._driver.switch_to.window(window)
+
+    def reintentar(self, intentos, sleep=1):
+        if intentos > 50:
+            return False, sleep
+        if intentos % 3 == 0:
+            sleep = int(sleep / 3)
+            self.close()
+        else:
+            sleep = sleep * 2
+        if intentos > 20:
+            time.sleep(10)
+        time.sleep(2 * (int(intentos / 10) + 1))
+        return True, sleep
+
+    def get(self, url):
+        logger.info(url)
+        self.driver.get(url)
+
+    def get_soup(self):
+        if self._driver is None:
+            return None
+        return buildSoup(self._driver.current_url, self._driver.page_source)
+
+    @property
+    def current_url(self):
+        if self._driver is None:
+            return None
+        return self._driver.current_url
+
+    @property
+    def source(self):
+        if self._driver is None:
+            return None
+        return self._driver.page_source
+
+    def wait(self, id: int | float | str, seconds=None, presence=False, by=None) -> WebElement:
+        if isinstance(id, (int, float)):
+            time.sleep(id)
+            return
+        if by is None:
+            by = By.ID
+            if seconds is None:
+                seconds = self._wait
+            if id.startswith("//"):
+                by = By.XPATH
+            if id.startswith("."):
+                by = By.CSS_SELECTOR
+        wait = WebDriverWait(self._driver, seconds)
+        if presence:
+            wait.until(ec.presence_of_element_located((by, id)))
+        else:
+            wait.until(ec.visibility_of_element_located((by, id)))
+        if by == By.CLASS_NAME:
+            return self._driver.find_element_by_class_name(id)
+        if by == By.CSS_SELECTOR:
+            return self._driver.find_element_by_css_selector(id)
+        if by == By.XPATH:
+            return self._driver.find_element_by_xpath(id)
+        return self._driver.find_element_by_id(id)
+
+    def waitjs(self, js: str, val=True, seconds=None):
+        if seconds is None:
+            seconds = self._wait
+        js = js.strip()
+
+        if not js.startswith("return "):
+            js = 'return '+js
+
+        def do_js(w: WebDriver):
+            rt = w.execute_script(js)
+            if callable(val):
+                return val(rt)
+            return rt == val
+
+        wait = WebDriverWait(self._driver, seconds)
+        wait.until(do_js)
+
+    def safe_wait(self, *ids, **kvarg):
+        for id in ids:
+            if isinstance(id, WebElement):
+                return id
+            try:
+                return self.wait(id, **kvarg)
+            except TimeoutException:
+                pass
+        return None
+
+    def val(self, n, val=None, **kwargs):
+        if n is None or self._driver is None:
+            return None
+        if isinstance(n, str):
+            n = self.wait(n, **kwargs)
+        if val is not None:
+            n.clear()
+            n.send_keys(val)
+        return n.text
+
+    def click(self, n, **kvarg):
+        if n is None or self._driver is None:
+            return None
+        if isinstance(n, str):
+            n = self.wait(n, **kvarg)
+        if n.is_displayed():
+            ActionChains(self._driver).move_to_element(n).click(n).perform()
+            #n.click()
+        else:
+            n.send_keys(Keys.RETURN)
+        return True
+
+    def safe_click(self, *ids, after=None, force_return=False, **kvarg):
+        if len(ids) == 1 and not isinstance(ids[0], str):
+            n = ids[0]
+        else:
+            n = self.safe_wait(*ids, **kvarg)
+        if n is None:
+            return -1
+        try:
+            if n.is_displayed() and not force_return:
+                n.click()
+            else:
+                n.send_keys(Keys.RETURN)
+        except (
+                ElementNotInteractableException,
+                StaleElementReferenceException,
+                ElementNotVisibleException,
+                WebDriverException
+                ):
+            return 0
+        if after is not None:
+            time.sleep(after)
+        return 1
+
+    def execute_script(self, *args, **kwargs):
+        return self.driver.execute_script(*args, **kwargs)
+
+    def pass_cookies(self, session=None):
+        if self._driver is None:
+            return session
+        if session is None:
+            session = requests.Session()
+        for cookie in self._driver.get_cookies():
+            session.cookies.set(cookie['name'], cookie['value'])
+        return session
+
+    def to_web(self):
+        w = Web()
+        self.pass_cookies(w.s)
+        return w

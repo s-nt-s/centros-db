@@ -3,8 +3,8 @@ from functools import cache, cached_property
 from urllib.parse import urljoin
 from typing import Tuple, Dict
 
-from .web import Web
-from .types import CsvRow
+from .web import Web, Driver
+from .types import CsvRow, ParamValueText
 from .cache import Cache
 from .retry import retry
 
@@ -67,19 +67,39 @@ class BadCsvException(DwnCsvException):
 
 
 class CsvCache(Cache):
+    def __init__(self, *args, ext="csv", **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ext = ext
+
     def parse_file_name(self, *args, **kargv):
         if len(kargv) == 0:
-            raise ApiException("No se puede calcular la ruta local para el csv")
+            raise ApiException("No se puede calcular la ruta local para el " + self.ext)
         arr = [self.file.rstrip("/")]
         for k, v in kargv.items():
             arr.append(f'{k}={v}')
-        return "/".join(arr) + ".csv"
+        return "/".join(arr) + "." + self.ext
 
 
-def csvstr_to_rows(content: str):
-    rows = content.strip()
-    rows = re_csv_br.split(rows)
-    rows = [re_csv_fl.split(r.rstrip(" ;,")) for r in rows]
+class IdCache(CsvCache):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, ext="txt", **kwargs)
+
+    def read(self, *args, **kargs):
+        content: str = super().read(*args, **kargs)
+        ids = map(int, set(content.strip().split()))
+        return tuple(sorted(ids))
+
+    def save(self, file, data, *args, **kargs):
+        data = "\n".join(map(str, sorted(set(data))))
+        super().save(file, data.strip(), *args, **kargs)
+
+
+def csvstr_to_rows(content: str) -> Tuple[Tuple[str]]:
+    rows = []
+    for row in re_csv_br.split(content.strip()):
+        row = row.rstrip(" ;,-")
+        if len(row) > 0:
+            rows.append(tuple(re_csv_fl.split(row)))
     return tuple(rows)
 
 
@@ -87,7 +107,7 @@ class Api():
     URL = "https://gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.icm"
 
     def __init__(self):
-        pass
+        self.id_form = "formBusquedaAvanzada"
 
     def get_csv(self, **kargv) -> Tuple[CsvRow]:
         content = self.get_csv_as_str(**kargv)
@@ -97,19 +117,26 @@ class Api():
         arr = []
         head = rows[1]
         for row in rows[2:]:
-            while len(row) < len(head):
-                row.append(None)
-            if len(row) > len(head):
-                row[len(head)-1] = row[-1]
-            o = {h: c for h, c in zip(head, row)}
-            arr.append(CsvRow.build(o))
+            arr.append(CsvRow.build(head, row))
         return tuple(arr)
 
-    @CsvCache("data/csv/", maxOld=1)
+    @IdCache("data/ids/", maxOld=2)
+    def get_ids(self, **data) -> Tuple[int]:
+        ids = set()
+        for row in self.get_csv(_avoid_save=True, **data):
+            ids.add(row.id)
+        return tuple(sorted(ids))
+
+    @CsvCache("data/csv/", maxOld=2)
     @retry(
         times=3,
-        exceptions=DwnCsvException,
-        sleep=15,
+        sleep=10,
+        exceptions=DwnCsvException
+    )
+    @retry(
+        times=2,
+        sleep=5,
+        exceptions=EmptyCodCentrosExpException,
         exc_to_return={
             EmptyCodCentrosExpException: ""
         }
@@ -162,14 +189,49 @@ class Api():
         return Web().get(Api.URL)
 
     @cache
-    @Cache("data/form.json", reload=True)
+    @Cache("data/form.json")
     def get_form(self) -> Dict[str, Dict[str, str]]:
         form = {}
-        for name, val, txt in self.iter_inputs("formBusquedaAvanzada"):
+        for name, val, txt in self.iter_inputs(self.id_form):
             if name not in form:
                 form[name] = {}
             form[name][val] = txt
         return form
+
+    @cache
+    @Cache("data/etapas.json")
+    def get_etapas(self) -> Dict[str, Dict]:
+        with Driver(wait=10) as w:
+            w.get(Api.URL)
+            w.wait("comboTipoEnsenanza", presence=True)
+            w.driver.set_script_timeout(120)
+            with open("data/script.js", "r") as f:
+                script = "return "+f.read()
+            return w.execute_script(script)
+
+    def iter_etapas(self):
+        def _walk(node: Dict[str, Dict]):
+            for name, val in node.items():
+                if name == "_":
+                    continue
+                for value, obj in val.items():
+                    arr = [ParamValueText(
+                        name=name,
+                        value=value,
+                        text=obj['_']
+                    )]
+                    yield tuple(arr)
+                    for x in _walk(obj):
+                        yield tuple(arr + list(x))
+
+        done = set()
+        for arr in _walk(self.get_etapas()):
+            for i in range(1, len(arr)+1):
+                chunk = arr[:i]
+                if chunk in done:
+                    continue
+                yield chunk
+                done.add(chunk)
 
     def iter_inputs(self, id: str):
         frm = self.home.select_one(f'#{id}')
@@ -196,6 +258,5 @@ class Api():
 
 if __name__ == "__main__":
     a = Api()
-    for name, obj in a.get_form().items():
-        for val, txt in obj.items():
-            a.get_csv(**{name: val})
+    a.get_form()
+    a.get_etapas()

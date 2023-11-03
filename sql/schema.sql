@@ -1,3 +1,14 @@
+CREATE TABLE TIPO (
+    cod TEXT PRIMARY KEY,
+    txt TEXT NOT NULL,
+    abbr TEXT UNIQUE
+);
+
+CREATE TABLE ETAPA (
+    cod TEXT PRIMARY KEY,
+    txt TEXT NOT NULL
+);
+
 CREATE TABLE CENTRO (
     id INTEGER PRIMARY KEY,
     area TEXT,
@@ -6,12 +17,12 @@ CREATE TABLE CENTRO (
     domicilio TEXT,
     municipio TEXT,
     distrito TEXT,
-    cp TEXT,
+    cp INTEGER,
     telefono TEXT,
     fax TEXT,
-    email1 TEXT,
-    email2 TEXT,
-    titularidad TEXT
+    email TEXT,
+    titularidad TEXT NOT NULL,
+    FOREIGN KEY (tipo) REFERENCES TIPO(abbr)
 );
 
 CREATE TABLE QUERY (
