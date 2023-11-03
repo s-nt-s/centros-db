@@ -4,6 +4,8 @@ import logging
 import errno
 from os.path import isfile
 from functools import cache
+from textwrap import dedent
+import re
 
 
 def dict_factory(cursor, row):
@@ -152,6 +154,11 @@ class DBLite:
             c = self.con.execute("pragma integrity_check")
             c = c.fetchone()
             print("integrity_check =", *c)
+            c = self.con.execute("pragma foreign_key_check")
+            c = c.fetchall()
+            print("foreign_key_check =", "ko" if c else "ok")
+            for table, parent in set((i[0], i[2]) for i in c):
+                print(f"  {table} -> {parent}")
             self.con.execute("VACUUM")
         self.con.commit()
         self.con.close()
@@ -191,3 +198,57 @@ class DBLite:
         if len(r) == 1:
             return r[0]
         return r
+
+    def iter_sql_backup(self, width_values=100, multiple_limit=-1):
+        re_insert = re.compile(r'^INSERT\s+INTO\s+(.+)\s+VALUES\s*\((.*)\);$')
+        yield 'PRAGMA foreign_keys=OFF;'
+        yield 'BEGIN TRANSACTION;'
+        for lines in self.con.iterdump():
+            for line in lines.split("\n"):
+                ln = line.strip().upper()
+                if ln in ("", "COMMIT;", "BEGIN TRANSACTION;"):
+                    continue
+                if ln.startswith("INSERT INTO ") or ln.startswith("--"):
+                    continue
+                yield line
+        table = None
+        lsttb = None
+        count = 0
+        values = []
+
+        def val_to_str(vls, end):
+            return ",".join(vls)+end
+
+        for line in self.con.iterdump():
+            m = re_insert.match(line)
+            if m is None:
+                continue
+            if multiple_limit == 1:
+                yield line
+                continue
+            table = m.group(1).strip('"')
+            if table != lsttb or count == 0:
+                if values:
+                    yield val_to_str(values, ";")
+                    values = []
+                yield f"INSERT INTO {table} VALUES"
+                count = multiple_limit
+            values.append("("+m.group(2)+")")
+            if len(",".join(values)) > width_values:
+                yield val_to_str(values[:-1], ",")
+                values = [values[-1]]
+            count = count - 1
+            lsttb = table
+        if values:
+            yield val_to_str(values, ";")
+            values = []
+        yield 'COMMIT;'
+        yield 'VACUUM;'
+        yield 'PRAGMA foreign_keys=ON;'
+        yield 'pragma integrity_check;'
+        yield 'pragma foreign_key_check;'
+
+    def sql_backup(self, file, *args, **kwargs):
+        with open(file, "w") as f:
+            for line in self.iter_sql_backup(*args, **kwargs):
+                f.write(line+"\n")

@@ -22,29 +22,6 @@
     "0160": "Educaci\u00f3n Personas Adultas",
     "0170": "Ense\u0144anzas Extranjeras"
   },
-  "comboDistritos": {
-    "02": "Arganzuela",
-    "21": "Barajas",
-    "11": "Carabanchel",
-    "01": "Centro",
-    "05": "Chamart\u00edn",
-    "07": "Chamber\u00ed",
-    "15": "Ciudad Lineal",
-    "08": "Fuencarral-El Pardo",
-    "16": "Hortaleza",
-    "10": "Latina",
-    "09": "Moncloa-Aravaca",
-    "14": "Moratalaz",
-    "13": "Puente de Vallecas",
-    "03": "Retiro",
-    "04": "Salamanca",
-    "20": "San Blas-Canillejas",
-    "06": "Tetu\u00e1n",
-    "12": "Usera",
-    "19": "Vic\u00e1lvaro",
-    "18": "Villa de Vallecas",
-    "17": "Villaverde"
-  },
   "cdGenerico": {
     "036": "AULA HOSPITALARIA",
     "418": "AULA HOSPITALARIA PRIVADA",
@@ -121,21 +98,6 @@
     "047": "SECCI\u00d3N DE INSTITUTO DE EDUCACI\u00d3N SECUNDARIA",
     "034": "UNIDAD DE FORMACI\u00d3N E INSERCI\u00d3N LABORAL",
     "005": "ZONA CASAS DE NI\u0143OS"
-  },
-  "checkSubdir1": {
-    "1": "MADRID-NORTE"
-  },
-  "checkSubdir2": {
-    "2": "MADRID-SUR"
-  },
-  "checkSubdir3": {
-    "3": "MADRID-ESTE"
-  },
-  "checkSubdir4": {
-    "4": "MADRID-OESTE"
-  },
-  "checkSubdir5": {
-    "5": "MADRID-CAPITAL"
   },
   "titularidadPublica": {
     "S": "P\u00daBLICO"

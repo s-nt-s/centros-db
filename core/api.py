@@ -2,18 +2,18 @@ import re
 from functools import cache, cached_property
 from urllib.parse import urljoin
 from typing import Tuple, Dict
+from bs4 import BeautifulSoup
+from os.path import dirname
+import logging
 
 from .web import Web, Driver
 from .types import CsvRow, ParamValueText
 from .cache import Cache
 from .retry import retry
 
-re_bocm = re.compile(r".*(BOCM-[\d\-]+).PDF", re.IGNORECASE)
-re_location = re.compile(r"document.location.href=\s*[\"'](.*.csv)[\"']")
-re_sp = re.compile(r"\s+", re.MULTILINE | re.UNICODE)
-re_centro = re.compile(r"\b(28\d\d\d\d\d\d)\b")
-re_pdfs = re.compile(r".*\bapplication%2Fpdf\b.*")
+logger = logging.getLogger(__name__)
 
+re_location = re.compile(r"document.location.href=\s*[\"'](.*.csv)[\"']")
 re_csv_br = re.compile(r"\s*\n\s*")
 re_csv_fl = re.compile(r"\s*;\s*")
 re_sp = re.compile(r"\s+")
@@ -28,6 +28,11 @@ def trim_null(s: str, is_null=tuple()):
     return s
 
 
+def data_to_str(*args, **data):
+    query = "&".join(f'{k}={v}' for k, v in data.items() if k[0] != '_')
+    return query
+
+
 class ApiException(Exception):
     pass
 
@@ -36,33 +41,27 @@ class DwnCsvException(ApiException):
     pass
 
 
-class BadTypeException(DwnCsvException):
-    def __init__(self, ask_type, get_type):
-        msg = f"Se pidio cdGenerico={ask_type} pero se obtuvo {get_type}"
+class DomNotFoundException(ApiException):
+    def __init__(self, data: dict, selector: str):
+        msg = f"No se ha encontrado el elemento {selector}"
         super().__init__(msg)
 
 
-class NoneCodCentrosExpException(DwnCsvException):
-    def __init__(self):
-        msg = "Falta codCentrosExp (None)"
-        super().__init__(msg)
-
-
-class EmptyCodCentrosExpException(DwnCsvException):
-    def __init__(self):
-        msg = "Falta codCentrosExp (vacio)"
+class BadFormException(DwnCsvException):
+    def __init__(self, data: dict, ask_name, ask_val, get_val):
+        msg = f"Se pidio {ask_name}={ask_val} pero se obtuvo {get_val}"
         super().__init__(msg)
 
 
 class NoCsvUrlDownloadException(DwnCsvException):
-    def __init__(self):
-        msg = "No se ha encontrado la url para descargar el csv"
+    def __init__(self, data: dict):
+        msg = f"No se ha encontrado la url para descargar el csv"
         super().__init__(msg)
 
 
 class BadCsvException(DwnCsvException):
-    def __init__(self):
-        msg = "No se han devuelto los mismos centros que se solicitaron"
+    def __init__(self, data: dict):
+        msg = f"No se han devuelto los mismos centros que se solicitaron"
         super().__init__(msg)
 
 
@@ -118,7 +117,9 @@ class Api():
         head = rows[1]
         for row in rows[2:]:
             arr.append(CsvRow.build(head, row))
-        return tuple(arr)
+        arr = tuple(arr)
+        logger.info(f'{len(arr):4d} = '+data_to_str(**kargv))
+        return arr
 
     @IdCache("data/ids/", maxOld=2)
     def get_ids(self, **data) -> Tuple[int]:
@@ -131,39 +132,54 @@ class Api():
     @retry(
         times=3,
         sleep=10,
-        exceptions=DwnCsvException
-    )
-    @retry(
-        times=2,
-        sleep=5,
-        exceptions=EmptyCodCentrosExpException,
-        exc_to_return={
-            EmptyCodCentrosExpException: ""
-        }
+        exceptions=DwnCsvException,
+        prefix=data_to_str
     )
     def get_csv_as_str(self, **data):
         w = Web()
-        # data["titularidadPublica"] = "S"
-        tipo_centro = data.get("cdGenerico")
         soup = w.get(Api.URL, **data)
-        if tipo_centro is not None:
-            tp = soup.select("#comboGenericos option[selected]")
-            if tp and tp[-1].attrs["value"] != tipo_centro:
-                tp = tp[-1].attrs["value"]
-                raise BadTypeException(tipo_centro, tp)
-        codCentrosExp = soup.find(
-            "input", attrs={"name": "codCentrosExp"}
+        self.__check_inputs(data, soup)
+        codCentrosExp = self.__select_one(
+            soup,
+            'input[name="codCentrosExp"]',
+            "value"
         )
-        if codCentrosExp is None:
-            raise NoneCodCentrosExpException()
-        codCentrosExp = codCentrosExp.attrs["value"].strip()
+        url = self.__select_one(
+            soup,
+            '#frmExportarResultado',
+            "action"
+        )
         if len(codCentrosExp) == 0:
-            raise EmptyCodCentrosExpException()
-        url = soup.find(
-            "form", attrs={"id": "frmExportarResultado"}
-        )
-        url = url.attrs["action"]
-        soup = w.get(url, codCentrosExp=codCentrosExp)
+            return ""
+        content = self.__get_content(w, url, codCentrosExp=codCentrosExp)
+        self.__check_csv_content(content, codCentrosExp.split(";"))
+
+        return content
+
+    def __check_inputs(self, data: dict, soup: BeautifulSoup):
+        frm = soup.select_one("#"+self.id_form)
+        if frm is None:
+            raise DomNotFoundException(data, "#"+self.id_form)
+        for k, v in data.items():
+            if k not in self.get_form():
+                continue
+            dom = frm.select_one(",".join((
+                f'select[name="{k}"] option[selected]:not([value^="-"]):not([value="0"])',
+                f'input[name="{k}"]:checked'
+            )))
+            if dom is not None:
+                dom = dom.attrs["value"].strip()
+            if v != dom:
+                raise BadFormException(data, k, v, dom)
+
+    def __select_one(self, soup: BeautifulSoup, selector: str, attr: str):
+        node = soup.select_one(selector)
+        if node is None:
+            raise DomNotFoundException(selector)
+        value = node.attrs[attr]
+        return value.strip()
+
+    def __get_csv_url(self, soup: BeautifulSoup):
         script = soup.find("script")
         error = soup.select_one("#detalle_error")
         if error is not None and script is None:
@@ -171,18 +187,25 @@ class Api():
         m = re_location.search(script.string)
         if m is None:
             raise NoCsvUrlDownloadException()
-        script = m.group(1)
-        url = urljoin(url, script)
+        url = m.group(1)
+        return url
+
+    def __get_content(self,  w: Web, url: str, **kwargs):
+        soup = w.get(url, **kwargs)
+        curl = self.__get_csv_url(soup)
+        url = urljoin(url, curl)
         r = w._get(url)
         if r.status_code == 404:
             raise DwnCsvException(f"{url} not found ({r.status_code})")
         content = r.content.decode('iso-8859-1')
+        return content
+
+    def __check_csv_content(self, content, ids):
         rows = csvstr_to_rows(content)
         ids = (r[1] for r in rows if len(r) > 2 and r[1].isdigit())
         ids = tuple(sorted(set(ids)))
-        if ids != tuple(sorted(set(codCentrosExp.split(";")))):
+        if ids != tuple(sorted(set(ids))):
             raise BadCsvException()
-        return content
 
     @cached_property
     def home(self):
@@ -191,8 +214,15 @@ class Api():
     @cache
     @Cache("data/form.json")
     def get_form(self) -> Dict[str, Dict[str, str]]:
+        def is_needed(name: str):
+            if name in ('comboMunicipios', 'comboDistritos'):
+                return False
+            return not name.startswith("checkSubdir")
+        logger.info("get form inputs")
         form = {}
         for name, val, txt in self.iter_inputs(self.id_form):
+            if not is_needed(name):
+                continue
             if name not in form:
                 form[name] = {}
             form[name][val] = txt
@@ -201,20 +231,21 @@ class Api():
     @cache
     @Cache("data/etapas.json")
     def get_etapas(self) -> Dict[str, Dict]:
+        logger.info("get form etapas")
         with Driver(wait=10) as w:
             w.get(Api.URL)
             w.wait("comboTipoEnsenanza", presence=True)
             w.driver.set_script_timeout(120)
-            with open("data/script.js", "r") as f:
+            with open(f"{dirname(__file__)}/script.js", "r") as f:
                 script = "return "+f.read()
             return w.execute_script(script)
 
     def iter_etapas(self):
         def _walk(node: Dict[str, Dict]):
-            for name, val in node.items():
+            for name, val in sorted(node.items()):
                 if name == "_":
                     continue
-                for value, obj in val.items():
+                for value, obj in sorted(val.items()):
                     arr = [ParamValueText(
                         name=name,
                         value=value,
@@ -254,6 +285,15 @@ class Api():
                 continue
             txt = n.find_parent("td").find("a").get_text().strip()
             yield name, val, txt
+
+
+class ApiTitularidadPublica(Api):
+    def get_csv_as_str(self, **data):
+        for k, v in list(data.items()):
+            if k.startswith("titularidad") and k != "titularidadPublica":
+                return ""
+        data["titularidadPublica"] = "S"
+        return super().get_csv_as_str(**data)
 
 
 if __name__ == "__main__":

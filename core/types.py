@@ -13,7 +13,7 @@ def _safe_int(x):
 
 def _parse(k, v):
     v = re_sp.sub(" ", v).strip()
-    if v in ("", "-", 0):
+    if v in ("", "-", "0", 0):
         return None
     x = re_sp.sub(" ", v).lower()
     if k == 'FAX' and x in ("sinfax", "nohayfax", "no", "x"):
@@ -60,7 +60,7 @@ class CsvRow(NamedTuple):
     def build(cls, head: Tuple, row: Tuple):
         obj = {h: _parse(h, c) for h, c in zip(head, row)}
         mails = _find_mails(row[head.index("EMAIL"):])
-        mails = "; ".join(mails) if mails else None
+        mails = " ".join(mails) if mails else None
         titularidad = _find_titularidad(row[head.index("EMAIL2")+1:])
 
         return cls(
@@ -83,3 +83,10 @@ class ParamValueText(NamedTuple):
     name: str
     value: str
     text: str
+
+
+class QueryCentros(NamedTuple):
+    id: str
+    qr: str
+    txt: str
+    centros: Tuple[int]

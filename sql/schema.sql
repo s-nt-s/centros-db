@@ -1,11 +1,11 @@
 CREATE TABLE TIPO (
-    cod TEXT PRIMARY KEY,
+    id TEXT PRIMARY KEY,
     txt TEXT NOT NULL,
     abbr TEXT UNIQUE
 );
 
 CREATE TABLE ETAPA (
-    cod TEXT PRIMARY KEY,
+    id TEXT PRIMARY KEY,
     txt TEXT NOT NULL
 );
 
@@ -19,10 +19,13 @@ CREATE TABLE CENTRO (
     distrito TEXT,
     cp INTEGER,
     telefono TEXT,
-    fax TEXT,
+    -- fax TEXT,
     email TEXT,
     titularidad TEXT NOT NULL,
-    FOREIGN KEY (tipo) REFERENCES TIPO(abbr)
+    CONSTRAINT fk_centro_tipo
+        FOREIGN KEY (tipo)
+        REFERENCES TIPO(abbr)
+        ON DELETE CASCADE
 );
 
 CREATE TABLE QUERY (
@@ -33,6 +36,27 @@ CREATE TABLE QUERY (
 CREATE TABLE QUERY_CENTRO (
     centro INTEGER,
     query TEXT,
-    FOREIGN KEY (query)  REFERENCES QUERY(id),
-    FOREIGN KEY (centro) REFERENCES CENTRO(id)
+    PRIMARY KEY (centro, query),
+    CONSTRAINT fk_query_centro_centro
+        FOREIGN KEY (centro)
+        REFERENCES CENTRO(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_query_centro_query
+        FOREIGN KEY (query)
+        REFERENCES QUERY(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE ETAPA_CENTRO (
+    centro INTEGER,
+    etapa TEXT,
+    PRIMARY KEY (centro, etapa),
+    CONSTRAINT fk_etapa_centro_centro
+        FOREIGN KEY (centro)
+        REFERENCES CENTRO(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_etapa_centro_etapa
+        FOREIGN KEY (etapa)
+        REFERENCES ETAPA(id)
+        ON DELETE CASCADE
 );

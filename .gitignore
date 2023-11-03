@@ -1,6 +1,7 @@
 *.sqlite
+*.sqlite3
+*.sqlite3-journal
 *.csv
-*.sqlite-journal
 *.txt
 !requirements.txt
 
