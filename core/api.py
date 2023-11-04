@@ -29,6 +29,8 @@ def trim_null(s: str, is_null=tuple()):
 
 
 def data_to_str(*args, **data):
+    if len(data) == 0:
+        return "ALL"
     query = "&".join(f'{k}={v}' for k, v in data.items() if k[0] != '_')
     return query
 
@@ -55,13 +57,13 @@ class BadFormException(DwnCsvException):
 
 class NoCsvUrlDownloadException(DwnCsvException):
     def __init__(self, data: dict):
-        msg = f"No se ha encontrado la url para descargar el csv"
+        msg = "No se ha encontrado la url para descargar el csv"
         super().__init__(msg)
 
 
 class BadCsvException(DwnCsvException):
     def __init__(self, data: dict):
-        msg = f"No se han devuelto los mismos centros que se solicitaron"
+        msg = "No se han devuelto los mismos centros que se solicitaron"
         super().__init__(msg)
 
 
@@ -72,7 +74,7 @@ class CsvCache(Cache):
 
     def parse_file_name(self, *args, **kargv):
         if len(kargv) == 0:
-            raise ApiException("No se puede calcular la ruta local para el " + self.ext)
+            return "all." + self.ext
         arr = [self.file.rstrip("/")]
         for k, v in kargv.items():
             arr.append(f'{k}={v}')
@@ -278,15 +280,6 @@ class Api():
                 continue
             txt = n.find_parent("td").find("a").get_text().strip()
             yield name, val, txt
-
-
-class ApiTitularidadPublica(Api):
-    def get_csv_as_str(self, **data):
-        for k, v in list(data.items()):
-            if k.startswith("titularidad") and k != "titularidadPublica":
-                return ""
-        data["titularidadPublica"] = "S"
-        return super().get_csv_as_str(**data)
 
 
 if __name__ == "__main__":

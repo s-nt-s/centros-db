@@ -2,6 +2,7 @@ from core.api import Api
 from core.dblite import DBLite, dict_factory
 from typing import Tuple
 from core.types import ParamValueText, QueryCentros, CsvRow
+from core.util import must_one, read_file
 import shutil
 import argparse
 import logging
@@ -18,6 +19,8 @@ parser.add_argument(
 )
 
 ARG = parser.parse_args()
+API = Api()
+KWV = {}
 
 logging.basicConfig(
     level=logging.INFO,
@@ -28,20 +31,120 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def get_if_one(arr):
-    arr = set(arr)
-    if len(arr) != 1:
-        return None
-    if len(arr) > 1:
-        logger.error("More than one: "+", ".join(sorted(arr)))
-    return arr.pop()
+def build_db(db: DBLite):
+    db.execute("sql/schema.sql")
+
+    KWV["area"] = dict(db.to_tuple("select txt, id from area"))
+    KWV["titularidad"] = dict(db.to_tuple("select txt, id from titularidad"))
+    KWV["tipo"] = dict()
+
+    insert_tipos(db)
+    insert_queries(db)
+    insert_etapas(db)
+    insert_all(db)
+    insert_missing(db)
+
+    fix_tipo(db)
+
+    # Nos fiamos del campo titularida del csv
+    # check_titularidad(db)
+
+    execute_if_query_is_col(
+        db,
+        "sql/fix/jornada.sql",
+        'checkOrdinaria=O',
+        'checkContinua=C'
+    )
 
 
-def read_file(file: str, *args, **kwargs):
-    with open(file, "r") as f:
-        txt = f.read().strip()
-        txt = txt.format(*args, **kwargs)
-        return txt
+def insert_tipos(db: DBLite):
+    for k, v in sorted(API.get_form()['cdGenerico'].items()):
+        rows = API.get_csv(cdGenerico=k)
+        if len(rows) == 0:
+            continue
+        abr = must_one((x.tipo for x in rows))
+        db.insert("TIPO", id=k, txt=v, abr=abr)
+        KWV["tipo"][abr] = k
+        for row in rows:
+            insert_centro(db, row)
+
+
+def insert_queries(db: DBLite):
+    def jump_me(name: str):
+        if name in (
+            'cdGenerico',
+            'comboMunicipios',
+            'comboDistritos',
+            'cdTramoEdu',
+            'titularidadPublica',
+            'titularidadPrivada',
+            'titularidadPrivadaConc'
+        ):
+            return True
+        return name.startswith("checkSubdir")
+
+    for name, obj in API.get_form().items():
+        if jump_me(name):
+            continue
+        for val, txt in sorted(obj.items()):
+            ids = API.get_ids(**{name: val})
+            if len(ids) == 0:
+                continue
+            id_query = f'{name}={val}'
+            db.insert("QUERY", id=id_query, txt=txt)
+            for id in ids:
+                db.insert("QUERY_CENTRO", query=id_query, centro=id)
+
+
+def insert_etapas(db: DBLite):
+    for e in walk_etapas():
+        db.insert("ETAPA", id=e.id, txt=e.txt)
+        for id in e.centros:
+            db.insert("ETAPA_CENTRO", etapa=e.id, centro=id)
+
+
+def insert_all(db: DBLite):
+    for row in API.get_csv():
+        insert_centro(db, row, _or="ignore")
+
+
+def insert_missing(db: DBLite):
+    for data in walk_fix_query():
+        for row in API.get_csv(**data):
+            insert_centro(db, row, _or="ignore")
+
+
+def fix_tipo(db: DBLite):
+    for abr in db.to_tuple(read_file("sql/fix/tipo.sql")):
+        db.insert("TIPO", id=abr, txt=abr, abr=abr)
+
+
+def check_titularidad(db: DBLite):
+    bad_tit = db.to_tuple(
+        read_file("sql/fix/titularidad.sql"),
+        row_factory=dict_factory
+    )
+    if len(bad_tit) == 0:
+        db.execute('''
+            PRAGMA foreign_keys = ON;
+            delete from query where id like 'titularidad%=S'
+        ''')
+    for e in bad_tit:
+        logger.critical("BAD {id}: {titularidad} <> {query}".format(**e))
+
+
+def execute_if_query_is_col(db: DBLite, sql_path: str, *query_in: str):
+    query_in = ", ".join(map(lambda x: f"'{x}'", query_in))
+    sql = read_file("sql/fix/iscol.sql", query_in)
+    if 0 == db.one(sql):
+        db.execute(read_file(sql_path))
+
+
+def insert_centro(db: DBLite, row: CsvRow, **kwargs):
+    obj = row._asdict()
+    for k, v in list(obj.items()):
+        obj[k] = KWV.get(k, {}).get(v, v)
+    db.insert("CENTRO", **obj, **kwargs)
 
 
 def walk_fix_query():
@@ -55,11 +158,11 @@ def walk_fix_query():
         yield qr
 
 
-def walk_etapas(api: Api, max_steps=0):
+def walk_etapas():
     ko = set()
     etapas: Tuple[ParamValueText] = None
-    for etapas in api.iter_etapas():
-        if max_steps > 0 and len(etapas) > max_steps:
+    for etapas in API.iter_etapas():
+        if ARG.etapas > 0 and len(etapas) > ARG.etapas:
             continue
         idet = []
         text = []
@@ -73,7 +176,7 @@ def walk_etapas(api: Api, max_steps=0):
         if tuple(idqr[:-1]) in ko:
             ko.add(tuple(idqr))
             continue
-        rows = api.get_ids(**data)
+        rows = API.get_ids(**data)
         if len(rows) == 0:
             ko.add(tuple(idqr))
             continue
@@ -85,85 +188,16 @@ def walk_etapas(api: Api, max_steps=0):
         )
 
 
-def build_db(db: DBLite, api: Api):
-    db.execute("sql/schema.sql")
+if __name__ == "__main__":
+    with DBLite(ARG.db, reload=True) as db:
+        build_db(db)
 
-    to_id = {
-        "area": dict(db.to_tuple("select txt, id from area")),
-        "titularidad": dict(db.to_tuple("select txt, id from titularidad")),
-        "tipo": dict(),
-    }
+    with DBLite(ARG.db, readonly=True) as db:
+        db.sql_backup(ARG.db.rsplit(".", 1)[0]+".sql")
 
-    def asdict(obj: CsvRow):
-        obj = obj._asdict()
-        for k, v in list(obj.items()):
-            obj[k] = to_id.get(k, {}).get(v, v)
-        return obj
-
-    for k, v in sorted(api.get_form()['cdGenerico'].items()):
-        rows = api.get_csv(cdGenerico=k)
-        abr = get_if_one((x.tipo for x in rows))
-        db.insert("TIPO", id=k, txt=v, abr=abr)
-        to_id["tipo"][abr] = k
-        for row in rows:
-            db.insert("CENTRO", **asdict(row))
-
-    def jump_me(name: str):
-        if name in ('cdGenerico', 'comboMunicipios', 'comboDistritos', 'cdTramoEdu'):
-            return True
-        return name.startswith("checkSubdir")
-
-    for name, obj in api.get_form().items():
-        if jump_me(name):
-            continue
-        for val, txt in sorted(obj.items()):
-            id_query = f'{name}={val}'
-            db.insert("QUERY", id=id_query, txt=txt)
-            for id in api.get_ids(**{name: val}):
-                db.insert("QUERY_CENTRO", query=id_query, centro=id)
-
-    for e in walk_etapas(api, max_steps=ARG.etapas):
-        db.insert("ETAPA", id=e.id, txt=e.txt)
-        for id in e.centros:
-            db.insert("ETAPA_CENTRO", etapa=e.id, centro=id)
-
-    for data in walk_fix_query():
-        for row in api.get_csv(**data):
-            if db.one("select id from CENTRO where id=?", row.id):
-                continue
-            db.insert("CENTRO", **asdict(row))
-
-    for abr in db.to_tuple(read_file("sql/fix/tipo.sql")):
-        db.insert("TIPO", id=abr, txt=abr, abr=abr)
-
-    bad_tit = db.to_tuple(
-        read_file("sql/fix/titularidad.sql"),
-        row_factory=dict_factory
-    )
-    if len(bad_tit) == 0:
-        db.execute('''
-            PRAGMA foreign_keys = ON;
-            delete from query where id like 'titularidad%=S'
-        ''')
-    for e in bad_tit:
-        logger.critical("BAD {id}: {titularidad} <> {query}".format(**e))
-
-    if 0 == db.one(
-        read_file("sql/fix/iscol.sql", "'checkOrdinaria=O', 'checkContinua=C'")
-    ):
-        db.execute(read_file("sql/fix/jornada.sql"))
-
-
-with DBLite(ARG.db, reload=True) as db:
-    build_db(db, Api())
-
-with DBLite(ARG.db, readonly=True) as db:
-    db.sql_backup(ARG.db.rsplit(".", 1)[0]+".sql")
-
-
-for tit in ("pub", "pri", "con"):
-    db_name, ext = ARG.db.rsplit(".", 1)
-    db_name = f"{db_name}_{tit}.{ext}"
-    shutil.copyfile(ARG.db, db_name)
-    with DBLite(db_name) as db:
-        db.execute(read_file("sql/drop/titularidad.sql", tit=tit.upper()))
+    for tit in ("pub", "pri", "con"):
+        db_name, ext = ARG.db.rsplit(".", 1)
+        db_name = f"{db_name}_{tit}.{ext}"
+        shutil.copyfile(ARG.db, db_name)
+        with DBLite(db_name) as db:
+            db.execute(read_file("sql/drop/titularidad.sql", tit=tit.upper()))
