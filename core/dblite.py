@@ -42,6 +42,13 @@ class DBLite:
                 con.load_extension(e)
         return con
 
+    @classmethod
+    def do_sql_backup(cls, path: str, out: str = None):
+        if out is None:
+            out = path.rsplit(".", 1)[0]+".sql"
+        with cls(path, readonly=True) as db:
+            db.sql_backup(out)
+
     def __init__(self, file, extensions=None, reload=False, readonly=False):
         self.readonly = readonly
         self.file = file

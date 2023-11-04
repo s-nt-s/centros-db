@@ -194,8 +194,7 @@ if __name__ == "__main__":
     with DBLite(ARG.db, reload=True) as db:
         build_db(db)
 
-    with DBLite(ARG.db, readonly=True) as db:
-        db.sql_backup(ARG.db.rsplit(".", 1)[0]+".sql")
+    DBLite.do_sql_backup(ARG.db)
 
     for tit in ("pub", "pri", "con"):
         db_name, ext = ARG.db.rsplit(".", 1)
