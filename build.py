@@ -159,7 +159,6 @@ def walk_fix_query():
 
 
 def walk_etapas(min_etapa, max_etapa):
-    ko = set()
     etapas: Tuple[ParamValueText] = None
     for etapas in API.iter_etapas():
         if max_etapa >= 0 and len(etapas) > max_etapa:
@@ -175,12 +174,8 @@ def walk_etapas(min_etapa, max_etapa):
             text.append(e.text)
             idqr.append(f'{e.name}={e.value}')
             data[e.name] = e.value
-        if tuple(idqr[:-1]) in ko:
-            ko.add(tuple(idqr))
-            continue
         rows = API.get_ids(**data)
         if len(rows) == 0:
-            ko.add(tuple(idqr))
             continue
         yield QueryCentros(
             centros=rows,
