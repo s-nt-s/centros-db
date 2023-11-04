@@ -14,8 +14,8 @@ parser.add_argument(
     '--db', type=str, default="out/db.sqlite"
 )
 parser.add_argument(
-    '--etapas', type=int, default=0,
-    help="Profundidad del árbol de etapas (0 = sin limite)"
+    '--etapas', type=int, default=-1,
+    help="Profundidad del árbol de etapas (-1 = sin limite)"
 )
 
 ARG = parser.parse_args()
@@ -40,7 +40,7 @@ def build_db(db: DBLite):
 
     insert_tipos(db)
     insert_queries(db)
-    insert_etapas(db)
+    insert_etapas(db, 0, ARG.etapas)
     insert_all(db)
     insert_missing(db)
 
@@ -96,8 +96,8 @@ def insert_queries(db: DBLite):
                 db.insert("QUERY_CENTRO", query=id_query, centro=id)
 
 
-def insert_etapas(db: DBLite):
-    for e in walk_etapas():
+def insert_etapas(db: DBLite, min_etapa, max_etapa):
+    for e in walk_etapas(min_etapa, max_etapa):
         db.insert("ETAPA", id=e.id, txt=e.txt)
         for id in e.centros:
             db.insert("ETAPA_CENTRO", etapa=e.id, centro=id)
@@ -158,11 +158,13 @@ def walk_fix_query():
         yield qr
 
 
-def walk_etapas():
+def walk_etapas(min_etapa, max_etapa):
     ko = set()
     etapas: Tuple[ParamValueText] = None
     for etapas in API.iter_etapas():
-        if ARG.etapas > 0 and len(etapas) > ARG.etapas:
+        if max_etapa >= 0 and len(etapas) > max_etapa:
+            continue
+        if min_etapa >= 0 and len(etapas) < min_etapa:
             continue
         idet = []
         text = []
