@@ -23,6 +23,8 @@ jobs:
         run: sudo apt install -y chromium-browser
       - name: Install pip packages
         run: pip install -r requirements.txt
+      - name: rm file cache
+        run: rm -f data/etapas.json data/form.json
       - name: Build DB
         uses: nick-fields/retry@v2
         with:
