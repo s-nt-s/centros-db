@@ -4,6 +4,7 @@ from urllib.parse import urljoin
 from typing import Tuple, Dict
 from bs4 import BeautifulSoup
 from os.path import dirname
+import os
 import logging
 
 from .web import Web, Driver
@@ -17,6 +18,8 @@ re_location = re.compile(r"document.location.href=\s*[\"'](.*.csv)[\"']")
 re_csv_br = re.compile(r"\s*\n\s*")
 re_csv_fl = re.compile(r"\s*;\s*")
 re_sp = re.compile(r"\s+")
+
+JS_TIMEOUT = int(os.environ.get('JS_TIMEOUT', '120'))
 
 
 def trim_null(s: str, is_null=tuple()):
@@ -230,7 +233,7 @@ class Api():
         with Driver(wait=10) as w:
             w.get(Api.URL)
             w.wait("comboTipoEnsenanza", presence=True)
-            w.driver.set_script_timeout(120)
+            w.driver.set_script_timeout(JS_TIMEOUT)
             with open(f"{dirname(__file__)}/script.js", "r") as f:
                 script = "return "+f.read()
             return w.execute_script(script)
