@@ -18,11 +18,11 @@ def retry(times: int, exceptions, sleep=0, exc_to_return: dict = None, prefix = 
     def decorator(func):
         def newfn(*args, **kwargs):
             def __msg_error(msg_prefix, e):
-                    if callable(msg_prefix):
-                        msg_prefix = msg_prefix(*args, **kwargs)
-                    if msg_prefix is None:
-                        return str(e)
-                    return f'{msg_prefix} - {str(e)}'
+                if callable(msg_prefix):
+                    msg_prefix = msg_prefix(*args, **kwargs)
+                if msg_prefix is None:
+                    return str(e)
+                return f'{msg_prefix} - {str(e)}'
 
             attempt = 0
             last_exc = None
@@ -30,7 +30,7 @@ def retry(times: int, exceptions, sleep=0, exc_to_return: dict = None, prefix = 
                 try:
                     return func(*args, **kwargs)
                 except exceptions as e:
-                    logger.warning(__msg_error(prefix, e))
+                    logger.error(__msg_error(prefix, e))
                     last_exc = e
                     attempt += 1
                     time.sleep(sleep)
@@ -41,4 +41,3 @@ def retry(times: int, exceptions, sleep=0, exc_to_return: dict = None, prefix = 
             return func(*args, **kwargs)
         return newfn
     return decorator
-
