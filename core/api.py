@@ -8,7 +8,7 @@ import os
 import logging
 
 from .web import Web, Driver
-from .types import CsvRow, ParamValueText
+from .types import CsvRow, ParamValueText, QueryResponse
 from .cache import Cache
 from .retry import retry
 
@@ -42,23 +42,27 @@ class ApiException(Exception):
     pass
 
 
+class SearchException(Exception):
+    pass
+
+
 class DwnCsvException(ApiException):
     pass
 
 
-class DomNotFoundException(ApiException):
+class DomNotFoundException(SearchException):
     def __init__(self, data: dict, selector: str):
         msg = f"No se ha encontrado el elemento {selector}"
         super().__init__(msg)
 
 
-class BadFormException(DwnCsvException):
+class BadFormException(SearchException):
     def __init__(self, data: dict, ask_name, ask_val, get_val):
         msg = f"Se pidio {ask_name}={ask_val} pero se obtuvo {get_val}"
         super().__init__(msg)
 
 
-class NoCsvUrlDownloadException(DwnCsvException):
+class NoCsvUrlDownloadException(SearchException):
     def __init__(self, data: dict):
         msg = "No se ha encontrado la url para descargar el csv"
         super().__init__(msg)
@@ -123,17 +127,14 @@ class Api():
         for row in rows[2:]:
             arr.append(CsvRow.build(head, row))
         arr = tuple(arr)
-        logger.info(f'{len(arr):4d} = '+data_to_str(**kargv))
         return arr
 
-    @IdCache("data/ids/", maxOld=2)
+    @IdCache("data/ids/", maxOld=5)
     def get_ids(self, **data) -> Tuple[int]:
-        ids = set()
-        for row in self.get_csv(_avoid_save=True, **data):
-            ids.add(row.id)
-        return tuple(sorted(ids))
+        r = self.__do_search(**data)
+        return r.get_ids()
 
-    @CsvCache("data/csv/", maxOld=2)
+    @CsvCache("data/csv/", maxOld=5)
     @retry(
         times=3,
         sleep=10,
@@ -142,6 +143,26 @@ class Api():
     )
     def get_csv_as_str(self, **data):
         w = Web()
+        r = self.__do_search(w=w, **data)
+        if len(r.get_ids()) == 0:
+            return ""
+        content = self.__get_content(
+            w,
+            r.frmExportarResultado,
+            codCentrosExp=r.codCentrosExp
+        )
+        self.__check_csv_content(content, r.get_ids())
+        return content
+
+    @retry(
+        times=3,
+        sleep=10,
+        exceptions=SearchException,
+        prefix=data_to_str
+    )
+    def __do_search(self, w: Web = None, **data):
+        if not isinstance(w, Web):
+            w = Web()
         soup = w.get(Api.URL, **data)
         self.__check_inputs(data, soup)
         codCentrosExp = self.__select_one(
@@ -149,16 +170,17 @@ class Api():
             'input[name="codCentrosExp"]',
             "value"
         )
-        url = self.__select_one(
+        frmExportarResultado = self.__select_one(
             soup,
             '#frmExportarResultado',
             "action"
         )
-        if len(codCentrosExp) == 0:
-            return ""
-        content = self.__get_content(w, url, codCentrosExp=codCentrosExp)
-        self.__check_csv_content(content, codCentrosExp.split(";"))
-        return content
+        r = QueryResponse(
+            codCentrosExp=codCentrosExp,
+            frmExportarResultado=frmExportarResultado
+        )
+        logger.info(f'{len(r.get_ids()):4d} = '+data_to_str(**data))
+        return r
 
     def __check_inputs(self, data: dict, soup: BeautifulSoup):
         frm = soup.select_one("#"+self.id_form)
@@ -204,11 +226,12 @@ class Api():
         content = r.content.decode('iso-8859-1')
         return content
 
-    def __check_csv_content(self, content, ids):
+    def __check_csv_content(self, content, codCentrosExp):
+        def _parse(arr):
+            return tuple(sorted(map(int, set(arr))))
         rows = csvstr_to_rows(content)
         ids = (r[1] for r in rows if len(r) > 2 and r[1].isdigit())
-        ids = tuple(sorted(set(ids)))
-        if ids != tuple(sorted(set(ids))):
+        if _parse(ids) != _parse(codCentrosExp):
             raise BadCsvException()
 
     @cached_property

@@ -1,10 +1,13 @@
 *.sqlite
 *.sqlite3
 *.sqlite3-journal
+*.sqlite-journal
 *.csv
 *.txt
 !requirements.txt
 sql/subset
+data/html
+ok.sql
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
