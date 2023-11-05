@@ -84,7 +84,7 @@ class DBLite:
         try:
             self.con.executescript(sql)
         except sqlite3.OperationalError:
-            print(sql)
+            logging.error(sql)
             raise
         self.con.commit()
         self.clear_cache()
@@ -159,12 +159,12 @@ class DBLite:
         if vacuum:
             c = self.con.execute("pragma integrity_check")
             c = c.fetchone()
-            print("integrity_check =", *c)
+            logging.info(f"integrity_check = {c[0]}")
             c = self.con.execute("pragma foreign_key_check")
             c = c.fetchall()
-            print("foreign_key_check =", "ko" if c else "ok")
+            logging.info("foreign_key_check = " + ("ko" if c else "ok"))
             for table, parent in set((i[0], i[2]) for i in c):
-                print(f"  {table} -> {parent}")
+                logging.info(f"  {table} -> {parent}")
             self.con.execute("VACUUM")
         self.con.commit()
         self.con.close()
