@@ -228,6 +228,8 @@ class Api():
 
     def __check_csv_content(self, content, codCentrosExp):
         def _parse(arr):
+            if isinstance(arr, str):
+                arr = arr.split(";")
             return tuple(sorted(map(int, set(arr))))
         rows = csvstr_to_rows(content)
         ids = (r[1] for r in rows if len(r) > 2 and r[1].isdigit())
