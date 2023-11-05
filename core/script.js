@@ -16,7 +16,7 @@
                 "disabled": s.is(":disabled")
             })
         })
-        while (arr.length>0 && arr[arr.length-1].disabled) arr.pop();
+        //while (arr.length>0 && arr[arr.length-1].disabled) arr.pop();
         return arr;
     }
     const get_last = () => {
