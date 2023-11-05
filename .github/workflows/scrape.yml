@@ -27,12 +27,15 @@ jobs:
         run: rm -f data/etapas.json data/form.json
       - name: Build DB
         uses: nick-fields/retry@v2
+        env:
+          JS_TIMEOUT: ${{ vars.JS_TIMEOUT }}
+          ETAPAS: ${{ vars.ETAPAS }}
         with:
           timeout_minutes: 60
           retry_wait_seconds: 15
           max_attempts: 3
           retry_on: error
-          command: "python build.py --etapas ${{ env.ETAPAS || '1' }}"
+          command: "python build.py --etapas ${ETAPAS:-1}"
       - name: Commit and push if content changed
         run: |-
           DT=$(date -u +'%Y-%m-%d %H:%M UTC')
