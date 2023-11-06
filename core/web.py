@@ -7,7 +7,7 @@ import requests
 from bs4 import BeautifulSoup, Tag
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.chrome import ChromeType
-from webdriver_manager.core.utils import read_version_from_cmd 
+from webdriver_manager.core.utils import read_version_from_cmd
 from webdriver_manager.core.os_manager import PATTERN
 from selenium import webdriver
 from selenium.common.exceptions import (ElementNotInteractableException,
@@ -24,6 +24,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 import logging
+from typing import Union
 
 logger = logging.getLogger(__name__)
 
@@ -308,7 +309,7 @@ class Driver:
             return None
         return self._driver.page_source
 
-    def wait(self, id: int | float | str, seconds=None, presence=False, by=None) -> WebElement:
+    def wait(self, id: Union[int, float, str], seconds=None, presence=False, by=None) -> WebElement:
         if isinstance(id, (int, float)):
             time.sleep(id)
             return
