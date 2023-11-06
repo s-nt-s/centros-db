@@ -122,6 +122,8 @@ class Api():
     FORM = "formBusquedaAvanzada"
 
     def get_csv(self, *ids: Tuple[int]):
+        if len(ids) == 0:
+            return tuple()
         content = self.get_csv_as_str(*ids)
         return self.__parse_csv(content)
 
@@ -172,7 +174,7 @@ class Api():
         logger.info(f'{len(r.get_ids()):4d} = '+data_to_str(**data))
         return r
 
-    @CsvCache("data/csv/", maxOld=5)
+    @CsvCache("data/csv/", maxOld=5, loglevel=logging.INFO)
     def get_csv_as_str(self, *ids: int, endpoint: str = None):
         logger.info('get_csv(' + ", ".join(map(str, ids))+')')
         return self.__get_csv_as_str(*ids, endpoint=endpoint)

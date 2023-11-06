@@ -115,8 +115,8 @@ def insert_missing(db: DBLite):
         if "centro" in db.get_cols(table):
             sql.append(f"select centro from {table}")
     missing = db.to_tuple('''
-        select distinct centro from ({}) where centro not in (
-            select id from centro
+        select distinct centro from ({}) t where not exists (
+            select c.id from centro c where t.centro=c.id
         )
     '''.format(" union ".join(sql)))
     rows = API.get_csv(*missing)
