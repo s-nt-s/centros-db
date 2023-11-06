@@ -51,25 +51,25 @@ class DwnCsvException(ApiException):
 
 
 class DomNotFoundException(SearchException):
-    def __init__(self, data: dict, selector: str):
+    def __init__(self, selector: str):
         msg = f"No se ha encontrado el elemento {selector}"
         super().__init__(msg)
 
 
 class BadFormException(SearchException):
-    def __init__(self, data: dict, ask_name, ask_val, get_val):
+    def __init__(self, ask_name, ask_val, get_val):
         msg = f"Se pidio {ask_name}={ask_val} pero se obtuvo {get_val}"
         super().__init__(msg)
 
 
 class NoCsvUrlDownloadException(SearchException):
-    def __init__(self, data: dict):
+    def __init__(self):
         msg = "No se ha encontrado la url para descargar el csv"
         super().__init__(msg)
 
 
 class BadCsvException(DwnCsvException):
-    def __init__(self, data: dict):
+    def __init__(self):
         msg = "No se han devuelto los mismos centros que se solicitaron"
         super().__init__(msg)
 
@@ -80,12 +80,16 @@ class CsvCache(Cache):
         self.ext = ext
 
     def parse_file_name(self, *args, **kargv):
+        root = self.file.rstrip("/")
+        if len(args) > 0:
+            name = ";".join(map(str, args))
+            return f"{root}/{name}.{self.ext}"
         if len(kargv) == 0:
-            return "all." + self.ext
-        arr = [self.file.rstrip("/")]
+            return f"{root}/all.{self.ext}"
+        arr = [root]
         for k, v in kargv.items():
             arr.append(f'{k}={v}')
-        return "/".join(arr) + "." + self.ext
+        return "/".join(arr) + f".{self.ext}"
 
 
 class IdCache(CsvCache):
@@ -113,45 +117,31 @@ def csvstr_to_rows(content: str) -> Tuple[Tuple[str]]:
 
 class Api():
     URL = "https://gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.icm"
+    DWN = "https://gestiona.comunidad.madrid/wpad_pub/run/j/ConsultaGeneralNPCentrosCSV.icm"
+    FORM = "formBusquedaAvanzada"
 
-    def __init__(self):
-        self.id_form = "formBusquedaAvanzada"
+    def get_csv(self, *ids: Tuple[int]):
+        content = self.get_csv_as_str(*ids)
+        return self.__parse_csv(content)
 
-    def get_csv(self, **kargv) -> Tuple[CsvRow]:
-        content = self.get_csv_as_str(**kargv)
-        rows = csvstr_to_rows(content)
-        if len(rows) <= 1:
-            return tuple()
-        arr = []
-        head = rows[1]
-        for row in rows[2:]:
-            arr.append(CsvRow.build(head, row))
-        arr = tuple(arr)
-        return arr
+    def search_csv(self, **kargv) -> Tuple[CsvRow]:
+        content = self.search_csv_as_str(**kargv)
+        return self.__parse_csv(content)
 
     @IdCache("data/ids/", maxOld=5)
-    def get_ids(self, **data) -> Tuple[int]:
+    def search_ids(self, **data) -> Tuple[int]:
         r = self.__do_search(**data)
         return r.get_ids()
 
     @CsvCache("data/csv/", maxOld=5)
-    @retry(
-        times=3,
-        sleep=10,
-        exceptions=DwnCsvException,
-        prefix=data_to_str
-    )
-    def get_csv_as_str(self, **data):
-        w = Web()
-        r = self.__do_search(w=w, **data)
+    def search_csv_as_str(self, **data):
+        r = self.__do_search(**data)
         if len(r.get_ids()) == 0:
             return ""
-        content = self.__get_content(
-            w,
-            r.frmExportarResultado,
-            codCentrosExp=r.codCentrosExp
+        content = self.__get_csv_as_str(
+            *r.get_ids(),
+            endpoint=r.frmExportarResultado
         )
-        self.__check_csv_content(content, r.get_ids())
         return content
 
     @retry(
@@ -160,9 +150,8 @@ class Api():
         exceptions=SearchException,
         prefix=data_to_str
     )
-    def __do_search(self, w: Web = None, **data):
-        if not isinstance(w, Web):
-            w = Web()
+    def __do_search(self, **data):
+        w = Web()
         soup = w.get(Api.URL, **data)
         self.__check_inputs(data, soup)
         codCentrosExp = self.__select_one(
@@ -182,10 +171,55 @@ class Api():
         logger.info(f'{len(r.get_ids()):4d} = '+data_to_str(**data))
         return r
 
+    @CsvCache("data/csv/", maxOld=5)
+    def get_csv_as_str(self, *ids: int, endpoint: str = None):
+        logger.info('get_csv(' + ", ".join(map(str, ids))+')')
+        return self.__get_csv_as_str(*ids, endpoint=endpoint)
+
+    @retry(
+        times=3,
+        sleep=10,
+        exceptions=DwnCsvException,
+        prefix=data_to_str
+    )
+    def __get_csv_as_str(self, *ids: int, endpoint: str = None):
+        ids = tuple(sorted(ids))
+        if endpoint is None:
+            endpoint = Api.DWN
+        w = Web()
+        soup = w.get(endpoint, codCentrosExp=";".join(map(str, ids)))
+        url = self.__search_csv_url(soup)
+        url = urljoin(endpoint, url)
+        r = w._get(url)
+        if r.status_code == 404:
+            raise DwnCsvException(f"{url} not found ({r.status_code})")
+        content = r.content.decode('iso-8859-1')
+        self.__check_csv_content(content, ids)
+        return content
+
+    def __search_csv_url(self, soup: BeautifulSoup):
+        script = soup.find("script")
+        error = soup.select_one("#detalle_error")
+        if error is not None and script is None:
+            raise DwnCsvException(error.get_text().strip())
+        m = re_location.search(script.string)
+        if m is None:
+            raise NoCsvUrlDownloadException()
+        url = m.group(1)
+        return url
+
+    def __check_csv_content(self, content: str, ids: tuple[int]):
+        def _parse(arr):
+            return tuple(sorted(map(int, set(arr))))
+        rows = csvstr_to_rows(content)
+        cntnt = (r[1] for r in rows if len(r) > 2 and r[1].isdigit())
+        if _parse(cntnt) != _parse(ids):
+            raise BadCsvException()
+
     def __check_inputs(self, data: dict, soup: BeautifulSoup):
-        frm = soup.select_one("#"+self.id_form)
+        frm = soup.select_one("#"+Api.FORM)
         if frm is None:
-            raise DomNotFoundException(data, "#"+self.id_form)
+            raise DomNotFoundException(data, "#"+Api.FORM)
         for k, v in data.items():
             if k not in self.get_form():
                 continue
@@ -205,36 +239,16 @@ class Api():
         value = node.attrs[attr]
         return value.strip()
 
-    def __get_csv_url(self, soup: BeautifulSoup):
-        script = soup.find("script")
-        error = soup.select_one("#detalle_error")
-        if error is not None and script is None:
-            raise DwnCsvException(error.get_text().strip())
-        m = re_location.search(script.string)
-        if m is None:
-            raise NoCsvUrlDownloadException()
-        url = m.group(1)
-        return url
-
-    def __get_content(self,  w: Web, url: str, **kwargs):
-        soup = w.get(url, **kwargs)
-        curl = self.__get_csv_url(soup)
-        url = urljoin(url, curl)
-        r = w._get(url)
-        if r.status_code == 404:
-            raise DwnCsvException(f"{url} not found ({r.status_code})")
-        content = r.content.decode('iso-8859-1')
-        return content
-
-    def __check_csv_content(self, content, codCentrosExp):
-        def _parse(arr):
-            if isinstance(arr, str):
-                arr = arr.split(";")
-            return tuple(sorted(map(int, set(arr))))
+    def __parse_csv(self, content: str):
         rows = csvstr_to_rows(content)
-        ids = (r[1] for r in rows if len(r) > 2 and r[1].isdigit())
-        if _parse(ids) != _parse(codCentrosExp):
-            raise BadCsvException()
+        if len(rows) <= 1:
+            return tuple()
+        arr = []
+        head = rows[1]
+        for row in rows[2:]:
+            arr.append(CsvRow.build(head, row))
+        arr = tuple(arr)
+        return arr
 
     @cached_property
     def home(self):
@@ -245,7 +259,7 @@ class Api():
     def get_form(self) -> Dict[str, Dict[str, str]]:
         logger.info("get form inputs")
         form = {}
-        for name, val, txt in self.iter_inputs(self.id_form):
+        for name, val, txt in self.iter_inputs(Api.FORM):
             if name not in form:
                 form[name] = {}
             form[name][val] = txt

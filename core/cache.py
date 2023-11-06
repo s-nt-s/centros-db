@@ -41,14 +41,14 @@ class Cache:
             return True
         return False
 
-    def callCache(self, slf, *args, _avoid_save=False, **kargs):
+    def callCache(self, slf, *args, **kargs):
         fl = self.parse_file_name(*args, **kargs)
         if not self.tooOld(fl):
             logger.log(self.loglevel, f"Cache.read({fl})")
             data = self.read(fl, *args, **kargs)
             return data
         data = self.func(slf, *args, **kargs)
-        if not _avoid_save and data is not None:
+        if data is not None:
             logger.log(self.loglevel, f"Cache.save({fl})")
             self.save(fl, data, *args, **kargs)
         return data

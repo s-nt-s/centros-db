@@ -59,7 +59,7 @@ def build_db(db: DBLite):
 
 def insert_tipos(db: DBLite):
     for k, v in sorted(API.get_form()['cdGenerico'].items()):
-        rows = API.get_csv(cdGenerico=k)
+        rows = API.search_csv(cdGenerico=k)
         if len(rows) == 0:
             continue
         abr = must_one((x.tipo for x in rows))
@@ -87,7 +87,7 @@ def insert_queries(db: DBLite):
         if jump_me(name):
             continue
         for val, txt in sorted(obj.items()):
-            ids = API.get_ids(**{name: val})
+            ids = API.search_ids(**{name: val})
             if len(ids) == 0:
                 continue
             id_query = f'{name}={val}'
@@ -104,14 +104,22 @@ def insert_etapas(db: DBLite, min_etapa, max_etapa):
 
 
 def insert_all(db: DBLite):
-    for row in API.get_csv():
+    for row in API.search_csv():
         insert_centro(db, row, _or="ignore")
 
 
 def insert_missing(db: DBLite):
-    for data in walk_fix_query():
-        for row in API.get_csv(**data):
-            insert_centro(db, row, _or="ignore")
+    sql = []
+    for table in db.tables:
+        if "centro" in db.get_cols(table):
+            sql.append(f"select centro from {table}")
+    missing = db.to_tuple('''
+        select distinct centro from ({}) where centro not in (
+            select id from centro
+        )
+    '''.format(" union ".join(sql)))
+    for row in API.get_csv(*missing):
+        insert_centro(db, row, _or="ignore")
 
 
 def fix_tipo(db: DBLite):
@@ -147,17 +155,6 @@ def insert_centro(db: DBLite, row: CsvRow, **kwargs):
     db.insert("CENTRO", **obj, **kwargs)
 
 
-def walk_fix_query():
-    sql = read_file("sql/fix/query.sql")
-    while True:
-        qr: str = db.one(sql)
-        if qr is None:
-            break
-        qr = qr.split("&")
-        qr = dict(kv.split("=") for kv in qr)
-        yield qr
-
-
 def walk_etapas(min_etapa, max_etapa):
     etapas: Tuple[ParamValueText] = None
     for etapas in API.iter_etapas():
@@ -174,7 +171,7 @@ def walk_etapas(min_etapa, max_etapa):
             text.append(e.text)
             idqr.append(f'{e.name}={e.value}')
             data[e.name] = e.value
-        rows = API.get_ids(**data)
+        rows = API.search_ids(**data)
         if len(rows) == 0:
             continue
         yield QueryCentros(
