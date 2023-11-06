@@ -31,6 +31,9 @@ CREATE TABLE CENTRO (
     telefono    TEXT,
     email       TEXT,
     titularidad TEXT NOT NULL REFERENCES TITULARIDAD(id),
+    titular     TEXT,
+    latitud     REAL,
+    longitud    REAL,
     -- fax TEXT,
     CONSTRAINT fk_centro_tipo
         FOREIGN KEY (tipo)

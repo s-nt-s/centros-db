@@ -101,3 +101,8 @@ class QueryResponse(NamedTuple):
             return tuple()
         ids = self.codCentrosExp.split(";")
         return tuple(sorted(map(int, ids)))
+
+
+class LatLon(NamedTuple):
+    latitude: float
+    longitude: float

@@ -9,26 +9,27 @@ logger = logging.getLogger(__name__)
 
 
 class Cache:
-    def __init__(self, file: str, *args, reload=False, maxOld=1, loglevel=logging.DEBUG, **kargs):
+    def __init__(self, file: str, *args, kwself=None, reload=False, maxOld=1, loglevel=logging.DEBUG, **kwargs):
         self.file = file
         self.func = None
         self.reload = reload
         self.maxOld = maxOld
         self.loglevel = loglevel
+        self.kwself = kwself
         if maxOld is not None:
             self.maxOld = time.time() - (maxOld * 86400)
-        self._kargs = kargs
+        self._kwargs = kwargs
 
-    def parse_file_name(self, *args, **kargv):
+    def parse_file_name(self, *args, slf=None, **kargv):
         if args or kargv:
             return self.file.format(*args, **kargv)
         return self.file
 
-    def read(self, file, *args, **kargs):
-        return FM.load(file, **self._kargs)
+    def read(self, file, *args, **kwargs):
+        return FM.load(file, **self._kwargs)
 
-    def save(self, file, data, *args, **kargs):
-        FM.dump(file, data, **self._kargs)
+    def save(self, file, data, *args, **kwargs):
+        FM.dump(file, data, **self._kwargs)
 
     def tooOld(self, fl):
         if not os.path.isfile(fl):
@@ -41,21 +42,24 @@ class Cache:
             return True
         return False
 
-    def callCache(self, slf, *args, **kargs):
-        fl = self.parse_file_name(*args, **kargs)
+    def callCache(self, slf, *args, **kwargs):
+        flkwargs = dict(kwargs)
+        if isinstance(self.kwself, str):
+            flkwargs[self.kwself] = slf
+        fl = self.parse_file_name(*args, **flkwargs)
         if not self.tooOld(fl):
             logger.log(self.loglevel, f"Cache.read({fl})")
-            data = self.read(fl, *args, **kargs)
+            data = self.read(fl, *args, **kwargs)
             return data
-        data = self.func(slf, *args, **kargs)
+        data = self.func(slf, *args, **kwargs)
         if data is not None:
             logger.log(self.loglevel, f"Cache.save({fl})")
-            self.save(fl, data, *args, **kargs)
+            self.save(fl, data, *args, **kwargs)
         return data
 
     def __call__(self, func):
-        def callCache(*args, **kargs):
-            return self.callCache(*args, **kargs)
+        def callCache(*args, **kwargs):
+            return self.callCache(*args, **kwargs)
         functools.update_wrapper(callCache, func)
         self.func = func
         return callCache

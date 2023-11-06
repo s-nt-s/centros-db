@@ -1,11 +1,13 @@
 from core.api import Api
 from core.dblite import DBLite, dict_factory
 from typing import Tuple
-from core.types import ParamValueText, QueryCentros, CsvRow
+from core.types import ParamValueText, QueryCentros
 from core.util import must_one, read_file
+from core.centro import Centro
 import shutil
 import argparse
 import logging
+from core.threadme import ThreadMe
 
 parser = argparse.ArgumentParser(
     description='Crea db a partir de '+Api.URL,
@@ -65,8 +67,9 @@ def insert_tipos(db: DBLite):
         abr = must_one((x.tipo for x in rows))
         db.insert("TIPO", id=k, txt=v, abr=abr)
         KWV["tipo"][abr] = k
-        for row in rows:
-            insert_centro(db, row)
+        multi_insert_centro(db, rows)
+        #for row in rows:
+        #    insert_centro(db, row)
 
 
 def insert_queries(db: DBLite):
@@ -104,8 +107,10 @@ def insert_etapas(db: DBLite, min_etapa, max_etapa):
 
 
 def insert_all(db: DBLite):
-    for row in API.search_csv():
-        insert_centro(db, row, _or="ignore")
+    rows = API.search_csv()
+    multi_insert_centro(db, rows, _or="ignore")
+    #for row in API.search_csv():
+    #    insert_centro(db, row, _or="ignore")
 
 
 def insert_missing(db: DBLite):
@@ -118,8 +123,10 @@ def insert_missing(db: DBLite):
             select id from centro
         )
     '''.format(" union ".join(sql)))
-    for row in API.get_csv(*missing):
-        insert_centro(db, row, _or="ignore")
+    rows = API.get_csv(*missing)
+    multi_insert_centro(db, rows)
+    #for row in rows:
+    #    insert_centro(db, row, _or="ignore")
 
 
 def fix_tipo(db: DBLite):
@@ -148,11 +155,41 @@ def execute_if_query_is_col(db: DBLite, sql_path: str, *query_in: str):
         db.execute(read_file(sql_path))
 
 
-def insert_centro(db: DBLite, row: CsvRow, **kwargs):
+def multi_insert_centro(db: DBLite, rows: Tuple[Centro], **kwargs):
+    def to_dict(row: Centro):
+        obj = row._asdict()
+        for k, v in list(obj.items()):
+            obj[k] = KWV.get(k, {}).get(v, v)
+        if row.latlon:
+            obj['latitud'] = row.latlon.latitude
+            obj['longitud'] = row.latlon.longitude
+        obj['titular'] = row.titular
+        return obj
+
+    tm = ThreadMe(
+        max_thread=30
+    )
+    for obj in tm.run(to_dict, rows):
+        db.insert(
+            "CENTRO",
+            **obj,
+            **kwargs
+        )
+
+
+def insert_centro(db: DBLite, row: Centro, **kwargs):
     obj = row._asdict()
     for k, v in list(obj.items()):
         obj[k] = KWV.get(k, {}).get(v, v)
-    db.insert("CENTRO", **obj, **kwargs)
+    if row.latlon:
+        obj['latitud'] = row.latlon.latitude
+        obj['longitud'] = row.latlon.longitude
+    db.insert(
+        "CENTRO",
+        titular=row.titular,
+        **obj,
+        **kwargs
+    )
 
 
 def walk_etapas(min_etapa, max_etapa):

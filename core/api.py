@@ -8,7 +8,8 @@ import os
 import logging
 
 from .web import Web, Driver
-from .types import CsvRow, ParamValueText, QueryResponse
+from .types import ParamValueText, QueryResponse
+from .centro import Centro
 from .cache import Cache
 from .retry import retry
 
@@ -124,7 +125,7 @@ class Api():
         content = self.get_csv_as_str(*ids)
         return self.__parse_csv(content)
 
-    def search_csv(self, **kargv) -> Tuple[CsvRow]:
+    def search_csv(self, **kargv):
         content = self.search_csv_as_str(**kargv)
         return self.__parse_csv(content)
 
@@ -239,14 +240,14 @@ class Api():
         value = node.attrs[attr]
         return value.strip()
 
-    def __parse_csv(self, content: str):
+    def __parse_csv(self, content: str) -> Tuple[Centro]:
         rows = csvstr_to_rows(content)
         if len(rows) <= 1:
             return tuple()
         arr = []
         head = rows[1]
         for row in rows[2:]:
-            arr.append(CsvRow.build(head, row))
+            arr.append(Centro.build(head, row))
         arr = tuple(arr)
         return arr
 
