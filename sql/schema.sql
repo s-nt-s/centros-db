@@ -34,6 +34,7 @@ CREATE TABLE CENTRO (
     titular     TEXT,
     latitud     REAL,
     longitud    REAL,
+    web         TEXT,
     -- fax TEXT,
     CONSTRAINT fk_centro_tipo
         FOREIGN KEY (tipo)

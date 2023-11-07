@@ -158,6 +158,7 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], **kwargs):
             obj['latitud'] = row.latlon.latitude
             obj['longitud'] = row.latlon.longitude
         obj['titular'] = row.titular
+        obj['web'] = row.web
         return obj
 
     for row in rows:

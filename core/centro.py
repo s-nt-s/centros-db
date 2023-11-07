@@ -16,6 +16,7 @@ re_mail = re.compile(r'[\w\.\-_]+@[\w\-_]+\.[\w\-_]+', re.IGNORECASE)
 re_coord = re.compile(r"&xIni=([\d\.]+)&yIni=([\d\.]+)")
 
 logger = logging.getLogger(__name__)
+WEB = Web()
 
 
 def _safe_int(x):
@@ -135,7 +136,7 @@ class Centro:
         exceptions=ConnectionError
     )
     def __visit_home(self):
-        soup = Web().get(self.info)
+        soup = WEB.get(self.info)
         body = soup.find("body")
         if not body:
             raise DomNotFoundException("body")
