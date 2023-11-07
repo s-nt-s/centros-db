@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class Cache:
-    def __init__(self, file: str, *args, kwself=None, reload=False, maxOld=1, loglevel=logging.DEBUG, **kwargs):
+    def __init__(self, file: str, *args, kwself=None, reload: bool =False, skip: bool = False, maxOld=1, loglevel=logging.DEBUG, **kwargs):
         self.file = file
         self.func = None
         self.reload = reload
@@ -19,6 +19,7 @@ class Cache:
         if maxOld is not None:
             self.maxOld = time.time() - (maxOld * 86400)
         self._kwargs = kwargs
+        self.skip = skip
 
     def parse_file_name(self, *args, slf=None, **kargv):
         if args or kargv:
@@ -58,6 +59,9 @@ class Cache:
         return data
 
     def __call__(self, func):
+        if self.skip:
+            return func
+
         def callCache(*args, **kwargs):
             return self.callCache(*args, **kwargs)
         functools.update_wrapper(callCache, func)

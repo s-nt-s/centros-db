@@ -9,6 +9,7 @@ from .retry import retry
 import re
 import logging
 from requests.exceptions import ConnectionError
+import os
 
 re_sp = re.compile(r"\s+")
 re_mail = re.compile(r'[\w\.\-_]+@[\w\-_]+\.[\w\-_]+', re.IGNORECASE)
@@ -71,8 +72,8 @@ class DomNotFoundException(CentroException):
 
 @dataclass(frozen=True)
 class Centro:
-    area: str
     id: int
+    area: str
     tipo: str
     nombre: str
     domicilio: str
@@ -122,7 +123,12 @@ class Centro:
             logger.critical(f"{self.info} = {txt}")
         return soup
 
-    @CentroHtmlCache("data/html/", maxOld=5, kwself="slf")
+    @CentroHtmlCache(
+        "data/html/",
+        maxOld=5,
+        kwself="slf",
+        skip=bool(os.environ.get("NO_CENTRO_HOME_CACHE"))
+    )
     @retry(
         times=3,
         sleep=10,
