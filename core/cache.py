@@ -66,4 +66,5 @@ class Cache:
             return self.callCache(*args, **kwargs)
         functools.update_wrapper(callCache, func)
         self.func = func
+        setattr(callCache, "__cache_obj__", self)
         return callCache

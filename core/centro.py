@@ -9,7 +9,7 @@ from .retry import retry
 import re
 import logging
 from requests.exceptions import ConnectionError
-import os
+from .bulkrequests import BulkRequestsFileJob
 
 re_sp = re.compile(r"\s+")
 re_mail = re.compile(r'[\w\.\-_]+@[\w\-_]+\.[\w\-_]+', re.IGNORECASE)
@@ -58,33 +58,54 @@ def _find_titularidad(arr):
 
 class CentroHtmlCache(Cache):
     def parse_file_name(self, *args, slf: "Centro" = None, **kargv):
-        return self.file.rstrip("/") + f"/{slf.id}.html"
+        return f"{self.file}/{slf.id}.html"
 
 
 class CentroException(Exception):
     pass
 
 
-class DomNotFoundException(CentroException):
-    def __init__(self, selector: str):
+class DomNotFoundException(BulkRequestsFileJob):
+    def __init__(self, selector: str, url: str = None, more_info: str = None):
         msg = f"No se ha encontrado el elemento {selector}"
+        if url is not None:
+            msg = msg + f' en {url}'
+        if more_info:
+            msg = msg + f'  ver: {more_info}'
         super().__init__(msg)
+
+
+class BulkRequestsCentro(BulkRequestsFileJob):
+    def __init__(self, id):
+        self.centro = Centro(id=id)
+        self.html_cache: CentroHtmlCache = getattr(
+            self.centro.get_soup, 
+            "__cache_obj__"
+        )
+
+    @property
+    def url(self):
+        return self.centro.info
+
+    @property
+    def file(self):
+        return self.html_cache.parse_file_name(slf=self.centro)
 
 
 @dataclass(frozen=True)
 class Centro:
     id: int
-    area: str
-    tipo: str
-    nombre: str
-    domicilio: str
-    municipio: str
-    distrito: str
-    cp: int
-    telefono: int
-    fax: int
-    email: str
-    titularidad: str
+    area: str = None
+    tipo: str = None
+    nombre: str = None
+    domicilio: str = None
+    municipio: str = None
+    distrito: str = None
+    cp: int = None
+    telefono: int = None
+    fax: int = None
+    email: str = None
+    titularidad: str = None
 
     @classmethod
     def build(cls, head: Tuple, row: Tuple):
@@ -117,29 +138,28 @@ class Centro:
 
     @cached_property
     def home(self):
-        soup = self.__visit_home()
+        soup = self.get_soup()
         body = soup.find("body")
+        if not body:
+            raise DomNotFoundException("body", url=self.info)
         if not body.select_one(":scope *"):
             txt = re_sp.sub(" ", body.get_text()).strip()
-            logger.critical(f"{self.info} = {txt}")
+            raise DomNotFoundException("body *", url=self.info, more_info=txt)
         return soup
 
     @CentroHtmlCache(
-        "data/html/",
+        file="data/html/",
         maxOld=5,
         kwself="slf",
-        skip=bool(os.environ.get("NO_CENTRO_HOME_CACHE"))
+        loglevel=logging.DEBUG
     )
     @retry(
         times=3,
         sleep=10,
         exceptions=ConnectionError
     )
-    def __visit_home(self):
+    def get_soup(self):
         soup = WEB.get(self.info)
-        body = soup.find("body")
-        if not body:
-            raise DomNotFoundException("body")
         return soup
 
     @cached_property

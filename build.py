@@ -1,13 +1,14 @@
-from core.api import Api
+from core.api import Api, BulkRequestsApi
 from core.dblite import DBLite, dict_factory
 from typing import Tuple
 from core.types import ParamValueText, QueryCentros
 from core.util import must_one, read_file
-from core.centro import Centro
+from core.centro import Centro, BulkRequestsCentro
 import shutil
 import argparse
 import logging
-from core.threadme import ThreadMe
+from core.bulkrequests import BulkRequests
+from typing import List, Dict
 
 parser = argparse.ArgumentParser(
     description='Crea db a partir de '+Api.URL,
@@ -16,8 +17,11 @@ parser.add_argument(
     '--db', type=str, default="out/db.sqlite"
 )
 parser.add_argument(
-    '--etapas', type=int, default=-1,
-    help="Profundidad del árbol de etapas (-1 = sin limite)"
+    '--tcp-limit', type=int, default=50
+)
+parser.add_argument(
+    '--etapas', type=int, default=9999999,
+    help="Profundidad del árbol de etapas"
 )
 
 ARG = parser.parse_args()
@@ -33,13 +37,15 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def build_db(db: DBLite):
+def build_db(db: DBLite, tcp_limit: int):
     db.execute("sql/schema.sql")
 
     KWV["area"] = dict(db.to_tuple("select txt, id from area"))
     KWV["titularidad"] = dict(db.to_tuple("select txt, id from titularidad"))
     KWV["tipo"] = dict()
 
+    dwn_html(tcp_limit=tcp_limit)
+    dwn_search(0, ARG.etapas, tcp_limit=tcp_limit)
     insert_tipos(db)
     insert_queries(db)
     insert_etapas(db, 0, ARG.etapas)
@@ -59,9 +65,36 @@ def build_db(db: DBLite):
     )
 
 
+def dwn_html(tcp_limit: int = 10):
+    BulkRequests(
+        tcp_limit=tcp_limit
+    ).run(*(
+        BulkRequestsCentro(c.id) for c in API.search_centros()
+    ))
+
+
+def dwn_search(min_etapa, max_etapa, tcp_limit: int = 10):
+    queries: List[Dict[str, str]] = []
+    for k, v in sorted(API.get_form()['cdGenerico'].items()):
+        queries.append(dict(cdGenerico=k))
+    for name, obj in API.get_form().items():
+        if jump_me(name):
+            continue
+        for val in sorted(obj.keys()):
+            queries.append({name: val})
+    for etapas in API.iter_etapas(min_etapa, max_etapa):
+        data = {e.name: e.value for e in etapas}
+        queries.append(data)
+    BulkRequests(
+        tcp_limit=tcp_limit
+    ).run(*(
+        BulkRequestsApi(API, data) for data in queries
+    ))
+
+
 def insert_tipos(db: DBLite):
     for k, v in sorted(API.get_form()['cdGenerico'].items()):
-        rows = API.search_csv(cdGenerico=k)
+        rows = API.search_centros(cdGenerico=k)
         if len(rows) == 0:
             continue
         abr = must_one((x.tipo for x in rows))
@@ -71,19 +104,6 @@ def insert_tipos(db: DBLite):
 
 
 def insert_queries(db: DBLite):
-    def jump_me(name: str):
-        if name in (
-            'cdGenerico',
-            'comboMunicipios',
-            'comboDistritos',
-            'cdTramoEdu',
-            'titularidadPublica',
-            'titularidadPrivada',
-            'titularidadPrivadaConc'
-        ):
-            return True
-        return name.startswith("checkSubdir")
-
     for name, obj in API.get_form().items():
         if jump_me(name):
             continue
@@ -105,7 +125,7 @@ def insert_etapas(db: DBLite, min_etapa, max_etapa):
 
 
 def insert_all(db: DBLite):
-    rows = API.search_csv()
+    rows = API.search_centros()
     multi_insert_centro(db, rows, _or="ignore")
 
 
@@ -119,7 +139,7 @@ def insert_missing(db: DBLite):
             select c.id from centro c where t.centro=c.id
         )
     '''.format(" union ".join(sql)))
-    rows = API.get_csv(*missing)
+    rows = API.get_centros(*missing)
     multi_insert_centro(db, rows)
 
 
@@ -183,11 +203,7 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], **kwargs):
 
 def walk_etapas(min_etapa, max_etapa):
     etapas: Tuple[ParamValueText] = None
-    for etapas in API.iter_etapas():
-        if max_etapa >= 0 and len(etapas) > max_etapa:
-            continue
-        if min_etapa >= 0 and len(etapas) < min_etapa:
-            continue
+    for etapas in API.iter_etapas(min_etapa, max_etapa):
         idet = []
         text = []
         idqr = []
@@ -208,9 +224,22 @@ def walk_etapas(min_etapa, max_etapa):
         )
 
 
+def jump_me(name: str):
+    if name in (
+        'cdGenerico',
+        'comboMunicipios',
+        'comboDistritos',
+        'cdTramoEdu',
+        'titularidadPublica',
+        'titularidadPrivada',
+        'titularidadPrivadaConc'
+    ):
+        return True
+    return name.startswith("checkSubdir")
+
 if __name__ == "__main__":
     with DBLite(ARG.db, reload=True) as db:
-        build_db(db)
+        build_db(db, ARG.tcp_limit)
 
     DBLite.do_sql_backup(ARG.db)
 

@@ -1,17 +1,23 @@
 import re
 from functools import cache, cached_property
 from urllib.parse import urljoin
-from typing import Tuple, Dict
+from typing import Any, Coroutine, Tuple, Dict, List
+from aiohttp import ClientResponse, ClientSession
 from bs4 import BeautifulSoup
 from os.path import dirname
 import os
 import logging
+from requests.exceptions import ConnectionError
 
-from .web import Web, Driver
+from .web import Web, Driver, buildSoup
 from .types import ParamValueText, QueryResponse
 from .centro import Centro
 from .cache import Cache
 from .retry import retry
+from .bulkrequests import BulkRequestsFileJob
+
+from hashlib import sha1
+
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +27,7 @@ re_csv_fl = re.compile(r"\s*;\s*")
 re_sp = re.compile(r"\s+")
 
 JS_TIMEOUT = int(os.environ.get('JS_TIMEOUT', '120'))
+WEB = Web()
 
 
 def trim_null(s: str, is_null=tuple()):
@@ -84,6 +91,7 @@ class CsvCache(Cache):
         root = self.file.rstrip("/")
         if len(args) > 0:
             name = ";".join(map(str, args))
+            name = int(sha1(name.encode("utf-8")).hexdigest(), 16)
             return f"{root}/{name}.{self.ext}"
         if len(kargv) == 0:
             return f"{root}/all.{self.ext}"
@@ -116,20 +124,61 @@ def csvstr_to_rows(content: str) -> Tuple[Tuple[str]]:
     return tuple(rows)
 
 
+class BulkRequestsApi(BulkRequestsFileJob):
+    def __init__(self, api: "Api", data):
+        self.data = data
+        self.api = api
+        self.id_cache: IdCache = getattr(self.api.search_ids, "__cache_obj__")
+
+    @property
+    def url(self):
+        return Api.URL
+
+    @property
+    def file(self):
+        return self.id_cache.parse_file_name(**self.data)
+
+    def get(self, session: ClientSession):
+        return session.post(self.url, data=self.data)
+
+    async def do(self, response: ClientResponse) -> Coroutine[Any, Any, bool]:
+        content = await response.text()
+        soup = buildSoup(self.url, content)
+        try:
+            r = self.api._get_search_response(self.data, soup)
+        except ApiException:
+            logger.exception()
+            return False
+        self.id_cache.save(self.file, r.get_ids())
+        return True
+
+
 class Api():
     URL = "https://gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.icm"
     DWN = "https://gestiona.comunidad.madrid/wpad_pub/run/j/ConsultaGeneralNPCentrosCSV.icm"
     FORM = "formBusquedaAvanzada"
 
-    def get_csv(self, *ids: Tuple[int]):
-        if len(ids) == 0:
-            return tuple()
-        content = self.get_csv_as_str(*ids)
-        return self.__parse_csv(content)
+    def __init__(self):
+        self.__centros = {}
 
-    def search_csv(self, **kargv):
-        content = self.search_csv_as_str(**kargv)
-        return self.__parse_csv(content)
+    def get_centros(self, *ids: Tuple[int]):
+        ids = list(ids)
+        centros: List[Centro] = []
+        for i, id in reversed(list(enumerate(ids))):
+            if id in self.__centros:
+                centros.append(self.__centros[id])
+                del ids[i]
+        if len(ids) > 0:
+            content = self.get_csv_as_str(*ids)
+            for c in self.__parse_csv(content):
+                self.__centros[c.id] = c
+                centros.append(c)
+        centros = sorted(centros, key=lambda x: x.id)
+        return tuple(centros)
+
+    def search_centros(self, **kargv):
+        ids = self.search_ids(**kargv)
+        return self.get_centros(*ids)
 
     @IdCache("data/ids/", maxOld=5)
     def search_ids(self, **data) -> Tuple[int]:
@@ -150,19 +199,21 @@ class Api():
     @retry(
         times=3,
         sleep=10,
-        exceptions=SearchException,
+        exceptions=(SearchException, ConnectionError),
         prefix=data_to_str
     )
     def __do_search(self, **data):
-        w = Web()
-        soup = w.get(Api.URL, **data)
-        self.__check_inputs(data, soup)
-        codCentrosExp = self.__select_one(
+        soup = WEB.get(Api.URL, **data)
+        return self._get_search_response(data, soup)
+
+    def _get_search_response(self, data: dict, soup: BeautifulSoup):
+        self._check_inputs(data, soup)
+        codCentrosExp = self._select_one(
             soup,
             'input[name="codCentrosExp"]',
             "value"
         )
-        frmExportarResultado = self.__select_one(
+        frmExportarResultado = self._select_one(
             soup,
             '#frmExportarResultado',
             "action"
@@ -176,24 +227,23 @@ class Api():
 
     @CsvCache("data/csv/", maxOld=5, loglevel=logging.INFO)
     def get_csv_as_str(self, *ids: int, endpoint: str = None):
-        logger.info('get_csv(' + ", ".join(map(str, ids))+')')
+        logger.info(f'get_centros({len(ids)} items)')
         return self.__get_csv_as_str(*ids, endpoint=endpoint)
 
     @retry(
         times=3,
         sleep=10,
-        exceptions=DwnCsvException,
+        exceptions=(DwnCsvException, ConnectionError),
         prefix=data_to_str
     )
     def __get_csv_as_str(self, *ids: int, endpoint: str = None):
         ids = tuple(sorted(ids))
         if endpoint is None:
             endpoint = Api.DWN
-        w = Web()
-        soup = w.get(endpoint, codCentrosExp=";".join(map(str, ids)))
+        soup = WEB.get(endpoint, codCentrosExp=";".join(map(str, ids)))
         url = self.__search_csv_url(soup)
         url = urljoin(endpoint, url)
-        r = w._get(url)
+        r = WEB._get(url)
         if r.status_code == 404:
             raise DwnCsvException(f"{url} not found ({r.status_code})")
         content = r.content.decode('iso-8859-1')
@@ -219,7 +269,7 @@ class Api():
         if _parse(cntnt) != _parse(ids):
             raise BadCsvException()
 
-    def __check_inputs(self, data: dict, soup: BeautifulSoup):
+    def _check_inputs(self, data: dict, soup: BeautifulSoup):
         frm = soup.select_one("#"+Api.FORM)
         if frm is None:
             raise DomNotFoundException(data, "#"+Api.FORM)
@@ -235,12 +285,12 @@ class Api():
             if v != dom:
                 raise BadFormException(data, k, v, dom)
 
-    def __select_one(self, soup: BeautifulSoup, selector: str, attr: str):
+    def _select_one(self, soup: BeautifulSoup, selector: str, attr: str):
         node = soup.select_one(selector)
         if node is None:
             raise DomNotFoundException(selector)
-        value = node.attrs[attr]
-        return value.strip()
+        value = node.attrs[attr].strip()
+        return value
 
     def __parse_csv(self, content: str) -> Tuple[Centro]:
         rows = csvstr_to_rows(content)
@@ -254,8 +304,13 @@ class Api():
         return arr
 
     @cached_property
+    @retry(
+        times=3,
+        sleep=10,
+        exceptions=ConnectionError
+    )
     def home(self):
-        return Web().get(Api.URL)
+        return WEB.get(Api.URL)
 
     @cache
     @Cache("data/form.json", loglevel=logging.INFO)
@@ -280,7 +335,7 @@ class Api():
                 script = "return "+f.read()
             return w.execute_script(script)
 
-    def iter_etapas(self):
+    def iter_etapas(self, min_etapa=0, max_etapa=999999999999):
         def _walk(node: Dict[str, Dict]):
             for name, val in sorted(node.items()):
                 if name == "_":
@@ -301,7 +356,8 @@ class Api():
                 chunk = arr[:i]
                 if chunk in done:
                     continue
-                yield chunk
+                if len(chunk) >= min_etapa and len(chunk) <= max_etapa:
+                    yield chunk
                 done.add(chunk)
 
     def iter_inputs(self, id: str):
