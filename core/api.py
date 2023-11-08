@@ -383,7 +383,7 @@ class Api():
             if val is None:
                 continue
             txt = n.find_parent("td").find("a").get_text()
-            txt = re.sub(" ", txt).strip()
+            txt = re_sp.sub(" ", txt).strip()
             yield name, val, txt
 
 
