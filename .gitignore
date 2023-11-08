@@ -9,6 +9,7 @@ sql/subset
 data/html
 ok.sql
 notas.txt
+debug/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
