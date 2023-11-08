@@ -4,7 +4,8 @@ from urllib.parse import urljoin
 from typing import Any, Coroutine, Tuple, Dict, List
 from aiohttp import ClientResponse, ClientSession
 from bs4 import BeautifulSoup
-from os.path import dirname
+from os.path import dirname, isfile
+from glob import glob
 import os
 import logging
 from requests.exceptions import ConnectionError
@@ -118,7 +119,7 @@ def csvstr_to_rows(content: str) -> Tuple[Tuple[str]]:
 
 
 class BulkRequestsApi(BulkRequestsFileJob):
-    def __init__(self, api: "Api", data):
+    def __init__(self, api: "Api", data: Dict[str, str]):
         self.data = data
         self.api = api
         self.id_cache: IdCache = getattr(self.api.search_ids, "__cache_obj__")
@@ -133,6 +134,23 @@ class BulkRequestsApi(BulkRequestsFileJob):
 
     def get(self, session: ClientSession):
         return session.post(self.url, data=self.data)
+
+    def done(self) -> bool:
+        if not isfile(self.file):
+            return False
+        if tuple(self.data.keys()) != ('cdGenerico', ):
+            return True
+        ids = set(self.id_cache.read(self.file))
+        if len(ids) == 0:
+            return True
+        for f in glob(self.id_cache.parse_file_name(cdGenerico='*')):
+            if f == self.file:
+                continue
+            ko = tuple(sorted(ids.intersection(self.id_cache.read(f))))
+            if len(ko) > 0:
+                logger.error(f"Conflicto entre {self.file} y {f}: {ko}")
+                return False
+        return True
 
     async def do(self, response: ClientResponse) -> Coroutine[Any, Any, bool]:
         content = await response.text()
@@ -364,7 +382,8 @@ class Api():
             val = trim_null(n.attrs.get("value"))
             if val is None:
                 continue
-            txt = n.find_parent("td").find("a").get_text().strip()
+            txt = n.find_parent("td").find("a").get_text()
+            txt = re.sub(" ", txt).strip()
             yield name, val, txt
 
 

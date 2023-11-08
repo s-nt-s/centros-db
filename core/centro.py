@@ -235,7 +235,11 @@ class Centro:
             txt = re_sp.sub(" ", td.get_text()).strip()
             val = txt.split("Titular:")
             if len(val) > 1:
-                return val[-1].strip()
+                val = val[-1].strip()
+                val = {
+                    'COMUNDAD DE MADRID': 'COMUNIDAD DE MADRID'
+                }.get(val, val)
+                return val
 
     @cached_property
     def etapas(self):

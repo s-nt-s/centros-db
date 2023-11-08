@@ -2,7 +2,7 @@ from core.api import Api, BulkRequestsApi
 from core.dblite import DBLite, dict_factory
 from typing import Tuple
 from core.types import ParamValueText, QueryCentros
-from core.util import must_one, read_file, hashint
+from core.util import must_one, read_file
 from core.centro import Centro, BulkRequestsCentro
 import argparse
 import logging
@@ -13,10 +13,10 @@ parser = argparse.ArgumentParser(
     description='Crea db a partir de '+Api.URL,
 )
 parser.add_argument(
-    '--db', type=str, default="out/db.sqlite"
+    '--tcp-limit', type=int, default=50
 )
 parser.add_argument(
-    '--tcp-limit', type=int, default=50
+    '--db', type=str, default="out/db.sqlite"
 )
 
 ARG = parser.parse_args()
@@ -110,7 +110,7 @@ def insert_queries(db: DBLite):
             db.insert("QUERY", id=id_query, txt=txt)
             for id in ids:
                 db.insert("QUERY_CENTRO", query=id_query, centro=id)
-    
+
 
 def insert_etapas(db: DBLite):
     for e in walk_etapas():
