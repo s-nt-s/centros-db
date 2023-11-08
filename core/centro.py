@@ -1,8 +1,10 @@
 from dataclasses import dataclass, asdict
 from functools import cached_property
-from typing import Tuple, Dict
+from typing import Any, Coroutine, Dict, Tuple, NamedTuple, List
+from aiohttp import ClientResponse
+from bs4 import BeautifulSoup, Tag
 from .types import LatLon
-from .web import Web
+from .web import Web, buildSoup, select_attr, DomNotFoundException
 from .cache import Cache
 from .utm_to_geo import utm_to_geo
 from .retry import retry
@@ -56,6 +58,18 @@ def _find_titularidad(arr):
     return tit.pop()
 
 
+def get_etapa_level(td: Tag):
+    cls = td.attrs["class"]
+    if isinstance(cls, str):
+        cls = cls.split()
+    for cl in cls:
+        if cl.startswith("p"):
+            cl = cl[1:]
+            if cl.isdigit():
+                return int(cl)
+    return 0
+
+
 class CentroHtmlCache(Cache):
     def parse_file_name(self, *args, slf: "Centro" = None, **kargv):
         return f"{self.file}/{slf.id}.html"
@@ -65,21 +79,11 @@ class CentroException(Exception):
     pass
 
 
-class DomNotFoundException(BulkRequestsFileJob):
-    def __init__(self, selector: str, url: str = None, more_info: str = None):
-        msg = f"No se ha encontrado el elemento {selector}"
-        if url is not None:
-            msg = msg + f' en {url}'
-        if more_info:
-            msg = msg + f'  ver: {more_info}'
-        super().__init__(msg)
-
-
 class BulkRequestsCentro(BulkRequestsFileJob):
     def __init__(self, id):
         self.centro = Centro(id=id)
         self.html_cache: CentroHtmlCache = getattr(
-            self.centro.get_soup, 
+            self.centro._get_soup,
             "__cache_obj__"
         )
 
@@ -90,6 +94,25 @@ class BulkRequestsCentro(BulkRequestsFileJob):
     @property
     def file(self):
         return self.html_cache.parse_file_name(slf=self.centro)
+
+    async def do(self, response: ClientResponse) -> Coroutine[Any, Any, bool]:
+        content = await response.text()
+        soup = buildSoup(self.url, content)
+        try:
+            self.centro._check_soup(soup)
+        except (DomNotFoundException, CentroException):
+            logger.exception()
+            return False
+        self.html_cache.save(self.file, soup)
+        return True
+
+
+class Etapa(NamedTuple):
+    nombre: str
+    titularidad: str
+    tipo: str
+    plazas: str
+    nivel: int
 
 
 @dataclass(frozen=True)
@@ -138,14 +161,7 @@ class Centro:
 
     @cached_property
     def home(self):
-        soup = self.get_soup()
-        body = soup.find("body")
-        if not body:
-            raise DomNotFoundException("body", url=self.info)
-        if not body.select_one(":scope *"):
-            txt = re_sp.sub(" ", body.get_text()).strip()
-            raise DomNotFoundException("body *", url=self.info, more_info=txt)
-        return soup
+        return self._get_soup()
 
     @CentroHtmlCache(
         file="data/html/",
@@ -156,11 +172,23 @@ class Centro:
     @retry(
         times=3,
         sleep=10,
-        exceptions=ConnectionError
+        exceptions=(ConnectionError, DomNotFoundException, CentroException)
     )
-    def get_soup(self):
+    def _get_soup(self):
         soup = WEB.get(self.info)
+        self._check_soup(soup)
         return soup
+
+    def _check_soup(self, soup: BeautifulSoup):
+        body = soup.find("body")
+        if not body:
+            raise DomNotFoundException("body", url=self.info)
+        if not body.select_one(":scope *"):
+            txt = re_sp.sub(" ", body.get_text()).strip()
+            raise DomNotFoundException("body *", url=self.info, more_info=txt)
+        cdCentro = select_attr(soup, "#cdCentro", "value")
+        if cdCentro != str(self.id):
+            raise CentroException(f"cdCentro={cdCentro} en {self.info}")
 
     @cached_property
     def web(self):
@@ -208,3 +236,40 @@ class Centro:
             val = txt.split("Titular:")
             if len(val) > 1:
                 return val[-1].strip()
+
+    @cached_property
+    def etapas(self):
+        def get_text(n: Tag):
+            txt = re_sp.sub(" ", n.get_text()).strip()
+            return txt if len(txt) else None
+
+        def find_padre(etapas: List[Etapa], nivel: int):
+            for e in reversed(etapas):
+                if e.nivel < nivel:
+                    return e
+
+        sep = " -> "
+        etapas: List[Etapa] = []
+        for tr in self.home.select("#capaEtapasContent tr"):
+            if len(re_sp.sub("", tr.get_text())) == 0:
+                continue
+            tds = tr.findAll("td")
+            txt = tuple(map(get_text, tds))
+            if txt[0] in (None, "", "Etapa"):
+                continue
+            etapa = Etapa(
+                nombre=txt[0],
+                titularidad=txt[1],
+                tipo=txt[2],
+                plazas=txt[3],
+                nivel=get_etapa_level(tds[0])
+            )
+            padre = find_padre(etapas, etapa.nivel)
+            if padre is None:
+                etapas.append(etapa)
+                continue
+            etapas.append(Etapa(**{
+                **etapa._asdict(),
+                **dict(nombre=padre.nombre+sep+etapa.nombre)
+            }))
+        return tuple(sorted(set(etapas)))

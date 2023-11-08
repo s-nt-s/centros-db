@@ -9,14 +9,13 @@ import os
 import logging
 from requests.exceptions import ConnectionError
 
-from .web import Web, Driver, buildSoup
+from .web import Web, Driver, buildSoup, select_attr, DomNotFoundException
 from .types import ParamValueText, QueryResponse
 from .centro import Centro
 from .cache import Cache
 from .retry import retry
 from .bulkrequests import BulkRequestsFileJob
-
-from hashlib import sha1
+from .util import hashint
 
 
 logger = logging.getLogger(__name__)
@@ -58,12 +57,6 @@ class DwnCsvException(ApiException):
     pass
 
 
-class DomNotFoundException(SearchException):
-    def __init__(self, selector: str):
-        msg = f"No se ha encontrado el elemento {selector}"
-        super().__init__(msg)
-
-
 class BadFormException(SearchException):
     def __init__(self, ask_name, ask_val, get_val):
         msg = f"Se pidio {ask_name}={ask_val} pero se obtuvo {get_val}"
@@ -91,7 +84,7 @@ class CsvCache(Cache):
         root = self.file.rstrip("/")
         if len(args) > 0:
             name = ";".join(map(str, args))
-            name = int(sha1(name.encode("utf-8")).hexdigest(), 16)
+            name = hashint(name)
             return f"{root}/{name}.{self.ext}"
         if len(kargv) == 0:
             return f"{root}/all.{self.ext}"
@@ -146,7 +139,7 @@ class BulkRequestsApi(BulkRequestsFileJob):
         soup = buildSoup(self.url, content)
         try:
             r = self.api._get_search_response(self.data, soup)
-        except ApiException:
+        except (ApiException, DomNotFoundException):
             logger.exception()
             return False
         self.id_cache.save(self.file, r.get_ids())
@@ -199,7 +192,7 @@ class Api():
     @retry(
         times=3,
         sleep=10,
-        exceptions=(SearchException, ConnectionError),
+        exceptions=(SearchException, ConnectionError, DomNotFoundException),
         prefix=data_to_str
     )
     def __do_search(self, **data):
@@ -208,12 +201,12 @@ class Api():
 
     def _get_search_response(self, data: dict, soup: BeautifulSoup):
         self._check_inputs(data, soup)
-        codCentrosExp = self._select_one(
+        codCentrosExp = select_attr(
             soup,
             'input[name="codCentrosExp"]',
             "value"
         )
-        frmExportarResultado = self._select_one(
+        frmExportarResultado = select_attr(
             soup,
             '#frmExportarResultado',
             "action"
@@ -285,13 +278,6 @@ class Api():
             if v != dom:
                 raise BadFormException(data, k, v, dom)
 
-    def _select_one(self, soup: BeautifulSoup, selector: str, attr: str):
-        node = soup.select_one(selector)
-        if node is None:
-            raise DomNotFoundException(selector)
-        value = node.attrs[attr].strip()
-        return value
-
     def __parse_csv(self, content: str) -> Tuple[Centro]:
         rows = csvstr_to_rows(content)
         if len(rows) <= 1:
@@ -335,7 +321,7 @@ class Api():
                 script = "return "+f.read()
             return w.execute_script(script)
 
-    def iter_etapas(self, min_etapa=0, max_etapa=999999999999):
+    def iter_etapas(self):
         def _walk(node: Dict[str, Dict]):
             for name, val in sorted(node.items()):
                 if name == "_":
@@ -356,8 +342,7 @@ class Api():
                 chunk = arr[:i]
                 if chunk in done:
                     continue
-                if len(chunk) >= min_etapa and len(chunk) <= max_etapa:
-                    yield chunk
+                yield chunk
                 done.add(chunk)
 
     def iter_inputs(self, id: str):

@@ -2,9 +2,8 @@ from core.api import Api, BulkRequestsApi
 from core.dblite import DBLite, dict_factory
 from typing import Tuple
 from core.types import ParamValueText, QueryCentros
-from core.util import must_one, read_file
+from core.util import must_one, read_file, hashint
 from core.centro import Centro, BulkRequestsCentro
-import shutil
 import argparse
 import logging
 from core.bulkrequests import BulkRequests
@@ -18,10 +17,6 @@ parser.add_argument(
 )
 parser.add_argument(
     '--tcp-limit', type=int, default=50
-)
-parser.add_argument(
-    '--etapas', type=int, default=9999999,
-    help="Profundidad del árbol de etapas"
 )
 
 ARG = parser.parse_args()
@@ -45,10 +40,10 @@ def build_db(db: DBLite, tcp_limit: int):
     KWV["tipo"] = dict()
 
     dwn_html(tcp_limit=tcp_limit)
-    dwn_search(0, ARG.etapas, tcp_limit=tcp_limit)
+    dwn_search(tcp_limit=tcp_limit)
     insert_tipos(db)
     insert_queries(db)
-    insert_etapas(db, 0, ARG.etapas)
+    insert_etapas(db)
     insert_all(db)
     insert_missing(db)
 
@@ -73,16 +68,16 @@ def dwn_html(tcp_limit: int = 10):
     ))
 
 
-def dwn_search(min_etapa, max_etapa, tcp_limit: int = 10):
+def dwn_search(tcp_limit: int = 10):
     queries: List[Dict[str, str]] = []
-    for k, v in sorted(API.get_form()['cdGenerico'].items()):
+    for k in sorted(API.get_form()['cdGenerico'].keys()):
         queries.append(dict(cdGenerico=k))
     for name, obj in API.get_form().items():
         if jump_me(name):
             continue
         for val in sorted(obj.keys()):
             queries.append({name: val})
-    for etapas in API.iter_etapas(min_etapa, max_etapa):
+    for etapas in API.iter_etapas():
         data = {e.name: e.value for e in etapas}
         queries.append(data)
     BulkRequests(
@@ -115,13 +110,17 @@ def insert_queries(db: DBLite):
             db.insert("QUERY", id=id_query, txt=txt)
             for id in ids:
                 db.insert("QUERY_CENTRO", query=id_query, centro=id)
+    
 
-
-def insert_etapas(db: DBLite, min_etapa, max_etapa):
-    for e in walk_etapas(min_etapa, max_etapa):
+def insert_etapas(db: DBLite):
+    for e in walk_etapas():
         db.insert("ETAPA", id=e.id, txt=e.txt)
         for id in e.centros:
             db.insert("ETAPA_CENTRO", etapa=e.id, centro=id)
+
+    for c in API.search_centros():
+        for e in c.etapas:
+            db.insert("ETAPA_TIPO_CENTRO", centro=c.id, **e._asdict())
 
 
 def insert_all(db: DBLite):
@@ -201,9 +200,9 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], **kwargs):
     '''
 
 
-def walk_etapas(min_etapa, max_etapa):
+def walk_etapas():
     etapas: Tuple[ParamValueText] = None
-    for etapas in API.iter_etapas(min_etapa, max_etapa):
+    for etapas in API.iter_etapas():
         idet = []
         text = []
         idqr = []
@@ -237,15 +236,9 @@ def jump_me(name: str):
         return True
     return name.startswith("checkSubdir")
 
+
 if __name__ == "__main__":
     with DBLite(ARG.db, reload=True) as db:
         build_db(db, ARG.tcp_limit)
 
     DBLite.do_sql_backup(ARG.db)
-
-    for tit in ("pub", "pri", "con"):
-        db_name, ext = ARG.db.rsplit(".", 1)
-        db_name = f"{db_name}_{tit}.{ext}"
-        shutil.copyfile(ARG.db, db_name)
-        with DBLite(db_name) as db:
-            db.execute(read_file("sql/drop/titularidad.sql", tit=tit.upper()))

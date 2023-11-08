@@ -4,7 +4,7 @@ import logging
 from os.path import isfile
 from os import remove
 from abc import ABC, abstractproperty, abstractmethod
-from .retry import retry
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -61,9 +61,13 @@ class BulkRequestsFileJob(BulkRequestsJob):
 class BulkRequests:
     def __init__(
             self,
-            tcp_limit: int = 10
+            tcp_limit: int = 10,
+            tries: int = 4,
+            sleep: int = 10
     ):
         self.tcp_limit = tcp_limit
+        self.tries = tries
+        self.sleep = sleep
 
     async def __requests(self, session: ClientSession, job: BulkRequestsJob):
         try:
@@ -90,17 +94,21 @@ class BulkRequests:
                 u.undone()
         self.__run(*job)
 
-    @retry(times=3, sleep=10, exceptions=BulkException)
     def __run(self, *job: BulkRequestsJob):
-        job = tuple(u for u in job if not u.done())
-        logger.info(
-            'BulkRequests' +
-            f'(tcp_limit={self.tcp_limit}).run({len(job)} items)'
-        )
-        if len(job) == 0:
-            return
-        rt = asyncio.run(self.__requests_all(*job))
-        ok = len([i for i in rt if i is True])
-        logger.info(f'{ok} urls downloaded')
-        if (ok < len(job)):
-            raise BulkException(f"{len(job)-ok} missing")
+        ko = 0
+        for i in range(max(self.tries, 1)):
+            job = tuple(u for u in job if not u.done())
+            if len(job) == 0:
+                return
+            if i == 0:
+                logger.info(
+                    'BulkRequests' +
+                    f'(tcp_limit={self.tcp_limit}).run({len(job)} items)'
+                )
+            else:
+                time.sleep(self.sleep)
+            rt = asyncio.run(self.__requests_all(*job))
+            ko = len([i for i in rt if i is not True])
+            if ko == 0:
+                return
+        raise BulkException(f"{ko} missing")

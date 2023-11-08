@@ -50,6 +50,16 @@ default_headers = {
 }
 
 
+class DomNotFoundException(Exception):
+    def __init__(self, selector: str, url: str = None, more_info: str = None):
+        msg = f"No se ha encontrado el elemento {selector}"
+        if url is not None:
+            msg = msg + f' en {url}'
+        if more_info:
+            msg = msg + f'  ver: {more_info}'
+        super().__init__(msg)
+
+
 def get_query(url):
     q = urlsplit(url)
     q = parse_qsl(q.query)
@@ -95,6 +105,14 @@ def get_text(node: Tag, default: str = None):
     if len(txt) == 0:
         return default
     return txt
+
+
+def select_attr(soup: BeautifulSoup, selector: str, attr: str):
+    node = soup.select_one(selector)
+    if node is None:
+        raise DomNotFoundException(selector)
+    value = node.attrs[attr].strip()
+    return value
 
 
 class Web:

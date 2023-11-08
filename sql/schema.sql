@@ -75,6 +75,19 @@ CREATE TABLE ETAPA_CENTRO (
         ON DELETE CASCADE
 );
 
+CREATE TABLE ETAPA_TIPO_CENTRO (
+    centro INTEGER NOT NULL,
+    nombre TEXT NOT NULL,
+    titularidad TEXT,
+    tipo TEXT,
+    -- plazas TEXT,
+    PRIMARY KEY (centro, nombre, titularidad),
+    CONSTRAINT fk_etapa_centro_centro
+        FOREIGN KEY (centro)
+        REFERENCES CENTRO(id)
+        ON DELETE CASCADE
+);
+
 INSERT INTO AREA VALUES
 ('E', 'Madrid-Este'),
 ('S', 'Madrid-Sur'),
