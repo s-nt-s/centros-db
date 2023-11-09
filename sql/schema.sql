@@ -64,6 +64,7 @@ CREATE TABLE QUERY_CENTRO (
 CREATE TABLE ETAPA_CENTRO (
     centro INTEGER NOT NULL,
     etapa  TEXT NOT NULL,
+    inferido INTEGER DEFAULT 0 NOT NULL,
     PRIMARY KEY (centro, etapa),
     CONSTRAINT fk_etapa_centro_centro
         FOREIGN KEY (centro)
@@ -75,12 +76,13 @@ CREATE TABLE ETAPA_CENTRO (
         ON DELETE CASCADE
 );
 
-CREATE TABLE ETAPA_TIPO_CENTRO (
+CREATE TABLE ETAPA_NOMBRE_CENTRO (
     centro INTEGER NOT NULL,
     nombre TEXT NOT NULL,
     titularidad TEXT,
     tipo TEXT,
     -- plazas TEXT,
+    inferido INTEGER DEFAULT 0 NOT NULL,
     PRIMARY KEY (centro, nombre, titularidad),
     CONSTRAINT fk_etapa_centro_centro
         FOREIGN KEY (centro)

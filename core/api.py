@@ -138,12 +138,21 @@ class BulkRequestsApi(BulkRequestsFileJob):
     def done(self) -> bool:
         if not isfile(self.file):
             return False
-        if tuple(self.data.keys()) != ('cdGenerico', ):
-            return True
+        if self.__is_cdGenerico():
+            return self.__check_cdGenerico()
+        return True
+
+    def __is_cdGenerico(self):
+        return tuple(self.data.keys()) == ('cdGenerico', )
+
+    def __check_cdGenerico(self):
         ids = set(self.id_cache.read(self.file))
         if len(ids) == 0:
             return True
-        for f in glob(self.id_cache.parse_file_name(cdGenerico='*')):
+        files = tuple(glob(self.id_cache.parse_file_name(cdGenerico='*')))
+        if self.file not in files:
+            return True
+        for f in files:
             if f == self.file:
                 continue
             ko = tuple(sorted(ids.intersection(self.id_cache.read(f))))
@@ -161,6 +170,8 @@ class BulkRequestsApi(BulkRequestsFileJob):
             logger.exception()
             return False
         self.id_cache.save(self.file, r.get_ids())
+        if self.__is_cdGenerico():
+            return self.__check_cdGenerico()
         return True
 
 

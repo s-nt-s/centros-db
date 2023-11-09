@@ -117,10 +117,37 @@ def insert_etapas(db: DBLite):
         db.insert("ETAPA", id=e.id, txt=e.txt)
         for id in e.centros:
             db.insert("ETAPA_CENTRO", etapa=e.id, centro=id)
+    for e in walk_etapas():
+        for id in e.centros:
+            eid = e.id.split("/")
+            while len(eid) > 1:
+                eid.pop()
+                etp = "/".join(eid)
+                txt = " -> ".join(e.txt.split(" -> ")[:len(eid)])
+                db.insert("ETAPA", id=etp, txt=txt, _or="ignore")
+                db.insert(
+                    "ETAPA_CENTRO",
+                    centro=id,
+                    etapa=etp,
+                    inferido=1,
+                    _or="ignore"
+                )
 
     for c in API.search_centros():
         for e in c.etapas:
-            db.insert("ETAPA_TIPO_CENTRO", centro=c.id, **e._asdict())
+            db.insert("ETAPA_NOMBRE_CENTRO", centro=c.id, **e._asdict())
+    for c in API.search_centros():
+        for e in c.etapas:
+            eid = e.nombre.split(" -> ")
+            while len(eid) > 1:
+                eid.pop()
+                db.insert(
+                    "ETAPA_NOMBRE_CENTRO",
+                    centro=id,
+                    nombre=" -> ".join(eid),
+                    inferido=1,
+                    _or="ignore"
+                )
 
 
 def insert_all(db: DBLite):
