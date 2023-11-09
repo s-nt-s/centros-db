@@ -48,6 +48,7 @@ def build_db(db: DBLite, tcp_limit: int):
     insert_missing(db)
 
     fix_tipo(db)
+    fix_latlon(db)
 
     # Nos fiamos del campo titularida del csv
     # check_titularidad(db)
@@ -225,6 +226,50 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], **kwargs):
             **kwargs
         )
     '''
+
+
+def fix_latlon(db: DBLite):
+    def to_where(k, v):
+        if v is None:
+            return f'{k} is null'
+        if isinstance(v, str):
+            return f"{k} = '{v}'"
+        return f"{k} = {v}"
+    for cnt in db.to_tuple('''
+        select
+            id, domicilio, municipio, distrito, cp
+        from
+            centro
+        where
+            latitud is null
+    ''', row_factory=dict_factory):
+        sql = '''
+            select distinct
+                latitud, longitud
+            from
+                centro
+            where
+                latitud is not null and
+                longitud is not null
+        '''.rstrip()
+        for k, v in cnt.items():
+            if k == "id":
+                continue
+            sql = sql + ' and ' + to_where(k, v)
+        latlon = db.to_tuple(sql, row_factory=dict_factory)
+        if len(latlon) != 1:
+            continue
+        latlon = latlon[0]
+        logger.info(
+            "centro {id} set latitud={latitud} longitud={longitud}".format(**latlon, **cnt)
+        )
+        db.execute('''
+            UPDATE centro SET
+                latitud={latitud},
+                longitud={longitud}
+            where
+                id={id}
+        '''.format(**latlon, **cnt))
 
 
 def walk_etapas():
