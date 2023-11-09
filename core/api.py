@@ -384,7 +384,8 @@ class Api():
                 val = trim_null(o.attrs.get("value"), is_null=("", "0", "-1"))
                 if val is None:
                     continue
-                txt = o.get_text().strip()
+                txt = o.get_text()
+                txt = re_sp.sub(" ", txt).strip()
                 yield name, val, txt
         for n in frm.select('input[type="checkbox"]'):
             name = trim_null(n.attrs.get("name"), is_null=("", ))
