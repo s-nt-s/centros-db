@@ -24,7 +24,7 @@ class BulkRequestsJob(ABC):
         pass
 
     @abstractmethod
-    def undone(self):
+    def undo(self):
         pass
 
     async def requests(self, session: ClientSession) -> bool:
@@ -47,7 +47,7 @@ class BulkRequestsFileJob(BulkRequestsJob):
     def done(self) -> bool:
         return isfile(self.file)
 
-    def undone(self):
+    def undo(self):
         if self.done():
             remove(self.file)
 
@@ -91,7 +91,7 @@ class BulkRequests:
     def run(self, *job: BulkRequestsJob, overwrite=False):
         if overwrite:
             for u in job:
-                u.undone()
+                u.undo()
         self.__run(*job)
 
     def __run(self, *job: BulkRequestsJob):
