@@ -211,7 +211,7 @@ class Centro:
 
     @cached_property
     def latlon(self):
-        mapa = self.home.select_one("#Mapa a")
+        mapa = self.home.select_one("#btLupa")
         if mapa is None:
             return None
         href = mapa.attrs["onclick"]
