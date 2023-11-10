@@ -252,6 +252,20 @@ class Centro:
                 if e.nivel < nivel:
                     return e
 
+        def get_tipo(txt: str):
+            if txt is None:
+                return None
+            txt = txt.strip(" /,")
+            if len(txt) == 0:
+                return None
+            arr = []
+            for s in txt.split("/"):
+                s = s.strip(" ,")
+                if len(s) == 0:
+                    continue
+                arr.append(", ".join(sorted(s.split(", "))))
+            return " / ".join(arr)
+
         sep = " -> "
         etapas: List[Etapa] = []
         for tr in self.home.select("#capaEtapasContent tr"):
@@ -264,7 +278,7 @@ class Centro:
             etapa = Etapa(
                 nombre=txt[0],
                 titularidad=txt[1],
-                tipo=txt[2],
+                tipo=get_tipo(txt[2]),
                 plazas=txt[3],
                 nivel=get_etapa_level(tds[0])
             )
