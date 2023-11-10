@@ -241,7 +241,7 @@ def fix_latlon(db: DBLite):
         from
             centro
         where
-            latitud is null
+            latitud is null or longitud is null
     ''', row_factory=dict_factory):
         sql = '''
             select distinct
