@@ -3,6 +3,6 @@ beautifulsoup4==4.12.2
 lxml==4.9.3
 selenium==3.141.0
 webdriver-manager==4.0.0
-pyproj==3.5.0
+pyproj==3.6.1
 aiohttp==3.8.6
 aiohttp-retry==2.8.3
