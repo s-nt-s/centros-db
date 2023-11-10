@@ -26,7 +26,7 @@ re_csv_br = re.compile(r"\s*\n\s*")
 re_csv_fl = re.compile(r"\s*;\s*")
 re_sp = re.compile(r"\s+")
 
-JS_TIMEOUT = int(os.environ.get('JS_TIMEOUT', '120'))
+JS_TIMEOUT = int(os.environ.get('JS_TIMEOUT', '600'))
 WEB = Web()
 
 
