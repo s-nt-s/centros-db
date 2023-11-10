@@ -107,9 +107,11 @@ def get_text(node: Tag, default: str = None):
     return txt
 
 
-def select_attr(soup: BeautifulSoup, selector: str, attr: str):
+def select_attr(soup: BeautifulSoup, selector: str, attr: str, safe=False):
     node = soup.select_one(selector)
     if node is None:
+        if safe:
+            return None
         raise DomNotFoundException(selector)
     value = node.attrs[attr].strip()
     return value

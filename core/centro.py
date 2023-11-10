@@ -3,10 +3,9 @@ from functools import cached_property
 from typing import Any, Coroutine, Dict, Tuple, NamedTuple, List
 from aiohttp import ClientResponse
 from bs4 import BeautifulSoup, Tag
-from .types import LatLon
 from .web import Web, buildSoup, select_attr, DomNotFoundException
 from .cache import Cache
-from .utm_to_geo import utm_to_geo
+from .utm_to_geo import utm_to_geo, LatLon
 from .retry import retry
 import re
 import logging
@@ -189,6 +188,14 @@ class Centro:
         cdCentro = select_attr(soup, "#cdCentro", "value")
         if cdCentro != str(self.id):
             raise CentroException(f"cdCentro={cdCentro} en {self.info}")
+        mapa = select_attr(soup, "#Mapa img", "src", safe=True)
+        if mapa and f'CD_CENTRO%20IN%20%28{self.id}%29' not in mapa:
+            raise DomNotFoundException(
+                "#Mapa img",
+                url=self.info,
+                more_info="no apunta al centro correcto"
+            )
+
 
     @cached_property
     def web(self):
@@ -216,16 +223,11 @@ class Centro:
             return None
         href = mapa.attrs["onclick"]
         m = re_coord.search(href)
-        UTM_ED50_HUSO_30 = m.group(1) + "," + m.group(2)
-        if UTM_ED50_HUSO_30 == "0.0,0.0":
+        UTM_ED50_HUSO_30_X_Y = tuple(map(float, m.groups()))
+        if UTM_ED50_HUSO_30_X_Y == (0, 0):
             return None
-        utm_split = UTM_ED50_HUSO_30.split(",")
-        x, y = tuple(map(float, utm_split))
-        lat, lon = utm_to_geo(30, x, y, "ED50")
-        return LatLon(
-            latitude=round(lat, 7),
-            longitude=round(lon, 7)
-        )
+        latlon = utm_to_geo("ED50", 30, *UTM_ED50_HUSO_30_X_Y)
+        return latlon.round(7)
 
     @cached_property
     def titular(self):

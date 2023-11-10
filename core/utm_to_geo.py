@@ -1,7 +1,20 @@
 import sys
 import pyproj
+from typing import NamedTuple
+
 
 ELIPSOIDE = "WGS84"
+
+
+class LatLon(NamedTuple):
+    latitude: float
+    longitude: float
+
+    def round(self, x):
+        return LatLon(
+            latitude=round(self.latitude, x),
+            longitude=round(self.longitude, x)
+        )
 
 
 def get_epsg(datum, huso):
@@ -38,7 +51,7 @@ def get_epsg(datum, huso):
     return None
 
 
-def utm_to_geo(HUSO, UTM_X, UTM_Y, DATUM):
+def utm_to_geo(DATUM, HUSO, UTM_X, UTM_Y):
     if HUSO is None or DATUM is None or UTM_X is None or UTM_Y is None:
         return (None, None)
     epsg = get_epsg(DATUM, HUSO)
@@ -46,13 +59,17 @@ def utm_to_geo(HUSO, UTM_X, UTM_Y, DATUM):
         return (None, None)
     transformer = pyproj.Transformer.from_crs('epsg:' + str(epsg), 'epsg:4326')
     lat, lon = transformer.transform(UTM_X, UTM_Y)
-    return lat, lon
+    return LatLon(
+        latitude=lat,
+        longitude=lon
+    )
 
 
 if __name__ == "__main__":
+    # ej: ED50 30 469656 4481719 = 40.4837353 -3.3593097
     argv = [int(a) if a.isdigit() else a for a in sys.argv[1:]]
-    lat, lon = utm_to_geo(30, *argv[1:])
+    latlon = utm_to_geo(*argv).round(7)
     print(*argv)
     print("=")
-    print(lat, lon)
-    print("https://www.google.com/maps?q=%s,%s" % (lon, lat))
+    print(latlon)
+    print(f"https://www.google.com/maps?q={latlon.latitude},{latlon.longitude}")
