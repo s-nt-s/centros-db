@@ -223,8 +223,8 @@ class Centro:
         x, y = tuple(map(float, utm_split))
         lat, lon = utm_to_geo(30, x, y, "ED50")
         return LatLon(
-            latitude=lat,
-            longitude=lon
+            latitude=round(lat, 7),
+            longitude=round(lon, 7)
         )
 
     @cached_property
