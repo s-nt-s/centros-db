@@ -3,7 +3,7 @@ from functools import cache, cached_property
 from urllib.parse import urljoin
 from typing import Any, Coroutine, Tuple, Dict, List
 from aiohttp import ClientResponse, ClientSession
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from os.path import dirname, isfile
 from glob import glob
 import os
@@ -375,6 +375,12 @@ class Api():
                 done.add(chunk)
 
     def iter_inputs(self, id: str):
+        def _get_text(n: Tag):
+            txt = n.get_text()
+            txt = re_sp.sub(" ", txt).strip()
+            txt = txt.replace("ń", "ñ")
+            return txt
+
         frm = self.home.select_one(f'#{id}')
         for n in frm.select("select"):
             name = trim_null(n.attrs.get("name"), is_null=("", ))
@@ -384,8 +390,7 @@ class Api():
                 val = trim_null(o.attrs.get("value"), is_null=("", "0", "-1"))
                 if val is None:
                     continue
-                txt = o.get_text()
-                txt = re_sp.sub(" ", txt).strip()
+                txt = _get_text(o)
                 yield name, val, txt
         for n in frm.select('input[type="checkbox"]'):
             name = trim_null(n.attrs.get("name"), is_null=("", ))
@@ -394,8 +399,7 @@ class Api():
             val = trim_null(n.attrs.get("value"))
             if val is None:
                 continue
-            txt = n.find_parent("td").find("a").get_text()
-            txt = re_sp.sub(" ", txt).strip()
+            txt = _get_text(n.find_parent("td").find("a"))
             yield name, val, txt
 
 
