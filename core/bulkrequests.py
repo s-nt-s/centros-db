@@ -1,9 +1,11 @@
 import asyncio
-from aiohttp import TCPConnector, ClientSession, ClientResponse
+from aiohttp import TCPConnector, ClientSession
 import logging
 from os.path import isfile
 from os import remove
 from abc import ABC, abstractproperty, abstractmethod
+from aiohttp.client_exceptions import ClientError
+from asyncio.exceptions import TimeoutError
 import time
 
 logger = logging.getLogger(__name__)
@@ -27,16 +29,25 @@ class BulkRequestsJob(ABC):
     def undo(self):
         pass
 
-    async def requests(self, session: ClientSession) -> bool:
-        async with self.get(session) as content:
-            return self.do(content)
-
-    def get(self, session: ClientSession):
-        return session.get(self.url)
-
     @abstractmethod
-    async def do(self, content: str) -> bool:
+    async def do(self, session: ClientSession) -> bool:
         pass
+
+    @property
+    def countdown(self) -> int:
+        return getattr(self, '__countdown', None)
+
+    @countdown.setter
+    def countdown(self, x: int):
+        setattr(self, '__countdown', x)
+
+    @property
+    def step(self) -> int:
+        return getattr(self, '__step', None)
+
+    @step.setter
+    def step(self, x: int):
+        setattr(self, '__step', x)
 
 
 class BulkRequestsFileJob(BulkRequestsJob):
@@ -51,11 +62,12 @@ class BulkRequestsFileJob(BulkRequestsJob):
         if self.done():
             remove(self.file)
 
-    async def do(self, response: ClientResponse) -> bool:
-        content = await response.text()
-        with open(self.file, "w") as f:
-            f.write(content)
-        return True
+    async def do(self, session: ClientSession) -> bool:
+        async with session.get(self.url) as response:
+            content = await response.text()
+            with open(self.file, "w") as f:
+                f.write(content)
+            return True
 
 
 class BulkRequests:
@@ -71,10 +83,11 @@ class BulkRequests:
 
     async def __requests(self, session: ClientSession, job: BulkRequestsJob):
         try:
-            async with job.get(session) as response:
-                return await job.do(response)
-        except Exception:
-            logger.exception()
+            return await job.do(session)
+        except (ClientError, TimeoutError):
+            raise
+        except Exception as e:
+            logger.critical(str(e), exc_info=e)
 
     async def __requests_all(self, *job: BulkRequestsJob):
         my_conn = TCPConnector(limit=self.tcp_limit)
@@ -96,16 +109,20 @@ class BulkRequests:
 
     def __run(self, *job: BulkRequestsJob):
         ko = 0
-        for i in range(max(self.tries, 1)):
+        tries = max(self.tries, 1) - 1
+        for i in reversed(range(tries+1)):
             job = tuple(u for u in job if not u.done())
             if len(job) == 0:
                 return
-            if i == 0:
-                logger.info(
-                    'BulkRequests' +
-                    f'(tcp_limit={self.tcp_limit}).run({len(job)} items)'
-                )
-            else:
+            for u in job:
+                u.step = tries - i
+                u.countdown = i
+            pre = "" if i == tries else "└─ "
+            logger.info(
+                pre + 'BulkRequests' +
+                f'(tcp_limit={self.tcp_limit}).run({len(job)} items)'
+            )
+            if i != tries:
                 time.sleep(self.sleep)
             rt = asyncio.run(self.__requests_all(*job))
             ko = len([i for i in rt if i is not True])

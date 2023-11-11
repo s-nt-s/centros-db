@@ -7,7 +7,7 @@ from os.path import isfile
 from .filemanager import FM
 from .web import Web
 from urllib.request import urlretrieve
-from .util import hashint
+from .util import hashme
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class Anexo():
     @cached_property
     def content(self):
         file = FM.resolve_path(
-            f"cache/pdf/{self.num:02} - {self.txt} - {hashint(self.url)}.pdf"
+            f"cache/pdf/{self.num:02} - {self.txt} - {hashme(self.url)}.pdf"
         )
         if not isfile(file):
             FM.makedirs(file)

@@ -16,7 +16,7 @@ from .centro import Centro
 from .cache import Cache
 from .retry import retry
 from .bulkrequests import BulkRequestsFileJob
-from .util import hashint
+from .util import hashme
 
 
 logger = logging.getLogger(__name__)
@@ -85,7 +85,7 @@ class CsvCache(Cache):
         root = self.file.rstrip("/")
         if len(args) > 0:
             name = ";".join(map(str, args))
-            name = hashint(name)
+            name = hashme(name)
             return f"{root}/{name}.{self.ext}"
         if len(kargv) == 0:
             return f"{root}/all.{self.ext}"
@@ -132,9 +132,6 @@ class BulkRequestsApi(BulkRequestsFileJob):
     def file(self):
         return self.id_cache.parse_file_name(**self.data)
 
-    def get(self, session: ClientSession):
-        return session.post(self.url, data=self.data)
-
     def done(self) -> bool:
         if not isfile(self.file):
             return False
@@ -161,18 +158,19 @@ class BulkRequestsApi(BulkRequestsFileJob):
                 return False
         return True
 
-    async def do(self, response: ClientResponse) -> Coroutine[Any, Any, bool]:
-        content = await response.text()
-        soup = buildSoup(self.url, content)
-        try:
-            r = self.api._get_search_response(self.data, soup)
-        except (ApiException, DomNotFoundException):
-            logger.exception()
-            return False
-        self.id_cache.save(self.file, r.get_ids())
-        if self.__is_cdGenerico():
-            return self.__check_cdGenerico()
-        return True
+    async def do(self, session: ClientSession) -> Coroutine[Any, Any, bool]:
+        async with session.post(self.url, data=self.data) as response:
+            content = await response.text()
+            soup = buildSoup(self.url, content)
+            try:
+                r = self.api._get_search_response(self.data, soup)
+            except (ApiException, DomNotFoundException):
+                logger.warn(str(e))
+                return False
+            self.id_cache.save(self.file, r.get_ids())
+            if self.__is_cdGenerico():
+                return self.__check_cdGenerico()
+            return True
 
 
 class Api():

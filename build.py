@@ -25,10 +25,15 @@ ARG = parser.parse_args()
 API = Api()
 KWV = {}
 
+open("build.log", "w").close()
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s %(name)s - %(levelname)s - %(message)s',
-    datefmt='%d-%m-%Y %H:%M:%S'
+    datefmt='%d-%m-%Y %H:%M:%S',
+    handlers=[
+        logging.FileHandler("build.log"),
+        logging.StreamHandler()
+    ]
 )
 
 logger = logging.getLogger(__name__)
@@ -67,7 +72,8 @@ def build_db(db: DBLite, tcp_limit: int):
 
 def dwn_html(tcp_limit: int = 10):
     BulkRequests(
-        tcp_limit=tcp_limit
+        tcp_limit=tcp_limit,
+        tries=10
     ).run(*(
         BulkRequestsCentro(c.id) for c in API.search_centros()
     ))

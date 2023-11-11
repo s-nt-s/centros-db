@@ -7,7 +7,7 @@
 *.pdf
 !requirements.txt
 sql/subset
-cache/html
+cache/html/*html
 ok.sql
 notas.txt
 debug/

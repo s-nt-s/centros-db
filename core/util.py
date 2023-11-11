@@ -1,8 +1,8 @@
 from hashlib import sha1
 
 
-def hashint(s: str):
-    return int(sha1(s.encode("utf-8")).hexdigest(), 16)
+def hashme(s):
+    return sha1(str(s).encode("utf-8")).hexdigest()
 
 
 def must_one(arr):
