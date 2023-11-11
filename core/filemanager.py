@@ -3,6 +3,7 @@ import logging
 from os import makedirs
 from os.path import dirname, realpath
 from pathlib import Path
+import pdftotext
 
 from bs4 import BeautifulSoup, Tag
 
@@ -88,7 +89,7 @@ class FileManager:
         Para que haya soporte para esa extension ha de exisitir una funcion dump_extension
         """
         file = self.resolve_path(file)
-        makedirs(file.parent, exist_ok=True)
+        self.makedirs(file)
 
         if isinstance(obj, bytes):
             with open(file, "wb") as f:
@@ -107,6 +108,10 @@ class FileManager:
             raise Exception(f"No existe metodo para guardar ficheros {ext} [{file.name}]")
 
         dump_fl(file, obj, *args, **kargv)
+
+    def makedirs(self, file):
+        file = self.resolve_path(file)
+        makedirs(file.parent, exist_ok=True)
 
     def load_json(self, file, *args, **kargv):
         with open(file, "r") as f:
@@ -138,6 +143,13 @@ class FileManager:
             txt = txt.format(*args, **kargv)
         with open(file, "w") as f:
             f.write(txt)
+
+    def load_pdf(self, file, *args, as_list=False, **kvargs):
+        with open(file, 'rb') as fl:
+            pdf = pdftotext.PDF(fl, **kvargs)
+            if as_list:
+                return list(pdf)
+            return "\n".join(pdf)
 
 
 # Mejoras dinamicas en la documentacion

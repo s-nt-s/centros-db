@@ -21,12 +21,12 @@ jobs:
         run: sudo apt clean -y && sudo apt autoclean -y && sudo apt autoremove -y
       - name: Install a new Chromium
         run: sudo apt install -y chromium-browser
+      - name: Install dependencies
+        run: sudo apt install libpoppler-cpp-dev
       - name: Install pip packages
         run: pip install -r requirements.txt
       - name: rm file cache
-        run: rm -f data/etapas.json data/form.json
-      - name: mkdir
-        run: mkdir -p data/html/
+        run: rm -f cache/etapas.json cache/form.json
       - name: Build DB
         uses: nick-fields/retry@v2
         env:

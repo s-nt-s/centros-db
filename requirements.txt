@@ -5,3 +5,4 @@ selenium==3.141.0
 webdriver-manager==4.0.0
 pyproj==3.6.1
 aiohttp==3.8.6
+pdftotext==2.2.2

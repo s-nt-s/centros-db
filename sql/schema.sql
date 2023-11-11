@@ -94,9 +94,50 @@ CREATE TABLE EDUCACION_DIFERENCIADA (
     centro INTEGER NOT NULL,
     etapa TEXT NOT NULL,
     PRIMARY KEY (centro, etapa),
-    CONSTRAINT fk_etapa_centro_centro
+    CONSTRAINT fk_educacion_diferenciada_centro
         FOREIGN KEY (centro)
         REFERENCES CENTRO(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE ESPECIAL_DIFICULTAD (
+    centro INTEGER NOT NULL PRIMARY KEY,
+    CONSTRAINT fk_especial_dificultad_centro
+        FOREIGN KEY (centro)
+        REFERENCES CENTRO(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE CONCURSO (
+    id TEXT NOT NULL PRIMARY KEY,
+    txt TEXT NOT NULL,
+    url TEXT NOT NULL
+);
+
+CREATE TABLE CONCURSO_ANEXO (
+    concurso TEXT NOT NULL,
+    anexo INTEGER NOT NULL,
+    txt TEXT NOT NULL,
+    url TEXT NOT NULL,
+    PRIMARY KEY (concurso, anexo),
+    CONSTRAINT fk_concurso
+        FOREIGN KEY (concurso)
+        REFERENCES CONCURSO(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE CONCURSO_ANEXO_CENTRO (
+    centro INTEGER NOT NULL,
+    concurso TEXT NOT NULL,
+    anexo INTEGER NOT NULL,
+    PRIMARY KEY (centro, concurso, anexo),
+    CONSTRAINT fk_concurso_centro
+        FOREIGN KEY (centro)
+        REFERENCES CENTRO(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_concurso_anexo
+        FOREIGN KEY (concurso, anexo)
+        REFERENCES CONCURSO_ANEXO(concurso, anexo)
         ON DELETE CASCADE
 );
 

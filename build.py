@@ -8,6 +8,8 @@ import argparse
 import logging
 from core.bulkrequests import BulkRequests
 from typing import List, Dict
+from core.concurso import Concurso
+import re
 
 parser = argparse.ArgumentParser(
     description='Crea db a partir de '+Api.URL,
@@ -59,6 +61,8 @@ def build_db(db: DBLite, tcp_limit: int):
         'checkOrdinaria=O',
         'checkContinua=C'
     )
+
+    insert_concurso(db)
 
 
 def dwn_html(tcp_limit: int = 10):
@@ -314,6 +318,45 @@ def jump_me(name: str):
     ):
         return True
     return name.startswith("checkSubdir")
+
+
+def insert_concurso(db: DBLite):
+    re_esp_dif = re.compile(r"centros? de especial dificultad", re.IGNORECASE)
+    esp_dif = set()
+    ok_cent = set(db.to_tuple("select id from centro"))
+    for url in (Concurso.MAESTROS, Concurso.PROFESORES):
+        con = Concurso(url)
+        db.insert(
+            "CONCURSO",
+            id=con.abr,
+            txt=con.titulo,
+            url=con.url
+        )
+        for anx in con.anexos.values():
+            if re_esp_dif.search(anx.txt):
+                esp_dif = esp_dif.union(anx.centros)
+                continue
+            db.insert(
+                "CONCURSO_ANEXO",
+                concurso=con.abr,
+                anexo=anx.num,
+                txt=anx.txt,
+                url=anx.url
+            )
+            ok_cent = ok_cent.union(anx.centros)
+            for c in anx.centros:
+                db.insert(
+                    "CONCURSO_ANEXO_CENTRO",
+                    centro=c,
+                    concurso=con.abr,
+                    anexo=anx.num,
+                )
+
+    for c in sorted(esp_dif):
+        if c not in ok_cent:
+            logger.warning(f"{c} no existe?")
+            continue
+        db.insert("ESPECIAL_DIFICULTAD", centro=c)
 
 
 if __name__ == "__main__":

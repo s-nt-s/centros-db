@@ -163,7 +163,7 @@ class Centro:
         return self._get_soup()
 
     @CentroHtmlCache(
-        file="data/html/",
+        file="cache/html/",
         maxOld=5,
         kwself="slf",
         loglevel=logging.DEBUG

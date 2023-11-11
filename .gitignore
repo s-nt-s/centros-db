@@ -4,9 +4,10 @@
 *.sqlite-journal
 *.csv
 *.txt
+*.pdf
 !requirements.txt
 sql/subset
-data/html
+cache/html
 ok.sql
 notas.txt
 debug/

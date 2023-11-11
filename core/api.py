@@ -202,12 +202,12 @@ class Api():
         ids = self.search_ids(**kargv)
         return self.get_centros(*ids)
 
-    @IdCache("data/ids/", maxOld=5)
+    @IdCache("cache/ids/", maxOld=5)
     def search_ids(self, **data) -> Tuple[int]:
         r = self.__do_search(**data)
         return r.get_ids()
 
-    @CsvCache("data/csv/", maxOld=5)
+    @CsvCache("cache/csv/", maxOld=5)
     def search_csv_as_str(self, **data):
         r = self.__do_search(**data)
         if len(r.get_ids()) == 0:
@@ -247,7 +247,7 @@ class Api():
         logger.info(f'{len(r.get_ids()):4d} = '+data_to_str(**data))
         return r
 
-    @CsvCache("data/csv/", maxOld=5, loglevel=logging.INFO)
+    @CsvCache("cache/csv/", maxOld=5, loglevel=logging.INFO)
     def get_csv_as_str(self, *ids: int, endpoint: str = None):
         logger.info(f'get_centros({len(ids)} items)')
         return self.__get_csv_as_str(*ids, endpoint=endpoint)
@@ -328,7 +328,7 @@ class Api():
         return WEB.get(Api.URL)
 
     @cache
-    @Cache("data/form.json", loglevel=logging.INFO)
+    @Cache("cache/form.json", loglevel=logging.INFO)
     def get_form(self) -> Dict[str, Dict[str, str]]:
         logger.info("get form inputs")
         form = {}
@@ -339,7 +339,7 @@ class Api():
         return form
 
     @cache
-    @Cache("data/etapas.json", loglevel=logging.INFO)
+    @Cache("cache/etapas.json", loglevel=logging.INFO)
     def get_etapas(self) -> Dict[str, Dict]:
         logger.info("get form etapas")
         with Driver(wait=10) as w:

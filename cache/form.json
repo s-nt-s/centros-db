@@ -1,0 +1,209 @@
+{
+  "cdTramoEdu": {
+    "0010": "Primer Ciclo de Educaci\u00f3n Infantil",
+    "0020": "Segundo Ciclo de Educaci\u00f3n Infantil",
+    "0030": "Educaci\u00f3n Primaria",
+    "0040": "Educaci\u00f3n Secundaria Obligatoria",
+    "0050": "Bachillerato",
+    "0053": "Programas Profesionales",
+    "0055": "Formaci\u00f3n Profesional B\u00e1sica",
+    "0060": "Formaci\u00f3n Profesional Grado Medio",
+    "0075": "Curso preparatorio prueba acces F.P.G.M.",
+    "0078": "Curso prueba acceso ciclos F.P.G.S.",
+    "0080": "Formaci\u00f3n Profesional Grado Superior",
+    "0090": "Educaci\u00f3n Especial",
+    "0100": "Ense\u00f1anza de Idiomas",
+    "0110": "Ense\u00f1anzas Art\u00edsticas M\u00fasica",
+    "0120": "Ense\u00f1anzas Art\u00edsticas Danza",
+    "0130": "Ens. Art\u00edsticas Artes Pl\u00e1sticas y Dise\u00f1o",
+    "0140": "Ense\u00f1anzas Art\u00edsticas Arte Dram\u00e1tico",
+    "0143": "Master en Ense\u00f1anzas Art\u00edsticas",
+    "0150": "Ense\u00f1anzas Deportivas",
+    "0160": "Educaci\u00f3n Personas Adultas",
+    "0170": "Ense\u00f1anzas Extranjeras"
+  },
+  "comboDistritos": {
+    "02": "Arganzuela",
+    "21": "Barajas",
+    "11": "Carabanchel",
+    "01": "Centro",
+    "05": "Chamart\u00edn",
+    "07": "Chamber\u00ed",
+    "15": "Ciudad Lineal",
+    "08": "Fuencarral-El Pardo",
+    "16": "Hortaleza",
+    "10": "Latina",
+    "09": "Moncloa-Aravaca",
+    "14": "Moratalaz",
+    "13": "Puente de Vallecas",
+    "03": "Retiro",
+    "04": "Salamanca",
+    "20": "San Blas-Canillejas",
+    "06": "Tetu\u00e1n",
+    "12": "Usera",
+    "19": "Vic\u00e1lvaro",
+    "18": "Villa de Vallecas",
+    "17": "Villaverde"
+  },
+  "cdGenerico": {
+    "036": "AULA HOSPITALARIA",
+    "418": "AULA HOSPITALARIA PRIVADA",
+    "104": "CENTRO AUTORIZADO DE ARTES PL\u00c1STICAS Y DISE\u00d1O",
+    "221": "CENTRO AUTORIZADO DE ENSE\u00d1ANZAS DEPORTIVAS GRADO MEDIO",
+    "220": "CENTRO AUTORIZADO DE ENSE\u00d1ANZAS DEPORTIVAS GRADO MEDIO Y SUPERIOR",
+    "222": "CENTRO AUTORIZADO DE ENSE\u00d1ANZAS DEPORTIVAS GRADO SUPERIOR",
+    "137": "CENTRO AUTORIZADO ELEMENTAL DE M\u00daSICA",
+    "414": "CENTRO AUTORIZADO ELEMENTAL DE M\u00daSICA Y DANZA",
+    "158": "CENTRO AUTORIZADO PROFESIONAL DE DANZA",
+    "138": "CENTRO AUTORIZADO PROFESIONAL DE M\u00daSICA",
+    "416": "CENTRO AUTORIZADO PROFESIONAL DE M\u00daSICA Y DANZA",
+    "172": "CENTRO AUTORIZADO SUPERIOR DE ARTE DRAM\u00c1TICO",
+    "159": "CENTRO AUTORIZADO SUPERIOR DE DANZA",
+    "105": "CENTRO AUTORIZADO SUPERIOR DE DISE\u00d1O",
+    "139": "CENTRO AUTORIZADO SUPERIOR DE M\u00daSICA",
+    "413": "CENTRO DE FORMACI\u00d3N AMBIENTAL",
+    "304": "CENTRO DE FORMACI\u00d3N PARA EL EMPLEO",
+    "419": "CENTRO DE FORMACI\u00d3N PARA INTERCAMBIOS INTERNACIONALES",
+    "303": "CENTRO DOCENTE EN EL EXTRANJERO",
+    "094": "CENTRO DOCENTE EXTRANJERO EN ESPA\u00d1A",
+    "305": "CENTRO DOCENTE MILITAR",
+    "038": "CENTRO EDUCATIVO-TERAP\u00c9UTICO",
+    "016": "CENTRO INTEGRADO DE ENSE\u00d1ANZAS ART\u00cdSTICAS ELEMENTALES Y PROFESIONALES DE M\u00daSICA, EDUCACI\u00d3N PRIMARIA Y SECUNDARIA",
+    "017": "CENTRO INTEGRADO DE ENSE\u00d1ANZAS ART\u00cdSTICAS PROFESIONALES DE M\u00daSICA Y EDUCACI\u00d3N SECUNDARIA",
+    "037": "CENTRO PRIVADO DE EDUCACI\u00d3N DE PERSONAS ADULTAS",
+    "021": "CENTRO PRIVADO DE EDUCACI\u00d3N ESPECIAL",
+    "004": "CENTRO PRIVADO DE EDUCACI\u00d3N INFANTIL",
+    "072": "CENTRO PRIVADO DE EDUCACI\u00d3N INFANTIL, PRIMARIA Y SECUNDARIA",
+    "415": "CENTRO PRIVADO DE EDUCACI\u00d3N INFANTIL Y FORMACI\u00d3N PROFESIONAL",
+    "015": "CENTRO PRIVADO DE EDUCACI\u00d3N INFANTIL Y PRIMARIA",
+    "013": "CENTRO PRIVADO DE EDUCACI\u00d3N PRIMARIA",
+    "073": "CENTRO PRIVADO DE EDUCACI\u00d3N PRIMARIA Y SECUNDARIA",
+    "045": "CENTRO PRIVADO DE EDUCACI\u00d3N SECUNDARIA",
+    "058": "CENTRO PRIVADO DE FORMACI\u00d3N PROFESIONAL ESPEC\u00cdFICA",
+    "074": "CENTRO PRIVADO DE INFANTIL Y SECUNDARIA",
+    "035": "CENTRO P\u00daBLICO DE EDUCACI\u00d3N ADULTOS ESTABLECIMIENTOS PENITENCIARIOS",
+    "031": "CENTRO P\u00daBLICO DE EDUCACI\u00d3N DE PERSONAS ADULTAS",
+    "223": "CENTRO P\u00daBLICO DE ENSE\u00d1ANZAS DEPORTIVAS",
+    "049": "CENTRO P\u00daBLICO DE FORMACI\u00d3N PROFESIONAL ESPEC\u00cdFICA",
+    "068": "CENTRO P\u00daBLICO INTEGRADO DE FORMACI\u00d3N PROFESIONAL",
+    "225": "CENTRO REGIONAL DE ENRIQUECIMIENTO EDUCATIVO PARA ALUMNADO DE ALTAS CAPACIDADES INTELECTUALES",
+    "039": "CENTRO REGIONAL DE ENSE\u00d1ANZAS INTEGRADAS",
+    "411": "CENTRO REGIONAL DE INNOVACI\u00d3N Y FORMACI\u00d3N",
+    "412": "CENTRO TERRITORIAL DE INNOVACI\u00d3N Y FORMACI\u00d3N",
+    "020": "COLEGIO DE EDUCACI\u00d3N ESPECIAL",
+    "070": "COLEGIO DE EDUCACI\u00d3N INFANTIL, PRIMARIA Y SECUNDARIA",
+    "014": "COLEGIO DE EDUCACI\u00d3N INFANTIL Y PRIMARIA",
+    "012": "COLEGIO DE EDUCACI\u00d3N PRIMARIA",
+    "151": "CONSERVATORIO PROFESIONAL DE DANZA",
+    "131": "CONSERVATORIO PROFESIONAL DE M\u00daSICA",
+    "152": "CONSERVATORIO SUPERIOR DE DANZA",
+    "132": "CONSERVATORIO SUPERIOR DE M\u00daSICA",
+    "205": "EQUIPO DE ORIENTACI\u00d3N EDUCATIVA Y PSICOPEDAG\u00d3GICA. ATENCI\u00d3N TEMPRANA",
+    "204": "EQUIPO DE ORIENTACI\u00d3N EDUCATIVA Y PSICOPEDAG\u00d3GICA. ESPEC\u00cdFICO",
+    "206": "EQUIPO DE ORIENTACI\u00d3N EDUCATIVA Y PSICOPEDAG\u00d3GICA. GENERAL.",
+    "103": "ESCUELA DE ARTE",
+    "003": "ESCUELA INFANTIL",
+    "006": "ESCUELA INFANTIL-CASA DE NI\u00d1OS",
+    "008": "ESCUELA INFANTIL PRIVADA",
+    "032": "ESCUELA MUNICIPAL DE EDUCACI\u00d3N DE PERSONAS ADULTAS",
+    "185": "ESCUELA MUNICIPAL DE M\u00daSICA",
+    "187": "ESCUELA MUNICIPAL DE M\u00daSICA Y DANZA",
+    "080": "ESCUELA OFICIAL DE IDIOMAS",
+    "171": "ESCUELA SUPERIOR DE ARTE DRAM\u00c1TICO",
+    "180": "ESCUELA SUPERIOR DE CANTO",
+    "120": "ESCUELA SUPERIOR DE CONSERVACI\u00d3N Y RESTAURACI\u00d3N BIENES CULTURALES",
+    "106": "ESCUELA SUPERIOR DE DISE\u00d1O",
+    "173": "ESCUELA SUPERIOR DE ENSE\u00d1ANZAS ART\u00cdSTICAS",
+    "300": "ESTABLECIMIENTO ADMINISTRATIVO",
+    "081": "EXTENSION ESCUELA OFICIAL DE IDIOMAS",
+    "042": "INSTITUTO DE EDUCACI\u00d3N SECUNDARIA",
+    "420": "INSTITUTO SUPERIOR MADRILE\u00d1O DE INNOVACI\u00d3N EDUCATIVA",
+    "047": "SECCI\u00d3N DE INSTITUTO DE EDUCACI\u00d3N SECUNDARIA",
+    "034": "UNIDAD DE FORMACI\u00d3N E INSERCI\u00d3N LABORAL",
+    "005": "ZONA CASAS DE NI\u00d1OS"
+  },
+  "checkSubdir1": {
+    "1": "MADRID-NORTE"
+  },
+  "checkSubdir2": {
+    "2": "MADRID-SUR"
+  },
+  "checkSubdir3": {
+    "3": "MADRID-ESTE"
+  },
+  "checkSubdir4": {
+    "4": "MADRID-OESTE"
+  },
+  "checkSubdir5": {
+    "5": "MADRID-CAPITAL"
+  },
+  "titularidadPublica": {
+    "S": "P\u00daBLICO"
+  },
+  "titularidadPrivada": {
+    "S": "PRIVADO"
+  },
+  "titularidadPrivadaConc": {
+    "S": "PRIVADO CONCERTADO"
+  },
+  "checkCentroBilingue": {
+    "S": "BILING\u00dcE ESPA\u00d1OL-INGL\u00c9S"
+  },
+  "checkCentroConvenio": {
+    "S": "CONVENIO BRITISH COUNCIL"
+  },
+  "checkSeccionesLinguisticasFr": {
+    "S": "FRANC\u00c9S EN I.E.S."
+  },
+  "checkSeccionesLinguisticasAl": {
+    "S": "ALEM\u00c1N EN I.E.S."
+  },
+  "itCentroExcelencia": {
+    "S": "CENTRO DE EXCELENCIA"
+  },
+  "itAulaExcelencia": {
+    "S": "AULA DE EXCELENCIA"
+  },
+  "itInTecno": {
+    "S": "INNOVACI\u00d3N"
+  },
+  "checkSer001": {
+    "S": "TRANSPORTE"
+  },
+  "checkSer002": {
+    "S": "HORARIO AMPLIADO"
+  },
+  "checkSer003": {
+    "S": "COMEDOR"
+  },
+  "checkSer004": {
+    "S": "RESIDENCIA"
+  },
+  "itRegimenPresencial": {
+    "1": "PRESENCIAL"
+  },
+  "itRegimenDistancia": {
+    "2": "DISTANCIA"
+  },
+  "itRegimenDual": {
+    "5": "FP DUAL"
+  },
+  "itRegimenNocturno": {
+    "4": "NOCTURNO"
+  },
+  "checkOrdinaria": {
+    "O": "JORNADA DIVIDIDA EN 2 SESIONES"
+  },
+  "checkContinua": {
+    "C": "JORNADA CONTINUADA"
+  },
+  "checkIntegraA": {
+    "S": "AUDITIVOS"
+  },
+  "checkIntegraM": {
+    "S": "MOT\u00d3RICOS"
+  },
+  "checkIntegraT": {
+    "S": "CENTRO PREFERENTE TGD/TEA"
+  }
+}
