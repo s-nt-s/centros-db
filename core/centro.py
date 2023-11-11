@@ -5,7 +5,7 @@ from aiohttp import ClientResponse
 from bs4 import BeautifulSoup, Tag
 from .web import Web, buildSoup, select_attr, DomNotFoundException
 from .cache import Cache
-from .utm_to_geo import utm_to_geo, LatLon
+from .utm_to_geo import utm_to_geo
 from .retry import retry
 import re
 import logging
