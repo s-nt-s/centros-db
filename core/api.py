@@ -379,6 +379,7 @@ class Api():
             txt = n.get_text()
             txt = re_sp.sub(" ", txt).strip()
             txt = txt.replace("ń", "ñ")
+            txt = txt.replace("Ń", "Ñ")
             return txt
 
         frm = self.home.select_one(f'#{id}')
