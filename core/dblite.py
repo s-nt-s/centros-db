@@ -119,7 +119,9 @@ class DBLite:
         return cols
 
     def insert(self, table: str, _or="", **kwargs):
-        if len(_or):
+        if _or is None:
+            _or = ""
+        elif len(_or):
             _or = "or "+_or
         ok_keys = tuple(k.lower() for k in self.get_cols(table))
         keys = []

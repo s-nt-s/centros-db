@@ -196,7 +196,7 @@ def execute_if_query_is_col(db: DBLite, sql_path: str, *query_in: str):
         db.execute(read_file(sql_path))
 
 
-def multi_insert_centro(db: DBLite, rows: Tuple[Centro], **kwargs):
+def multi_insert_centro(db: DBLite, rows: Tuple[Centro], _or: str = None):
     def to_dict(row: Centro):
         obj = row._asdict()
         for k, v in list(obj.items()):
@@ -212,8 +212,15 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], **kwargs):
         db.insert(
             "CENTRO",
             **to_dict(row),
-            **kwargs
+            _or=_or
         )
+        for dif in row.educacion_diferenciada:
+            db.insert(
+                "EDUCACION_DIFERENCIADA",
+                centro=row.id,
+                etapa=dif,
+                _or=_or
+            )
 
     '''
     tm = ThreadMe(

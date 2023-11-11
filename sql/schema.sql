@@ -90,6 +90,16 @@ CREATE TABLE ETAPA_NOMBRE_CENTRO (
         ON DELETE CASCADE
 );
 
+CREATE TABLE EDUCACION_DIFERENCIADA (
+    centro INTEGER NOT NULL,
+    etapa TEXT NOT NULL,
+    PRIMARY KEY (centro, etapa),
+    CONSTRAINT fk_etapa_centro_centro
+        FOREIGN KEY (centro)
+        REFERENCES CENTRO(id)
+        ON DELETE CASCADE
+);
+
 INSERT INTO AREA VALUES
 ('E', 'Madrid-Este'),
 ('S', 'Madrid-Sur'),

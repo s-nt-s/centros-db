@@ -196,7 +196,6 @@ class Centro:
                 more_info="no apunta al centro correcto"
             )
 
-
     @cached_property
     def web(self):
         return self.inputs.get("tlWeb")
@@ -293,3 +292,21 @@ class Centro:
                 **dict(nombre=padre.nombre+sep+etapa.nombre)
             }))
         return tuple(sorted(set(etapas)))
+
+    @cached_property
+    def educacion_diferenciada(self) -> Tuple[str]:
+        txt = (select_attr(
+            self.home,
+            'input[name="tlEdDiferenciada"]',
+            "value",
+            safe=True
+        ) or '')
+        re_sp.sub(" ", txt).strip()
+        if txt.lower() in ('', 'null'):
+            return tuple()
+        arr = set()
+        for t in txt.split(", "):
+            t = t.strip()
+            if len(t):
+                arr.add(t)
+        return tuple(sorted(arr))
