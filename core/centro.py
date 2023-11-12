@@ -98,6 +98,7 @@ class CountSoupCentro(NamedTuple):
     sc: "SoupCentro" = None
     before_map: int = 0
     after_map: int = 0
+    similar: int = 0
 
     @property
     def ok(self):
@@ -105,7 +106,7 @@ class CountSoupCentro(NamedTuple):
 
     @property
     def oderkey(self):
-        return (self.after_map, self.before_map)
+        return (self.after_map, self.before_map, self.similar)
 
     def __lt__(self, other: "CountSoupCentro"):
         return self.oderkey < other.oderkey
@@ -124,7 +125,7 @@ class BulkRequestsCentro(BulkRequestsFileJob):
             self.centro._get_soup,
             "__cache_obj__"
         )
-        self.ko_map = set()
+        self.okkomap: Dict[str, bool] = {}
         self.before_map: Dict[tuple(), CountSoupCentro] = dict()
         self.after_map: Dict[tuple(), CountSoupCentro] = dict()
 
@@ -132,22 +133,28 @@ class BulkRequestsCentro(BulkRequestsFileJob):
         before_map = self.before_map.get(
             spct.as_tuple, CountSoupCentro()
         ).before_map
+        similar = 0
+        for c in self.before_map.values():
+            if c.sc.similar(spct):
+                similar = similar + 1
         self.before_map[spct.as_tuple] = CountSoupCentro(
             sc=spct,
             before_map=before_map+1,
-            after_map=0
+            after_map=0,
+            similar=similar
         )
 
     def add_ok_after_map(self, spct: "SoupCentro"):
-        before_map = self.before_map.get(
+        bm = self.before_map.get(
             spct.as_tuple, CountSoupCentro()
-        ).before_map
+        )
         after_map = self.after_map.get(
             spct.as_tuple, CountSoupCentro()
         ).after_map
         self.after_map[spct.as_tuple] = CountSoupCentro(
             sc=spct,
-            before_map=before_map,
+            before_map=bm.before_map,
+            similar=bm.similar,
             after_map=after_map+1
         )
 
@@ -156,6 +163,8 @@ class BulkRequestsCentro(BulkRequestsFileJob):
         if cntbst is None:
             return None
         if cntbst.ok > 1:
+            return cntbst.sc
+        if cntbst.similar > 2:
             return cntbst.sc
         if self.countdown == 0:
             logger.warning(
@@ -260,14 +269,15 @@ class BulkRequestsCentro(BulkRequestsFileJob):
             return True
         if direcc and urlmap.popup == BulkRequestsCentro.DIR_MAP.get(direcc):
             return True
-        if urlmap.url in self.ko_map:
-            return False
+        if urlmap.url in self.okkomap:
+            return self.okkomap[urlmap.url]
         for url in urlmap.urls:
             if await self._do_map(session, url, spct):
                 if direcc:
                     BulkRequestsCentro.DIR_MAP[direcc] = urlmap.popup
+                self.okkomap[urlmap.url] = True
                 return True
-        self.ko_map.add(urlmap.url)
+        self.okkomap[urlmap.url] = False
         return False
 
     async def _do_map(self, session: ClientSession, url: str, spct: "SoupCentro"):
@@ -360,6 +370,15 @@ class SoupCentro:
 
     def __eq__(self, other: "SoupCentro"):
         return self.as_tuple == other.as_tuple
+
+    def similar(self, other: "SoupCentro"):
+        def _tp(o:  "SoupCentro"):
+            arr = []
+            for e in o.as_tuple:
+                if not isinstance(e, LatLon):
+                    arr.append(e)
+            return tuple(arr)
+        return _tp(self) == _tp(other)
 
     @cached_property
     def as_tuple(self):
@@ -483,6 +502,7 @@ class SoupCentro:
         arr = set()
         for t in txt.split(", "):
             t = t.strip()
+            t = re.sub(r"\s*\(", " (", t).strip()
             if len(t):
                 arr.add(t)
         return tuple(sorted(arr))

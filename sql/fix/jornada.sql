@@ -1,10 +1,12 @@
 CREATE TABLE JORNADA (
+    -- query TEXT UNIQUE,
     id  TEXT NOT NULL PRIMARY KEY,
     txt TEXT NOT NULL
 );
 
 INSERT INTO JORNADA
 select
+    -- id query,
     substr(id, -1, 1) id,
     txt
 from
