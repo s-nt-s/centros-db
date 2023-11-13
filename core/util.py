@@ -22,3 +22,4 @@ def read_file(file: str, *args, **kwargs):
         txt = f.read().strip()
         txt = txt.format(*args, **kwargs)
         return txt
+

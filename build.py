@@ -1,21 +1,16 @@
-from core.api import Api, BulkRequestsApi
+from core.api import Api
 from core.dblite import DBLite, dict_factory
-from typing import Tuple
+from typing import Tuple, Dict
 from core.types import ParamValueText, QueryCentros
 from core.util import must_one, read_file
-from core.centro import Centro, BulkRequestsCentro
+from core.centro import Centro
 import argparse
 import logging
-from core.bulkrequests import BulkRequests
-from typing import List, Dict
 from core.concurso import Concurso
 import re
 
 parser = argparse.ArgumentParser(
     description='Crea db a partir de '+Api.URL,
-)
-parser.add_argument(
-    '--tcp-limit', type=int, default=50
 )
 parser.add_argument(
     '--db', type=str, default="out/db.sqlite"
@@ -39,15 +34,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def build_db(db: DBLite, tcp_limit: int):
+def build_db(db: DBLite):
     db.execute("sql/schema.sql")
+    API.search_centros()
 
     KWV["area"] = dict(db.to_tuple("select txt, id from area"))
     KWV["titularidad"] = dict(db.to_tuple("select txt, id from titularidad"))
     KWV["tipo"] = dict()
 
-    dwn_html(tcp_limit=tcp_limit)
-    dwn_search(tcp_limit=tcp_limit)
     insert_tipos(db)
     insert_queries(db)
     insert_etapas(db)
@@ -70,34 +64,6 @@ def build_db(db: DBLite, tcp_limit: int):
     insert_concurso(db)
 
 
-def dwn_html(tcp_limit: int = 10):
-    BulkRequests(
-        tcp_limit=tcp_limit,
-        tries=10
-    ).run(*(
-        BulkRequestsCentro(c.id) for c in API.search_centros()
-    ))
-
-
-def dwn_search(tcp_limit: int = 10):
-    queries: List[Dict[str, str]] = []
-    for k in sorted(API.get_form()['cdGenerico'].keys()):
-        queries.append(dict(cdGenerico=k))
-    for name, obj in API.get_form().items():
-        if jump_me(name):
-            continue
-        for val in sorted(obj.keys()):
-            queries.append({name: val})
-    for etapas in API.iter_etapas():
-        data = {e.name: e.value for e in etapas}
-        queries.append(data)
-    BulkRequests(
-        tcp_limit=tcp_limit
-    ).run(*(
-        BulkRequestsApi(API, data) for data in queries
-    ))
-
-
 def insert_tipos(db: DBLite):
     for k, v in sorted(API.get_form()['cdGenerico'].items()):
         rows = API.search_centros(cdGenerico=k)
@@ -111,7 +77,7 @@ def insert_tipos(db: DBLite):
 
 def insert_queries(db: DBLite):
     for name, obj in API.get_form().items():
-        if jump_me(name):
+        if Api.is_redundant_parameter(name):
             continue
         for val, txt in sorted(obj.items()):
             ids = API.search_ids(**{name: val})
@@ -232,61 +198,101 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], _or: str = None):
                 _or=_or
             )
 
-    '''
-    tm = ThreadMe(
-        max_thread=30
-    )
-    for obj in tm.run(to_dict, rows):
-        db.insert(
-            "CENTRO",
-            **obj,
-            **kwargs
-        )
-    '''
-
 
 def fix_latlon(db: DBLite):
+    changes = 1
+    while changes > 0:
+        changes = sum([
+            fix_centro_col(
+                db,
+                cols=('cp', ),
+                keys=('domicilio', 'municipio', 'distrito')
+            ),
+            fix_centro_col(
+                db,
+                cols=('distrito', ),
+                keys=('domicilio', 'municipio', 'cp')
+            ),
+            fix_centro_col(
+                db,
+                cols=('latitud', 'longitud'),
+                keys=('domicilio', 'municipio', 'distrito', 'cp'),
+                strong=False
+            )
+        ])
+
+
+def fix_centro_col(db: DBLite, cols: Tuple[str], keys: Tuple[str], strong=True):
+    if len(keys) == 0:
+        return 0
+    sql1 = '''
+        select
+            id, {0}
+        from
+            centro
+        where
+            {1}
+    '''.format(
+        ", ".join(keys),
+        " and ".join(map(lambda x: x+" is not null", keys)),
+    ).strip()
+    if strong:
+        sql1 = f"{sql1} and " + " and ".join(map(lambda x: x+" is null", cols))
+    sql2 = '''
+        select distinct
+            {0}
+        from
+            centro
+        where
+            {1}
+    '''.format(
+        ", ".join(cols),
+        " and ".join(map(lambda x: x+" is not null", cols))
+    ).strip()
+
+    def _parse(v):
+        if isinstance(v, str):
+            x = v.replace("'", "''")
+            return f"'{x}'"
+        return v
+
+    def _parse_dict(obj: dict):
+        return ", ".join(map(
+            lambda v: f'{v[0]}={_parse(v[1])}',
+            obj.items()
+        ))
+    changes = 0
+    for cnt, val in find_val_for_null(db, sql1, sql2):
+        set_sql = _parse_dict(val)
+        logger.info(f"SET {set_sql} where {_parse_dict(cnt)}")
+        db.execute(f"""
+            UPDATE centro SET
+                {set_sql}
+            where
+                id={cnt['id']}
+        """)
+        changes = changes + 1
+    return changes
+
+
+def find_val_for_null(db: DBLite, sql1: str, sql2: str) -> Tuple[Tuple[Dict, Dict]]:
     def to_where(k, v):
         if v is None:
             return f'{k} is null'
         if isinstance(v, str):
             return f"{k} = '{v}'"
         return f"{k} = {v}"
-    for cnt in db.to_tuple('''
-        select
-            id, domicilio, municipio, distrito, cp
-        from
-            centro
-        where
-            latitud is null or longitud is null
-    ''', row_factory=dict_factory):
-        sql = '''
-            select distinct
-                latitud, longitud
-            from
-                centro
-            where
-                latitud is not null and
-                longitud is not null
-        '''.rstrip()
+    arr = []
+    for cnt in db.to_tuple(sql1, row_factory=dict_factory):
+        sql = str(sql2)
         for k, v in cnt.items():
             if k == "id":
                 continue
             sql = sql + ' and ' + to_where(k, v)
-        latlon = db.to_tuple(sql, row_factory=dict_factory)
-        if len(latlon) != 1:
-            continue
-        latlon = latlon[0]
-        logger.info(
-            "centro {id} set latitud={latitud} longitud={longitud}".format(**latlon, **cnt)
-        )
-        db.execute('''
-            UPDATE centro SET
-                latitud={latitud},
-                longitud={longitud}
-            where
-                id={id}
-        '''.format(**latlon, **cnt))
+        value = db.to_tuple(sql, row_factory=dict_factory)
+        if len(value) == 1:
+            arr.append((cnt, value[0]))
+    return tuple(arr)
 
 
 def walk_etapas():
@@ -310,20 +316,6 @@ def walk_etapas():
             qr="&".join(idqr),
             txt=" -> ".join(text)
         )
-
-
-def jump_me(name: str):
-    if name in (
-        'cdGenerico',
-        'comboMunicipios',
-        'comboDistritos',
-        'cdTramoEdu',
-        'titularidadPublica',
-        'titularidadPrivada',
-        'titularidadPrivadaConc'
-    ):
-        return True
-    return name.startswith("checkSubdir")
 
 
 def insert_concurso(db: DBLite):
@@ -367,6 +359,6 @@ def insert_concurso(db: DBLite):
 
 if __name__ == "__main__":
     with DBLite(ARG.db, reload=True) as db:
-        build_db(db, ARG.tcp_limit)
+        build_db(db)
 
     DBLite.do_sql_backup(ARG.db)

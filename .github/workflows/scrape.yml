@@ -27,18 +27,38 @@ jobs:
         run: pip install -r requirements.txt
       - name: rm file cache
         run: rm -f cache/etapas.json cache/form.json
-      - name: Build DB
+      - name: DWN Centros
         uses: nick-fields/retry@v2
         env:
           JS_TIMEOUT: ${{ vars.JS_TIMEOUT }}
           TCP_LIMIT: ${{ vars.TCP_LIMIT }}
-          ETAPAS: ${{ vars.ETAPAS }}
         with:
           timeout_minutes: 60
           retry_wait_seconds: 15
           max_attempts: 3
           retry_on: error
-          command: "python build.py --tcp-limit ${TCP_LIMIT:-50}"
+          command: "python dwn.py --centros --tcp-limit ${TCP_LIMIT:-50}"
+      - name: DWN Busquedas
+        uses: nick-fields/retry@v2
+        env:
+          JS_TIMEOUT: ${{ vars.JS_TIMEOUT }}
+          TCP_LIMIT: ${{ vars.TCP_LIMIT }}
+        with:
+          timeout_minutes: 60
+          retry_wait_seconds: 15
+          max_attempts: 3
+          retry_on: error
+          command: "python dwn.py --busquedas --tcp-limit ${TCP_LIMIT:-50}"
+      - name: Build DB
+        uses: nick-fields/retry@v2
+        env:
+          JS_TIMEOUT: ${{ vars.JS_TIMEOUT }}
+        with:
+          timeout_minutes: 60
+          retry_wait_seconds: 15
+          max_attempts: 3
+          retry_on: error
+          command: "python build.py"
       - name: Commit and push if content changed
         run: |-
           DT=$(date -u +'%Y-%m-%d %H:%M UTC')

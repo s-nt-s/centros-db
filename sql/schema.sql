@@ -25,7 +25,7 @@ CREATE TABLE CENTRO (
     tipo        TEXT NOT NULL,
     nombre      TEXT NOT NULL,
     domicilio   TEXT,
-    municipio   TEXT,
+    municipio   TEXT NOT NULL,
     distrito    TEXT,
     cp          INTEGER,
     telefono    TEXT,

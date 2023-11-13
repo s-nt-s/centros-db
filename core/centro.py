@@ -36,7 +36,7 @@ def _parse(k, v):
     x = re_sp.sub(" ", v).lower()
     if k == 'FAX' and x in ("sinfax", "nohayfax", "no", "x"):
         return None
-    if k == "cp" and v == "00000":
+    if k == "cp" and int(v) == 0:
         return None
     return v
 
@@ -94,19 +94,16 @@ class BadMapException(CentroException):
         super().__init__(msg)
 
 
-class CountSoupCentro(NamedTuple):
+@dataclass
+class CountSoupCentro:
     sc: "SoupCentro" = None
-    before_map: int = 0
-    after_map: int = 0
-    similar: int = 0
-
-    @property
-    def ok(self):
-        return max(self.before_map, self.after_map)
+    ok_full: int = 0
+    ok_basic: int = 0
+    ok_similar: int = 0
 
     @property
     def oderkey(self):
-        return (self.after_map, self.before_map, self.similar)
+        return (self.ok_full, self.ok_basic, self.ok_similar)
 
     def __lt__(self, other: "CountSoupCentro"):
         return self.oderkey < other.oderkey
@@ -126,72 +123,51 @@ class BulkRequestsCentro(BulkRequestsFileJob):
             "__cache_obj__"
         )
         self.okkomap: Dict[str, bool] = {}
-        self.before_map: Dict[tuple(), CountSoupCentro] = dict()
-        self.after_map: Dict[tuple(), CountSoupCentro] = dict()
+        self.oksoup: Dict[tuple(), CountSoupCentro] = dict()
 
     def add_ok_before_map(self, spct: "SoupCentro"):
-        before_map = self.before_map.get(
-            spct.as_tuple, CountSoupCentro()
-        ).before_map
-        similar = 0
-        for c in self.before_map.values():
+        if spct.as_tuple not in self.oksoup:
+            self.oksoup[spct.as_tuple] = CountSoupCentro(sc=spct)
+        counter = self.oksoup[spct.as_tuple]
+        counter.ok_basic = counter.ok_basic + 1
+        counter.ok_similar = 0
+        for c in self.oksoup.values():
             if c.sc.similar(spct):
-                similar = similar + 1
-        self.before_map[spct.as_tuple] = CountSoupCentro(
-            sc=spct,
-            before_map=before_map+1,
-            after_map=0,
-            similar=similar
-        )
+                counter.ok_similar = counter.ok_similar + 1
 
     def add_ok_after_map(self, spct: "SoupCentro"):
-        bm = self.before_map.get(
-            spct.as_tuple, CountSoupCentro()
-        )
-        after_map = self.after_map.get(
-            spct.as_tuple, CountSoupCentro()
-        ).after_map
-        self.after_map[spct.as_tuple] = CountSoupCentro(
-            sc=spct,
-            before_map=bm.before_map,
-            similar=bm.similar,
-            after_map=after_map+1
-        )
+        counter = self.oksoup[spct.as_tuple]
+        counter.ok_full = counter.ok_full + 1
 
-    def get_best(self) -> "SoupCentro":
+    def get_best(self, silent=False) -> "SoupCentro":
         cntbst = self._get_best()
         if cntbst is None:
             return None
-        if cntbst.ok > 1:
+        if cntbst.ok_full > 1:
             return cntbst.sc
-        if cntbst.similar > 2:
+        if cntbst.ok_basic > 2:
+            return cntbst.sc
+        if cntbst.ok_similar > 3:
             return cntbst.sc
         if self.countdown == 0:
-            logger.warning(
-                f"{self.id} sopa elegida por última oportunidad ({self.step+1} intentos)"
-            )
+            if not silent:
+                logger.warning(
+                    f"{self.id} sopa elegida por última oportunidad ({self.step+1} intentos)"
+                )
             return cntbst.sc
-        if len(self.before_map) > 3:
-            logger.warning(
-                f"{self.id} sopa elegida por cansancio ({self.step+1} intentos)"
-            )
+        if len(self.oksoup) > 4:
+            if not silent:
+                logger.warning(
+                    f"{self.id} sopa elegida por cansancio ({self.step+1} intentos)"
+                )
             return cntbst.sc
         return None
-
-    def get_ok(self):
-        cntbst = self._get_best()
-        if cntbst is None:
-            return -1
-        return cntbst.ok
 
     def _get_best(self) -> CountSoupCentro:
-        after_map = list(sorted(self.after_map.values()))
-        if len(after_map):
-            return after_map[-1]
-        before_map = list(sorted(self.before_map.values()))
-        if len(before_map):
-            return before_map[-1]
-        return None
+        if len(self.oksoup) == 0:
+            return None
+        cntbst = list(sorted(self.oksoup.values()))[-1]
+        return cntbst
 
     def save(self, spct: "SoupCentro"):
         self.html_cache.save(self.file, spct.soup)
@@ -209,7 +185,7 @@ class BulkRequestsCentro(BulkRequestsFileJob):
         return buildSoup(url, content)
 
     async def do(self, session: ClientSession):
-        if self.countdown == 0 or self.get_ok() > 1:
+        if self.countdown == 0 or self.get_best(silent=True) is not None:
             return await self.last_do(session)
         return await self.main_do(session)
 
@@ -393,7 +369,7 @@ class SoupCentro:
     @cached_property
     def web(self):
         return self.inputs.get("tlWeb")
-        
+
     @cached_property
     def inputs(self) -> Dict[str, str]:
         selector = 'div.formularioconTit input[type="hidden"]'

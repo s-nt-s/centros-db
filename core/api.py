@@ -181,6 +181,20 @@ class Api():
     def __init__(self):
         self.__centros = {}
 
+    @staticmethod
+    def is_redundant_parameter(name: str):
+        if name in (
+            'cdGenerico',
+            'comboMunicipios',
+            'comboDistritos',
+            'cdTramoEdu',
+            'titularidadPublica',
+            'titularidadPrivada',
+            'titularidadPrivadaConc'
+        ):
+            return True
+        return name.startswith("checkSubdir")
+
     def get_centros(self, *ids: Tuple[int]):
         ids = list(ids)
         centros: List[Centro] = []
