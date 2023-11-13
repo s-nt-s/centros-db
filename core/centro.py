@@ -171,7 +171,7 @@ class BulkRequestsCentro(BulkRequestsFileJob):
                 f"{self.id} sopa elegida por última oportunidad ({self.step+1} intentos)"
             )
             return cntbst.sc
-        if self.step > 2:
+        if len(self.before_map) > 3:
             logger.warning(
                 f"{self.id} sopa elegida por cansancio ({self.step+1} intentos)"
             )
@@ -383,7 +383,7 @@ class SoupCentro:
     @cached_property
     def as_tuple(self):
         return (
-            tuple(sorted(self.inputs.items())),
+            self.web or '',
             self.latlon or LatLon(latitude=0, longitude=0),
             self.titular or '',
             self.etapas or tuple(),
@@ -391,10 +391,15 @@ class SoupCentro:
         )
 
     @cached_property
+    def web(self):
+        return self.inputs.get("tlWeb")
+        
+    @cached_property
     def inputs(self) -> Dict[str, str]:
-        items = self.soup.select("div.formularioconTit input")
+        selector = 'div.formularioconTit input[type="hidden"]'
+        items = self.soup.select(selector)
         if len(items) == 0:
-            raise DomNotFoundException("div.formularioconTit input")
+            raise DomNotFoundException(selector)
         data = {}
         for i in items:
             n = i.attrs.get("name", "").strip()
@@ -658,7 +663,7 @@ class Centro:
 
     @cached_property
     def web(self):
-        return self.home.inputs.get("tlWeb")
+        return self.home.web
 
     @cached_property
     def latlon(self):
