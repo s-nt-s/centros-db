@@ -4,6 +4,8 @@ from typing import Tuple, Dict
 from core.types import ParamValueText, QueryCentros
 from core.util import must_one, read_file
 from core.centro import Centro
+from core.colegio import Colegio, BulkRequestsColegio
+from core.bulkrequests import BulkRequests
 import argparse
 import logging
 from core.concurso import Concurso
@@ -50,6 +52,7 @@ def build_db(db: DBLite):
 
     fix_tipo(db)
     fix_latlon(db)
+    try_complete(db)
 
     # Nos fiamos del campo titularida del csv
     # check_titularidad(db)
@@ -222,22 +225,54 @@ def fix_latlon(db: DBLite):
         ])
 
 
+def try_complete(db: DBLite):
+    def iter_rows(*args: str):
+        where = " and ".join(map(lambda x: f"{x} is null", args))
+        ids = db.to_tuple(f"select id from centro where ({where})")
+        if len(ids) > 0:
+            BulkRequests().run(*map(BulkRequestsColegio, ids))
+            for id in ids:
+                c = Colegio.get(id)
+                if c is not None:
+                    yield c, id
+
+    for c, id in iter_rows("latitud", "longitud"):
+        if c.latlon is not None:
+            update_centro(
+                db,
+                id,
+                latitud=c.latlon.latitude,
+                longitud=c.latlon.longitude
+            )
+    for c, id in iter_rows("telefono"):
+        if c.telefono is not None:
+            update_centro(db, id, telefono=c.telefono)
+    for c, id in iter_rows("web"):
+        if c.web is not None:
+            update_centro(db, id, web=c.web)
+    for c, id in iter_rows("email"):
+        if c.email is not None:
+            update_centro(db, id, email=c.email)
+
+
 def fix_centro_col(db: DBLite, cols: Tuple[str], keys: Tuple[str], strong=True):
     if len(keys) == 0:
         return 0
+    _and_or = " and " if strong else " or "
     sql1 = '''
         select
             id, {0}
         from
             centro
-        where
-            {1}
+        where (
+            ({1}) and
+            ({2})
+        )
     '''.format(
         ", ".join(keys),
-        " and ".join(map(lambda x: x+" is not null", keys)),
+        " and ".join(map(lambda x: x+" is null", cols)),
+        _and_or.join(map(lambda x: x+" is not null", keys))
     ).strip()
-    if strong:
-        sql1 = f"{sql1} and " + " and ".join(map(lambda x: x+" is null", cols))
     sql2 = '''
         select distinct
             {0}
@@ -250,46 +285,21 @@ def fix_centro_col(db: DBLite, cols: Tuple[str], keys: Tuple[str], strong=True):
         " and ".join(map(lambda x: x+" is not null", cols))
     ).strip()
 
-    def _parse(v):
-        if isinstance(v, str):
-            x = v.replace("'", "''")
-            return f"'{x}'"
-        return v
-
-    def _parse_dict(obj: dict):
-        return ", ".join(map(
-            lambda v: f'{v[0]}={_parse(v[1])}',
-            obj.items()
-        ))
     changes = 0
     for cnt, val in find_val_for_null(db, sql1, sql2):
-        set_sql = _parse_dict(val)
-        logger.info(f"SET {set_sql} where {_parse_dict(cnt)}")
-        db.execute(f"""
-            UPDATE centro SET
-                {set_sql}
-            where
-                id={cnt['id']}
-        """)
+        update_centro(db, cnt['id'], **val)
         changes = changes + 1
     return changes
 
 
 def find_val_for_null(db: DBLite, sql1: str, sql2: str) -> Tuple[Tuple[Dict, Dict]]:
-    def to_where(k, v):
-        if v is None:
-            return f'{k} is null'
-        if isinstance(v, str):
-            return f"{k} = '{v}'"
-        return f"{k} = {v}"
     arr = []
     for cnt in db.to_tuple(sql1, row_factory=dict_factory):
-        sql = str(sql2)
-        for k, v in cnt.items():
-            if k == "id":
-                continue
-            sql = sql + ' and ' + to_where(k, v)
-        value = db.to_tuple(sql, row_factory=dict_factory)
+        kvs = dict(kv for kv in cnt.items() if kv[0] != 'id')
+        sql = (sql2 + " and ") + " and ".join(
+            map(lambda k: f'{k}=?', kvs.keys())
+        )
+        value = db.to_tuple(sql, *kvs.values(), row_factory=dict_factory)
         if len(value) == 1:
             arr.append((cnt, value[0]))
     return tuple(arr)
@@ -355,6 +365,19 @@ def insert_concurso(db: DBLite):
             logger.warning(f"{c} no existe?")
             continue
         db.insert("ESPECIAL_DIFICULTAD", centro=c)
+
+
+def update_centro(db: DBLite, id: int, **kwargs):
+    if len(kwargs) == 0:
+        return
+    log = ", ".join(map(lambda kv: f'{kv[0]}={kv[1]}', kwargs.items()))
+    logger.info(f"SET[id={id}] " + log)
+    sql = " ".join([
+        "update centro set ",
+        ", ".join(map(lambda k: f'{k}=?', kwargs.keys())),
+        "where id=?"
+    ])
+    db.execute(sql, *kwargs.values(), id)
 
 
 if __name__ == "__main__":

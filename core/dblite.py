@@ -77,12 +77,15 @@ class DBLite:
             self.con.execute("END TRANSACTION")
             self.inTransaction = False
 
-    def execute(self, sql: str):
+    def execute(self, sql: str, *args):
         if isfile(sql):
             with open(sql, "r") as f:
                 sql = f.read()
         try:
-            self.con.executescript(sql)
+            if len(args) > 0:
+                self.con.execute(sql, args)
+            else:
+                self.con.executescript(sql)
         except sqlite3.OperationalError:
             logging.error(sql)
             raise
@@ -161,7 +164,10 @@ class DBLite:
         if vacuum:
             c = self.con.execute("pragma integrity_check")
             c = c.fetchone()
-            logging.info(f"integrity_check = {c[0]}")
+            if c:
+                logging.info(f"integrity_check = {c[0]}")
+            else:
+                logging.info("integrity_check = ¿?")
             c = self.con.execute("pragma foreign_key_check")
             c = c.fetchall()
             logging.info("foreign_key_check = " + ("ko" if c else "ok"))
@@ -175,10 +181,14 @@ class DBLite:
         sql = self._build_select(sql)
         self.con.row_factory = row_factory
         cursor = self.con.cursor()
-        if len(args):
-            cursor.execute(sql, args)
-        else:
-            cursor.execute(sql)
+        try:
+            if len(args):
+                cursor.execute(sql, args)
+            else:
+                cursor.execute(sql)
+        except sqlite3.OperationalError:
+            logging.error(sql)
+            raise
         for r in ResultIter(cursor):
             yield r
         cursor.close()

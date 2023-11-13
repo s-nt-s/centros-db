@@ -36,7 +36,7 @@ def _parse(k, v):
     x = re_sp.sub(" ", v).lower()
     if k == 'FAX' and x in ("sinfax", "nohayfax", "no", "x"):
         return None
-    if k == "cp" and int(v) == 0:
+    if k == "COD. POSTAL" and int(v) == 0:
         return None
     return v
 
@@ -380,10 +380,13 @@ class SoupCentro:
         for i in items:
             n = i.attrs.get("name", "").strip()
             v = i.attrs.get("value", "").strip()
+            if n in ("filtroConsultaSer", "salidaCompSerializada", "formularioConsulta"):
+                continue
             if v == "null" or 0 in (len(n), len(v)):
                 continue
-            if n not in ("filtroConsultaSer", "salidaCompSerializada", "formularioConsulta"):
-                data[n] = v
+            if n == "tlWeb" and "." not in v:
+                continue
+            data[n] = v
         return data
 
     @cached_property
@@ -413,6 +416,8 @@ class SoupCentro:
             val = txt.split("Titular:")
             if len(val) > 1:
                 val = val[-1].strip()
+                if val.strip() in ('', 'null'):
+                    return None
                 val = {
                     'COMUNDAD DE MADRID': 'COMUNIDAD DE MADRID'
                 }.get(val, val)
