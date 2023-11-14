@@ -149,7 +149,18 @@ class Colegio:
 
     @cached_property
     def telefono(self):
-        return self.__get_h3_div(r"\s*Teléfono\s*")
+        telefono = self.__get_h3_div(r"\s*Teléfono\s*")
+        if telefono is None:
+            return None
+        telefono = telefono.replace(".", "")
+        r = []
+        for t in re.findall(r"(\d\s*\d\s*\d\s*\d\s*\d\s*\d\s*\d\s*\d\s*\d\s*)", telefono):
+            t = re_sp.sub("", t)
+            if len(t) and t not in r:
+                r.append(t)
+        if len(r) == 0:
+            return None
+        return " ".join(r)
 
 
 if __name__ == "__main__":

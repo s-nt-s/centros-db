@@ -50,6 +50,17 @@ def _find_mails(arr):
     return tuple(mails)
 
 
+def _get_telefono(s: str):
+    if s is None:
+        return s
+    s = s.replace(".", "")
+    s = re.sub(r"^\s*(00|\+)34\s*", "", s)
+    s = re_sp.sub(" ", s).strip()
+    if len(s) < 9:
+        return None
+    return s
+
+
 def _find_titularidad(arr):
     tit = set()
     for a in arr:
@@ -368,7 +379,12 @@ class SoupCentro:
 
     @cached_property
     def web(self):
-        return self.inputs.get("tlWeb")
+        web = self.inputs.get("tlWeb")
+        if web is None:
+            return web
+        web = re.sub(r",?\s+", " ", web).strip()
+        if len(web):
+            return web
 
     @cached_property
     def inputs(self) -> Dict[str, str]:
@@ -609,7 +625,7 @@ class Centro:
             municipio=obj['MUNICIPIO'],
             distrito=obj['DISTRITO MUNICIPAL'],
             cp=_safe_int(obj['COD. POSTAL']),
-            telefono=obj['TELEFONO'],
+            telefono=_get_telefono(obj['TELEFONO']),
             fax=obj['FAX'],
             email=mails,
             titularidad=titularidad
