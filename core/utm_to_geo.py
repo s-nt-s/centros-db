@@ -10,7 +10,7 @@ class LatLon(NamedTuple):
     latitude: float
     longitude: float
 
-    def round(self, x):
+    def round(self, x: int):
         return LatLon(
             latitude=round(self.latitude, x),
             longitude=round(self.longitude, x)

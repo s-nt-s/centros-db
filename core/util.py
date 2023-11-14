@@ -1,4 +1,5 @@
 from hashlib import sha1
+from typing import Union, Tuple, Any
 
 
 def hashme(s):
@@ -23,3 +24,22 @@ def read_file(file: str, *args, **kwargs):
         txt = txt.format(*args, **kwargs)
         return txt
 
+
+def to_set_tuple(s: Union[str, list]) -> Tuple[str]:
+    if s is None:
+        return tuple()
+    if isinstance(s, str):
+        s = s.split()
+    arr = []
+    for i in s:
+        if i not in arr:
+            arr.append(i)
+    return tuple(arr)
+
+
+def tp_join(t: Union[Any, Tuple]):
+    if not isinstance(t, tuple):
+        return t
+    if len(t) == 0:
+        return None
+    return " ".join(map(str, t))

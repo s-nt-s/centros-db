@@ -52,13 +52,15 @@ def _find_mails(arr):
 
 def _get_telefono(s: str):
     if s is None:
-        return s
+        return tuple()
     s = s.replace(".", "")
     s = re.sub(r"^\s*(00|\+)34\s*", "", s)
     s = re_sp.sub(" ", s).strip()
-    if len(s) < 9:
-        return None
-    return s
+    arr = []
+    for t in s.split():
+        if len(t) > 8 and t not in arr and t.isdigit():
+            arr.append(int(t))
+    return tuple(arr)
 
 
 def _find_titularidad(arr):
@@ -370,21 +372,25 @@ class SoupCentro:
     @cached_property
     def as_tuple(self):
         return (
-            self.web or '',
+            self.web,
             self.latlon or LatLon(latitude=0, longitude=0),
             self.titular or '',
-            self.etapas or tuple(),
-            self.educacion_diferenciada or tuple()
+            self.etapas,
+            self.educacion_diferenciada
         )
 
     @cached_property
-    def web(self):
+    def web(self) -> Tuple[str]:
         web = self.inputs.get("tlWeb")
         if web is None:
-            return web
+            return tuple()
         web = re.sub(r",?\s+|\s+[oó]\s+", " ", web).strip()
-        if len(web):
-            return web
+        arr = []
+        for w in web.split():
+            w = re.sub(r"^https?://\s*|[/#\?]+$", "", w, flags=re.IGNORECASE)
+            if len(w) and w not in arr:
+                arr.append(w)
+        return tuple(arr)
 
     @cached_property
     def inputs(self) -> Dict[str, str]:
@@ -406,7 +412,7 @@ class SoupCentro:
         return data
 
     @cached_property
-    def latlon(self):
+    def latlon(self) -> LatLon:
         if self.utm_ed50_huso_30_x_y is None:
             return None
         latlon = utm_to_geo("ED50", 30, *self.utm_ed50_huso_30_x_y)
@@ -430,14 +436,15 @@ class SoupCentro:
                 continue
             txt = re_sp.sub(" ", td.get_text()).strip()
             val = txt.split("Titular:")
-            if len(val) > 1:
-                val = val[-1].strip()
-                if val.strip() in ('', 'null'):
-                    return None
-                val = {
-                    'COMUNDAD DE MADRID': 'COMUNIDAD DE MADRID'
-                }.get(val, val)
-                return val
+            if len(val) < 2:
+                continue
+            val = val[-1].strip()
+            if val.strip() in ('', 'null'):
+                return None
+            val = {
+                'COMUNDAD DE MADRID': 'COMUNIDAD DE MADRID'
+            }.get(val, val)
+            return val
 
     @cached_property
     def etapas(self):
@@ -604,16 +611,15 @@ class Centro:
     municipio: str = None
     distrito: str = None
     cp: int = None
-    telefono: int = None
-    fax: int = None
-    email: str = None
+    telefono: Tuple[int] = None
+    email: Tuple[str] = tuple()
     titularidad: str = None
+    # fax: Tuple[int] = tuple()
 
     @classmethod
     def build(cls, head: Tuple, row: Tuple):
         obj = {h: _parse(h, c) for h, c in zip(head, row)}
         mails = _find_mails(row[head.index("EMAIL"):])
-        mails = " ".join(mails) if mails else None
         titularidad = _find_titularidad(row[head.index("EMAIL2")+1:])
 
         return cls(
@@ -626,13 +632,22 @@ class Centro:
             distrito=obj['DISTRITO MUNICIPAL'],
             cp=_safe_int(obj['COD. POSTAL']),
             telefono=_get_telefono(obj['TELEFONO']),
-            fax=obj['FAX'],
             email=mails,
-            titularidad=titularidad
+            titularidad=titularidad,
+            # fax=_get_telefono(obj['FAX']),
         )
 
     def _asdict(self):
         return asdict(self)
+
+    def fix_mail_web(self):
+        is_mail = []
+        for w in self.home.web:
+            w = re.sub(r"^www", "", w)
+            if "@" in w and w not in self.email and w not in is_mail:
+                is_mail.append(w)
+        if is_mail:
+            object.__setattr__(self, 'email', self.email + tuple(is_mail))
 
     @cached_property
     def info(self):
@@ -660,7 +675,9 @@ class Centro:
 
     @cached_property
     def web(self):
-        return self.home.web
+        return tuple(
+            w for w in self.home.web if "@" not in w
+        )
 
     @cached_property
     def latlon(self):
@@ -675,7 +692,7 @@ class Centro:
         return self.home.etapas
 
     @cached_property
-    def educacion_diferenciada(self) -> Tuple[str]:
+    def educacion_diferenciada(self):
         return self.home.educacion_diferenciada
 
 

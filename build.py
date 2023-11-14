@@ -2,7 +2,7 @@ from core.api import Api
 from core.dblite import DBLite, dict_factory
 from typing import Tuple, Dict
 from core.types import ParamValueText, QueryCentros
-from core.util import must_one, read_file
+from core.util import must_one, read_file, tp_join
 from core.centro import Centro
 from core.colegio import Colegio, BulkRequestsColegio
 from core.bulkrequests import BulkRequests
@@ -177,14 +177,15 @@ def execute_if_query_is_col(db: DBLite, sql_path: str, *query_in: str):
 
 def multi_insert_centro(db: DBLite, rows: Tuple[Centro], _or: str = None):
     def to_dict(row: Centro):
+        row.fix_mail_web()
         obj = row._asdict()
         for k, v in list(obj.items()):
-            obj[k] = KWV.get(k, {}).get(v, v)
+            obj[k] = KWV.get(k, {}).get(v, tp_join(v))
         if row.latlon:
             obj['latitud'] = row.latlon.latitude
             obj['longitud'] = row.latlon.longitude
         obj['titular'] = row.titular
-        obj['web'] = row.web
+        obj['web'] = tp_join(row.web)
         return obj
 
     for row in rows:
@@ -234,25 +235,25 @@ def try_complete(db: DBLite):
             for id in ids:
                 c = Colegio.get(id)
                 if c is not None:
-                    yield c, id
+                    yield c
 
-    for c, id in iter_rows("latitud", "longitud"):
-        if c.latlon is not None:
+    for c in iter_rows("web"):
+        if c.web:
+            update_centro(db, c.id, web=c.web)
+    for c in iter_rows("telefono"):
+        if c.telefono:
+            update_centro(db, c.id, telefono=c.telefono)
+    for c in iter_rows("email"):
+        if c.email:
+            update_centro(db, c.id, email=c.email)
+    for c in iter_rows("latitud", "longitud"):
+        if c.latlon:
             update_centro(
                 db,
-                id,
+                c.id,
                 latitud=c.latlon.latitude,
                 longitud=c.latlon.longitude
             )
-    for c, id in iter_rows("telefono"):
-        if c.telefono is not None:
-            update_centro(db, id, telefono=c.telefono)
-    for c, id in iter_rows("web"):
-        if c.web is not None:
-            update_centro(db, id, web=c.web)
-    for c, id in iter_rows("email"):
-        if c.email is not None:
-            update_centro(db, id, email=c.email)
 
 
 def fix_centro_col(db: DBLite, cols: Tuple[str], keys: Tuple[str], strong=True):
@@ -370,14 +371,17 @@ def insert_concurso(db: DBLite):
 def update_centro(db: DBLite, id: int, **kwargs):
     if len(kwargs) == 0:
         return
-    log = ", ".join(map(lambda kv: f'{kv[0]}={kv[1]}', kwargs.items()))
+    log = ", ".join(map(
+        lambda kv: f'{kv[0]}={tp_join(kv[1])}',
+        kwargs.items()
+    ))
     logger.info(f"SET[id={id}] " + log)
     sql = " ".join([
         "update centro set ",
         ", ".join(map(lambda k: f'{k}=?', kwargs.keys())),
         "where id=?"
     ])
-    db.execute(sql, *kwargs.values(), id)
+    db.execute(sql, *map(tp_join, kwargs.values()), id)
 
 
 if __name__ == "__main__":

@@ -7,6 +7,9 @@ import re
 from bs4 import BeautifulSoup
 from .bulkrequests import BulkRequestsFileJob
 from aiohttp import ClientResponse, ClientSession
+from .util import to_set_tuple
+from typing import Tuple
+
 
 WEB = Web()
 logger = logging.getLogger(__name__)
@@ -140,27 +143,36 @@ class Colegio:
         return txt
 
     @cached_property
-    def web(self):
-        return self.__get_h3_div(r"\s*Página\s+Web\s*")
+    def web(self) -> Tuple[str]:
+        web = self.__get_h3_div(r"\s*Página\s+Web\s*")
+        if web is None:
+            return tuple()
+        web = re.sub(r",?\s+|\s+[oó]\s+", " ", web).strip()
+        arr = []
+        for w in web.split():
+            w = re.sub(r"^https?://\s*|[/#\?]+$", "", w, flags=re.IGNORECASE)
+            if len(w) and w not in arr:
+                arr.append(w)
+        return tuple(arr)
 
     @cached_property
     def email(self):
-        return self.__get_h3_div(r"\s*Email\s*")
+        return to_set_tuple(self.__get_h3_div(r"\s*Email\s*"))
 
     @cached_property
-    def telefono(self):
+    def telefono(self) -> Tuple[int]:
         telefono = self.__get_h3_div(r"\s*Teléfono\s*")
         if telefono is None:
-            return None
+            return tuple()
         telefono = telefono.replace(".", "")
         r = []
         for t in re.findall(r"(\d\s*\d\s*\d\s*\d\s*\d\s*\d\s*\d\s*\d\s*\d\s*)", telefono):
             t = re_sp.sub("", t)
             if len(t) and t not in r:
-                r.append(t)
+                r.append(int(t))
         if len(r) == 0:
-            return None
-        return " ".join(r)
+            return tuple()
+        return tuple(r)
 
 
 if __name__ == "__main__":
