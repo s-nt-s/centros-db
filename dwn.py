@@ -37,7 +37,8 @@ API = Api()
 def dwn_html(tcp_limit: int = 10):
     BulkRequests(
         tcp_limit=tcp_limit,
-        tries=10
+        tries=10,
+        tolerance=100
     ).run(*(
         BulkRequestsCentro(c.id) for c in API.search_centros()
     ))
@@ -56,10 +57,12 @@ def dwn_search(tcp_limit: int = 10):
         data = {e.name: e.value for e in etapas}
         queries.append(data)
     BulkRequests(
-        tcp_limit=tcp_limit
+        tcp_limit=tcp_limit,
+        tolerance=100
     ).run(*(
         BulkRequestsApi(API, data) for data in queries
     ))
+
 
 if ARG.todo or ARG.centros:
     dwn_html(tcp_limit=ARG.tcp_limit)

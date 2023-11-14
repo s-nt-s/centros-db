@@ -15,6 +15,12 @@ class BulkException(Exception):
     pass
 
 
+class MissingBulkException(BulkException):
+    def __init__(self, ko: int):
+        super().__(f"{ko} missing")
+        self.ko = ko
+
+
 class BulkRequestsJob(ABC):
 
     @abstractproperty
@@ -75,11 +81,13 @@ class BulkRequests:
             self,
             tcp_limit: int = 10,
             tries: int = 4,
-            sleep: int = 10
+            sleep: int = 10,
+            tolerance: int = 0
     ):
         self.tcp_limit = tcp_limit
         self.tries = tries
         self.sleep = sleep
+        self.tolerance = tolerance
 
     async def __requests(self, session: ClientSession, job: BulkRequestsJob):
         try:
@@ -128,4 +136,7 @@ class BulkRequests:
             ko = len([i for i in rt if i is not True])
             if ko == 0:
                 return
-        raise BulkException(f"{ko} missing")
+        e = MissingBulkException(ko)
+        if ko > self.tolerance:
+            raise e
+        logger.warning(str(e))
