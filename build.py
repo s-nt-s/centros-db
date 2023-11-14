@@ -227,16 +227,23 @@ def fix_latlon(db: DBLite):
 
 
 def try_complete(db: DBLite):
-    def iter_rows(*args: str):
-        where = " and ".join(map(lambda x: f"{x} is null", args))
+    def iter_rows(*args: str, andor="and"):
+        where = f" {andor} ".join(map(lambda x: f"{x} is null", args))
         ids = db.to_tuple(f"select id from centro where ({where})")
         if len(ids) > 0:
-            BulkRequests().run(*map(BulkRequestsColegio, ids))
+            BulkRequests().run(
+                *map(BulkRequestsColegio, ids),
+                label="colegios"
+            )
             for id in ids:
                 c = Colegio.get(id)
                 if c is not None:
                     yield c
 
+    list(iter_rows(
+        "web", "telefono", "email", "latitud", "longitud",
+        andor="or"
+    ))
     for c in iter_rows("web"):
         if c.web:
             update_centro(db, c.id, web=c.web)

@@ -109,13 +109,13 @@ class BulkRequests:
             rt = await asyncio.gather(*tasks, return_exceptions=True)
         return rt
 
-    def run(self, *job: BulkRequestsJob, overwrite=False):
+    def run(self, *job: BulkRequestsJob, overwrite=False, label="items"):
         if overwrite:
             for u in job:
                 u.undo()
-        self.__run(*job)
+        self.__run(*job, label=label)
 
-    def __run(self, *job: BulkRequestsJob):
+    def __run(self, *job: BulkRequestsJob, label="items"):
         ko = 0
         tries = max(self.tries, 1) - 1
         for i in reversed(range(tries+1)):
@@ -128,7 +128,7 @@ class BulkRequests:
             pre = "" if i == tries else "└─ "
             logger.info(
                 pre + 'BulkRequests' +
-                f'(tcp_limit={self.tcp_limit}).run({len(job)} items)'
+                f'(tcp_limit={self.tcp_limit}).run({len(job)} {label})'
             )
             if i != tries:
                 time.sleep(self.sleep)

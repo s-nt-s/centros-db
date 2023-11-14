@@ -30,7 +30,7 @@ logging.basicConfig(
 )
 
 ARG = parser.parse_args()
-ARG.todo = not(ARG.centros or ARG.busquedas)
+ARG.todo = not (ARG.centros or ARG.busquedas)
 API = Api()
 
 
@@ -41,7 +41,7 @@ def dwn_html(tcp_limit: int = 10):
         tolerance=100
     ).run(*(
         BulkRequestsCentro(c.id) for c in API.search_centros()
-    ))
+    ), label="centros")
 
 
 def dwn_search(tcp_limit: int = 10):
@@ -61,7 +61,7 @@ def dwn_search(tcp_limit: int = 10):
         tolerance=100
     ).run(*(
         BulkRequestsApi(API, data) for data in queries
-    ))
+    ), label="busquedas")
 
 
 if ARG.todo or ARG.centros:
