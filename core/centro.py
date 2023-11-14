@@ -382,7 +382,7 @@ class SoupCentro:
         web = self.inputs.get("tlWeb")
         if web is None:
             return web
-        web = re.sub(r",?\s+", " ", web).strip()
+        web = re.sub(r",?\s+|\s+[oó]\s+", " ", web).strip()
         if len(web):
             return web
 
