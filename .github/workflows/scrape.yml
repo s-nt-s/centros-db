@@ -37,7 +37,7 @@ jobs:
           retry_wait_seconds: 15
           max_attempts: 3
           retry_on: error
-          command: "python dwn.py --centros --tcp-limit ${TCP_LIMIT:-50}"
+          command: "rm -rf cache/csv/ && python dwn.py --centros --tcp-limit ${TCP_LIMIT:-50}"
       - name: DWN Busquedas
         uses: nick-fields/retry@v2
         env:
@@ -48,7 +48,7 @@ jobs:
           retry_wait_seconds: 15
           max_attempts: 3
           retry_on: error
-          command: "python dwn.py --busquedas --tcp-limit ${TCP_LIMIT:-50}"
+          command: "rm -rf cache/ids/ && python dwn.py --busquedas --tcp-limit ${TCP_LIMIT:-50}"
       - name: Build DB
         uses: nick-fields/retry@v2
         env:

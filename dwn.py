@@ -38,7 +38,7 @@ def dwn_html(tcp_limit: int = 10):
     BulkRequests(
         tcp_limit=tcp_limit,
         tries=10,
-        tolerance=100
+        tolerance=5
     ).run(*(
         BulkRequestsCentro(c.id) for c in API.search_centros()
     ), label="centros")
@@ -58,7 +58,7 @@ def dwn_search(tcp_limit: int = 10):
         queries.append(data)
     BulkRequests(
         tcp_limit=tcp_limit,
-        tolerance=100
+        tolerance=5
     ).run(*(
         BulkRequestsApi(API, data) for data in queries
     ), label="busquedas")
