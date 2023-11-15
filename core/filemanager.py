@@ -68,12 +68,14 @@ class FileManager:
             "htm": "html"
         }.get(ext, ext)
 
-    def load(self, file, *args, **kargv):
+    def load(self, file, *args, not_exist_ok=False, **kargv):
         """
         Lee un fichero en funcion de su extension
         Para que haya soporte para esa extension ha de exisitir una funcion load_extension
         """
         file = self.resolve_path(file)
+        if not_exist_ok and not file.exists():
+            return None
 
         ext = self.normalize_ext(file.suffix)
 

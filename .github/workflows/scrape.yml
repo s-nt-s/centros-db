@@ -53,12 +53,13 @@ jobs:
         uses: nick-fields/retry@v2
         env:
           JS_TIMEOUT: ${{ vars.JS_TIMEOUT }}
+          TCP_LIMIT: ${{ vars.TCP_LIMIT }}
         with:
           timeout_minutes: 60
           retry_wait_seconds: 15
           max_attempts: 3
           retry_on: error
-          command: "python build.py"
+          command: "python build.py --tcp-limit ${TCP_LIMIT:-50}"
       - name: Commit and push if content changed
         run: |-
           DT=$(date -u +'%Y-%m-%d %H:%M UTC')

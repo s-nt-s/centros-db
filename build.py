@@ -6,6 +6,7 @@ from core.util import must_one, read_file, tp_join
 from core.centro import Centro
 from core.colegio import Colegio, BulkRequestsColegio
 from core.bulkrequests import BulkRequests
+from core.filemanager import FM
 import argparse
 import logging
 from core.concurso import Concurso
@@ -15,12 +16,16 @@ parser = argparse.ArgumentParser(
     description='Crea db a partir de '+Api.URL,
 )
 parser.add_argument(
+    '--tcp-limit', type=int, default=50
+)
+parser.add_argument(
     '--db', type=str, default="out/db.sqlite"
 )
 
 ARG = parser.parse_args()
 API = Api()
 KWV = {}
+LAST_TUNE = "sql/fix/last"
 
 open("build.log", "w").close()
 logging.basicConfig(
@@ -36,7 +41,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def build_db(db: DBLite):
+def build_db(db: DBLite, tcp_limit: int = 10):
     db.execute("sql/schema.sql")
     API.search_centros()
 
@@ -52,7 +57,7 @@ def build_db(db: DBLite):
 
     fix_tipo(db)
     fix_latlon(db)
-    try_complete(db)
+    try_complete(db, tcp_limit)
 
     # Nos fiamos del campo titularida del csv
     # check_titularidad(db)
@@ -65,6 +70,7 @@ def build_db(db: DBLite):
     )
 
     insert_concurso(db)
+    auto_fix(db)
 
 
 def insert_tipos(db: DBLite):
@@ -226,12 +232,14 @@ def fix_latlon(db: DBLite):
         ])
 
 
-def try_complete(db: DBLite):
+def try_complete(db: DBLite, tcp_limit: int = 10):
     def iter_rows(*args: str, andor="and"):
         where = f" {andor} ".join(map(lambda x: f"{x} is null", args))
         ids = db.to_tuple(f"select id from centro where ({where})")
         if len(ids) > 0:
-            BulkRequests().run(
+            BulkRequests(
+                tcp_limit=tcp_limit
+            ).run(
                 *map(BulkRequestsColegio, ids),
                 label="colegios"
             )
@@ -391,8 +399,52 @@ def update_centro(db: DBLite, id: int, **kwargs):
     db.execute(sql, *map(tp_join, kwargs.values()), id)
 
 
+def auto_fix(db: DBLite):
+    sql = []
+    for f in sorted(FM.resolve_path(LAST_TUNE).glob("*.sql")):
+        for ln in FM.load(f).split("\n"):
+            ln = ln.strip()
+            if len(ln) > 0 and not ln.startswith("--"):
+                sql.append(ln)
+    if len(sql):
+        db.execute("\n".join(sql))
+
+    file = f"{LAST_TUNE}/01-latlon.sql"
+    _concat_ = " || ' ' || ".join(map(
+        lambda x: f"IFNULL({x}, '')",
+        (
+            "domicilio",
+            "municipio",
+            "distrito",
+            "cp"
+        )
+    ))
+    field = f"TRIM(REPLACE({_concat_}, '  ', ' '))"
+    sql = []
+    for up in (FM.load(file, not_exist_ok=True) or '').split("\n"):
+        if not up.strip().startswith("--"):
+            sql.append(up)
+    for dr in db.to_tuple(f"""
+        select distinct
+            {field}
+        from
+            centro
+        where
+            longitud is null and
+            latitud is null and
+            domicilio is not null and
+            municipio is not null and
+            length({field})>10
+    """):
+        dr = dr.replace("'", "''")
+        up = f"--UPDATE centro SET latitud=? and logitud=? where {field}='{dr}';"
+        if up not in sql:
+            sql.append(up)
+    FM.dump(file, "\n".join(sql).strip())
+
+
 if __name__ == "__main__":
     with DBLite(ARG.db, reload=True) as db:
-        build_db(db)
+        build_db(db, ARG.tcp_limit)
 
     DBLite.do_sql_backup(ARG.db)
