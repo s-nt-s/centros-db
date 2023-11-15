@@ -50,7 +50,7 @@ def _find_mails(arr):
     return tuple(mails)
 
 
-def _get_telefono(s: str):
+def _get_telefono(s: str) -> Tuple[int]:
     if s is None:
         return tuple()
     s = s.replace(".", "")
@@ -393,6 +393,34 @@ class SoupCentro:
         return tuple(arr)
 
     @cached_property
+    def email(self) -> Tuple[str]:
+        mails = re_mail.findall(
+            (self.inputs.get("tlMail") or '')
+        )
+        for txt in self.__iter_strong_text():
+            for m in re_mail.findall(txt):
+                if m not in mails:
+                    mails.append(m)
+        return tuple(mails)
+
+    @cached_property
+    def telefono(self) -> Tuple[str]:
+        fax = _get_telefono(self.inputs.get("tlFax"))
+        tlfs = list(_get_telefono(self.inputs.get("tlTelefono")))
+        for txt in self.__iter_strong_text():
+            for m in _get_telefono(txt):
+                if m not in tlfs and m not in fax:
+                    tlfs.append(m)
+        return tuple(tlfs)
+
+    def __iter_strong_text(self) -> str:
+        for strong in self.soup.select("#capaDatIdentContent strong"):
+            if strong.find(["strong", "td", "span"]):
+                continue
+            for txt in strong.findAll(text=True):
+                yield txt.get_text()
+
+    @cached_property
     def inputs(self) -> Dict[str, str]:
         selector = 'div.formularioconTit input[type="hidden"]'
         items = self.soup.select(selector)
@@ -640,14 +668,31 @@ class Centro:
     def _asdict(self):
         return asdict(self)
 
-    def fix_mail_web(self):
-        is_mail = []
+    def fix(self):
+        self.fix_mail()
+        self.fix_telefono()
+
+    def fix_mail(self):
+        is_mail = list(self.email)
         for w in self.home.web:
-            w = re.sub(r"^www", "", w)
-            if "@" in w and w not in self.email and w not in is_mail:
+            w = re.sub(r"^www\.?", "", w)
+            if "@" in w and w not in is_mail:
                 is_mail.append(w)
-        if is_mail:
-            object.__setattr__(self, 'email', self.email + tuple(is_mail))
+        for m in self.home.email:
+            if m not in is_mail:
+                is_mail.append(m)
+        is_mail = tuple(is_mail)
+        if is_mail != self.email:
+            object.__setattr__(self, 'email', is_mail)
+
+    def fix_telefono(self):
+        is_telf = list(self.telefono)
+        for t in self.home.telefono:
+            if t not in is_telf:
+                is_telf.append(t)
+        is_telf = tuple(is_telf)
+        if is_telf != self.telefono:
+            object.__setattr__(self, 'telefono', is_telf)
 
     @cached_property
     def info(self):

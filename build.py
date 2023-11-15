@@ -177,7 +177,7 @@ def execute_if_query_is_col(db: DBLite, sql_path: str, *query_in: str):
 
 def multi_insert_centro(db: DBLite, rows: Tuple[Centro], _or: str = None):
     def to_dict(row: Centro):
-        row.fix_mail_web()
+        row.fix()
         obj = row._asdict()
         for k, v in list(obj.items()):
             obj[k] = KWV.get(k, {}).get(v, tp_join(v))
