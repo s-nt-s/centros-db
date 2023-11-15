@@ -445,6 +445,8 @@ def auto_fix(db: DBLite):
 
 if __name__ == "__main__":
     with DBLite(ARG.db, reload=True) as db:
+        db.openTransaction()
         build_db(db, ARG.tcp_limit)
+        db.closeTransaction()
 
     DBLite.do_sql_backup(ARG.db)

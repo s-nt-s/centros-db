@@ -7,6 +7,9 @@ from functools import cache
 import re
 
 
+logger = logging.getLogger(__name__)
+
+
 def dict_factory(cursor, row):
     d = {}
     for idx, col in enumerate(cursor.description):
@@ -30,7 +33,7 @@ class EmptyInsertException(sqlite3.OperationalError):
 class DBLite:
     @staticmethod
     def get_connection(file, *extensions, readonly=False):
-        logging.info("sqlite: " + file)
+        logger.info(f"DBLite({file})")
         if readonly:
             file = "file:" + file + "?mode=ro"
             con = sqlite3.connect(file, uri=True)
@@ -57,7 +60,7 @@ class DBLite:
         if self.readonly and not isfile(self.file):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), file)
         self.extensions = extensions or []
-        self.inTransaction = False
+        self.__in_transaction = False
         self.con = DBLite.get_connection(self.file, *self.extensions, readonly=self.readonly)
 
     def __enter__(self, *args, **kwargs):
@@ -67,18 +70,19 @@ class DBLite:
         self.close()
 
     def openTransaction(self):
-        if self.inTransaction:
+        if self.__in_transaction:
             self.con.execute("END TRANSACTION")
         self.con.execute("BEGIN TRANSACTION")
-        self.inTransaction = True
+        self.__in_transaction = True
 
     def closeTransaction(self):
-        if self.inTransaction:
+        if self.__in_transaction:
             self.con.execute("END TRANSACTION")
-            self.inTransaction = False
+            self.__in_transaction = False
 
     def execute(self, sql: str, *args):
         if isfile(sql):
+            logger.info(f"DBLite.execute({sql})")
             with open(sql, "r") as f:
                 sql = f.read()
         try:
@@ -87,7 +91,7 @@ class DBLite:
             else:
                 self.con.executescript(sql)
         except sqlite3.OperationalError:
-            logging.error(sql)
+            logger.error(sql)
             raise
         self.con.commit()
         self.clear_cache()
@@ -165,14 +169,14 @@ class DBLite:
             c = self.con.execute("pragma integrity_check")
             c = c.fetchone()
             if c:
-                logging.info(f"integrity_check = {c[0]}")
+                logger.info(f"integrity_check = {c[0]}")
             else:
-                logging.info("integrity_check = ¿?")
+                logger.info("integrity_check = ¿?")
             c = self.con.execute("pragma foreign_key_check")
             c = c.fetchall()
-            logging.info("foreign_key_check = " + ("ko" if c else "ok"))
+            logger.info("foreign_key_check = " + ("ko" if c else "ok"))
             for table, parent in set((i[0], i[2]) for i in c):
-                logging.info(f"  {table} -> {parent}")
+                logger.info(f"  {table} -> {parent}")
             self.con.execute("VACUUM")
         self.con.commit()
         self.con.close()
@@ -187,7 +191,7 @@ class DBLite:
             else:
                 cursor.execute(sql)
         except sqlite3.OperationalError:
-            logging.error(sql)
+            logger.error(sql)
             raise
         for r in ResultIter(cursor):
             yield r
