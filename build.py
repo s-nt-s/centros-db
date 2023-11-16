@@ -1,6 +1,6 @@
 from core.api import Api
 from core.dblite import DBLite, dict_factory
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 from core.types import ParamValueText, QueryCentros
 from core.util import must_one, read_file, tp_join
 from core.centro import Centro
@@ -9,7 +9,7 @@ from core.bulkrequests import BulkRequests
 from core.filemanager import FM
 import argparse
 import logging
-from core.concurso import Concurso
+from core.concurso import Concurso, Anexo
 import re
 
 parser = argparse.ArgumentParser(
@@ -376,27 +376,29 @@ def insert_concurso(db: DBLite):
                     anexo=anx.num,
                 )
 
-    for c in sorted(esp_dif):
-        if c not in ok_cent:
-            logger.warning(f"{c} no existe?")
-            continue
-        db.insert("ESPECIAL_DIFICULTAD", centro=c)
+    for c in (esp_dif - ok_cent):
+        logger.warning(f"{c} no existe?")
+        continue
+    esp_dif = esp_dif.intersection(ok_cent)
+    update_centro(db, *tuple(sorted(esp_dif)), dificultad=1)
 
 
-def update_centro(db: DBLite, id: int, **kwargs):
-    if len(kwargs) == 0:
+def update_centro(db: DBLite, *id: int, **kwargs):
+    if len(kwargs) == 0 or len(id) == 0:
         return
+
     log = ", ".join(map(
         lambda kv: f'{kv[0]}={tp_join(kv[1])}',
         kwargs.items()
     ))
-    logger.info(f"SET[id={id}] " + log)
+    idwhere = (f"={id[0]}" if len(id) == 1 else f" in {id}")
+    logger.info(f"SET[id{idwhere}] " + log)
     sql = " ".join([
         "update centro set ",
         ", ".join(map(lambda k: f'{k}=?', kwargs.keys())),
-        "where id=?"
+        "where id"+idwhere
     ])
-    db.execute(sql, *map(tp_join, kwargs.values()), id)
+    db.execute(sql, *map(tp_join, kwargs.values()))
 
 
 def auto_fix(db: DBLite):
@@ -445,8 +447,6 @@ def auto_fix(db: DBLite):
 
 if __name__ == "__main__":
     with DBLite(ARG.db, reload=True) as db:
-        db.openTransaction()
         build_db(db, ARG.tcp_limit)
-        db.closeTransaction()
 
     DBLite.do_sql_backup(ARG.db)

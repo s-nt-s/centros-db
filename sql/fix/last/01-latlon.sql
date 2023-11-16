@@ -23,3 +23,4 @@
 --UPDATE centro SET latitud=? and logitud=? where TRIM(REPLACE(IFNULL(domicilio, '') || ' ' || IFNULL(municipio, '') || ' ' || IFNULL(distrito, '') || ' ' || IFNULL(cp, ''), '  ', ' '))='Avenida Juan Pablo Ii (esquina Manuel De Falla) Pinto 28320';
 --UPDATE centro SET latitud=? and logitud=? where TRIM(REPLACE(IFNULL(domicilio, '') || ' ' || IFNULL(municipio, '') || ' ' || IFNULL(distrito, '') || ' ' || IFNULL(cp, ''), '  ', ' '))='Del Niño Jesús, 1 Arganda del Rey 28500';
 --UPDATE centro SET latitud=? and logitud=? where TRIM(REPLACE(IFNULL(domicilio, '') || ' ' || IFNULL(municipio, '') || ' ' || IFNULL(distrito, '') || ' ' || IFNULL(cp, ''), '  ', ' '))='Carretera M-607 Colmenar Viejo, K12,8 Madrid Fuencarral-El Pardo 28049';
+--UPDATE centro SET latitud=? and logitud=? where TRIM(REPLACE(IFNULL(domicilio, '') || ' ' || IFNULL(municipio, '') || ' ' || IFNULL(distrito, '') || ' ' || IFNULL(cp, ''), '  ', ' '))='Avenida De Los Angeles, 57 Getafe 28903';

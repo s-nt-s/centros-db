@@ -35,6 +35,7 @@ CREATE TABLE CENTRO (
     municipio   TEXT NOT NULL,
     distrito    TEXT,
     cp          INTEGER,
+    dificultad  INTEGER NOT NULL DEFAULT 0,
     -- fax TEXT,
     CONSTRAINT fk_centro_tipo
         FOREIGN KEY (tipo)
@@ -95,14 +96,6 @@ CREATE TABLE EDUCACION_DIFERENCIADA (
     etapa TEXT NOT NULL,
     PRIMARY KEY (centro, etapa),
     CONSTRAINT fk_educacion_diferenciada_centro
-        FOREIGN KEY (centro)
-        REFERENCES CENTRO(id)
-        ON DELETE CASCADE
-);
-
-CREATE TABLE ESPECIAL_DIFICULTAD (
-    centro INTEGER NOT NULL PRIMARY KEY,
-    CONSTRAINT fk_especial_dificultad_centro
         FOREIGN KEY (centro)
         REFERENCES CENTRO(id)
         ON DELETE CASCADE
