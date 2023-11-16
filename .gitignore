@@ -11,6 +11,8 @@ cache/html
 ok.sql
 notas.txt
 debug/
+schemaspy/*
+!schemaspy/schemaspy.properties
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

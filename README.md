@@ -2,7 +2,7 @@ Convierte [gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.icm](https:
 
 El resultado actual se puede consular en [`db.sql`](out/db.sql).
 
-![diagrama](out/db.png)
+![diagrama](out/db.svg)
 
 # FAQ
 
