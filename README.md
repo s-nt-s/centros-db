@@ -24,7 +24,7 @@ La 2º información es la recogida en la tabla `ETAPA_NOMBRE_CENTRO`.
 
 Como ya se ha dicho, ambos caminos no siempre dan el mismo resultado. Además, en las fichas aparecen nombres de etapas educativas que no coinciden con las que puedes seleccionar en el buscador.
 
-## ¿Qué es el campo `inferido` de las tablas de etapas educativas?
+## ¿Qué es el campo `inferido` de la tabla `ETAPA_CENTRO`?
 
 El buscador muestra la información de las etapas educativas como un árbol de jerarquía, por ejemplo `Educación Personas Adultas -> Educación Secundaria Obligatoria para personas adultas (LOE-LOMCE) -> A distancia`, y por lo tanto sería de presuponer que si un centro `X` aparece buscando por ese filtro también debería aparecer si busco por `Educación Personas Adultas -> Educación Secundaria Obligatoria para personas adultas (LOE-LOMCE)` (pues este filtro es más general que el anterior) pero no siempre es así.
 

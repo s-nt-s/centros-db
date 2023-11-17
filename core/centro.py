@@ -21,6 +21,7 @@ re_coord = re.compile(r"&xIni=([\d\.]+)&yIni=([\d\.]+)")
 logger = logging.getLogger(__name__)
 
 WEB = Web()
+SEP = " -> "
 
 
 def _safe_int(x):
@@ -63,10 +64,21 @@ def _get_telefono(s: str) -> Tuple[int]:
     return tuple(arr)
 
 
+def _parse_titularidad(t: str):
+    if t in ('Privado Concertado', 'Concertado', 'Concertada'):
+        return 'CON'
+    if t in ('Privado', 'Privada'):
+        return 'PRI'
+    if t in ('Público', 'Pública'):
+        return "PUB"
+    return None
+
+
 def _find_titularidad(arr):
     tit = set()
     for a in arr:
-        if a in ('Público', 'Privado Concertado', 'Privado'):
+        a = _parse_titularidad(a)
+        if a is not None:
             tit.add(a)
     if len(tit) != 1:
         return None
@@ -103,7 +115,7 @@ class BadMapException(CentroException):
     def __init__(self, id: int, *urls: str):
         msg = f"{id}: Mapa incorrecto"
         if urls:
-            msg = msg + ": " + " -> ".join(urls)
+            msg = msg + ": " + SEP.join(urls)
         super().__init__(msg)
 
 
@@ -282,6 +294,12 @@ class Etapa(NamedTuple):
     plazas: str
     nivel: int
 
+    def merge(self, **kwargs):
+        return Etapa(**{
+            **self._asdict(),
+            **kwargs
+        })
+
 
 @dataclass(frozen=True)
 class UrlMap:
@@ -341,7 +359,7 @@ class UrlMap:
         return url
 
     def get_breadcrumbs(self):
-        return " -> ".join([
+        return SEP.join([
             str(self.id), self.thumbnail, self.popup, self.url
         ])
 
@@ -499,7 +517,6 @@ class SoupCentro:
                 arr.append(", ".join(sorted(s.split(", "))))
             return " / ".join(arr)
 
-        sep = " -> "
         etapas: List[Etapa] = []
         for tr in self.soup.select("#capaEtapasContent tr"):
             if len(re_sp.sub("", tr.get_text())) == 0:
@@ -521,7 +538,7 @@ class SoupCentro:
                 continue
             etapas.append(Etapa(**{
                 **etapa._asdict(),
-                **dict(nombre=padre.nombre+sep+etapa.nombre)
+                **dict(nombre=padre.nombre+SEP+etapa.nombre)
             }))
         return tuple(sorted(set(etapas)))
 
@@ -733,8 +750,32 @@ class Centro:
         return self.home.titular
 
     @cached_property
-    def etapas(self):
-        return self.home.etapas
+    def etapas(self) -> Tuple[Etapa]:
+        def get_tit(cnt: Centro, et: Etapa):
+            t = _parse_titularidad(et.titularidad)
+            if t is not None:
+                return t
+            if cnt.titularidad == 'PUB':
+                return 'PUB'
+            return 'OTR'
+        etps: List[Etapa] = []
+        for e in self.home.etapas:
+            etps.append(e.merge(
+                titularidad=get_tit(self, e)
+            ))
+        etps = list(
+            sorted(set(etps), key=lambda x: (-x.count(SEP), -len(x), x))
+        )
+        for i, e in enumerate(etps):
+            if e.titularidad != 'OTR':
+                continue
+            tit = set()
+            for x in etps:
+                if x.nombre.startswith(e.nombre+SEP):
+                    tit.add(x.titularidad)
+            if len(tit) == 1:
+                etps[i] = e.merge(titularidad=tit.pop())
+        return tuple(sorted(etps))
 
     @cached_property
     def educacion_diferenciada(self):

@@ -3,7 +3,7 @@ from core.dblite import DBLite, dict_factory
 from typing import Tuple, Dict, List
 from core.types import ParamValueText, QueryCentros
 from core.util import must_one, read_file, tp_join
-from core.centro import Centro
+from core.centro import Centro, Etapa, SEP
 from core.colegio import Colegio, BulkRequestsColegio
 from core.bulkrequests import BulkRequests
 from core.filemanager import FM
@@ -46,7 +46,6 @@ def build_db(db: DBLite, tcp_limit: int = 10):
     API.search_centros()
 
     KWV["area"] = dict(db.to_tuple("select txt, id from area"))
-    KWV["titularidad"] = dict(db.to_tuple("select txt, id from titularidad"))
     KWV["tipo"] = dict()
 
     insert_tipos(db)
@@ -101,19 +100,19 @@ def insert_queries(db: DBLite):
 def insert_etapas(db: DBLite):
     for e in walk_etapas():
         db.insert("ETAPA", id=e.id, txt=e.txt)
-        for id in e.centros:
-            db.insert("ETAPA_CENTRO", etapa=e.id, centro=id)
+        for c in e.centros:
+            db.insert("ETAPA_CENTRO", etapa=e.id, centro=c)
     for e in walk_etapas():
-        for id in e.centros:
+        for c in e.centros:
             eid = e.id.split("/")
             while len(eid) > 1:
                 eid.pop()
                 etp = "/".join(eid)
-                txt = " -> ".join(e.txt.split(" -> ")[:len(eid)])
+                txt = SEP.join(e.txt.split(SEP)[:len(eid)])
                 db.insert("ETAPA", id=etp, txt=txt, _or="ignore")
                 db.insert(
                     "ETAPA_CENTRO",
-                    centro=id,
+                    centro=c,
                     etapa=etp,
                     inferido=1,
                     _or="ignore"
@@ -122,18 +121,6 @@ def insert_etapas(db: DBLite):
     for c in API.search_centros():
         for e in c.etapas:
             db.insert("ETAPA_NOMBRE_CENTRO", centro=c.id, **e._asdict())
-    for c in API.search_centros():
-        for e in c.etapas:
-            eid = e.nombre.split(" -> ")
-            while len(eid) > 1:
-                eid.pop()
-                db.insert(
-                    "ETAPA_NOMBRE_CENTRO",
-                    centro=id,
-                    nombre=" -> ".join(eid),
-                    inferido=1,
-                    _or="ignore"
-                )
 
 
 def insert_all(db: DBLite):
@@ -340,7 +327,7 @@ def walk_etapas():
             centros=rows,
             id="/".join(idet),
             qr="&".join(idqr),
-            txt=" -> ".join(text)
+            txt=SEP.join(text)
         )
 
 

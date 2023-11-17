@@ -63,8 +63,8 @@ CREATE TABLE QUERY_CENTRO (
 );
 
 CREATE TABLE ETAPA_CENTRO (
-    centro INTEGER NOT NULL,
-    etapa  TEXT NOT NULL,
+    centro   INTEGER NOT NULL,
+    etapa    TEXT NOT NULL,
     inferido INTEGER DEFAULT 0 NOT NULL,
     PRIMARY KEY (centro, etapa),
     CONSTRAINT fk_etapa_centro_centro
@@ -78,12 +78,11 @@ CREATE TABLE ETAPA_CENTRO (
 );
 
 CREATE TABLE ETAPA_NOMBRE_CENTRO (
-    centro INTEGER NOT NULL,
-    nombre TEXT NOT NULL,
-    titularidad TEXT,
-    tipo TEXT,
+    centro      INTEGER NOT NULL,
+    nombre      TEXT NOT NULL,
+    titularidad TEXT NOT NULL REFERENCES TITULARIDAD(id),
+    tipo        TEXT,
     -- plazas TEXT,
-    inferido INTEGER DEFAULT 0 NOT NULL,
     PRIMARY KEY (centro, nombre, titularidad),
     CONSTRAINT fk_etapa_centro_centro
         FOREIGN KEY (centro)
@@ -93,7 +92,7 @@ CREATE TABLE ETAPA_NOMBRE_CENTRO (
 
 CREATE TABLE EDUCACION_DIFERENCIADA (
     centro INTEGER NOT NULL,
-    tipo TEXT NOT NULL,
+    tipo   TEXT NOT NULL,
     PRIMARY KEY (centro, tipo),
     CONSTRAINT fk_educacion_diferenciada_centro
         FOREIGN KEY (centro)
@@ -102,16 +101,16 @@ CREATE TABLE EDUCACION_DIFERENCIADA (
 );
 
 CREATE TABLE CONCURSO (
-    id TEXT NOT NULL PRIMARY KEY,
+    id  TEXT NOT NULL PRIMARY KEY,
     txt TEXT NOT NULL,
     url TEXT NOT NULL
 );
 
 CREATE TABLE CONCURSO_ANEXO (
     concurso TEXT NOT NULL,
-    anexo INTEGER NOT NULL,
-    txt TEXT NOT NULL,
-    url TEXT NOT NULL,
+    anexo    INTEGER NOT NULL,
+    txt      TEXT NOT NULL,
+    url      TEXT NOT NULL,
     PRIMARY KEY (concurso, anexo),
     CONSTRAINT fk_concurso
         FOREIGN KEY (concurso)
@@ -120,9 +119,9 @@ CREATE TABLE CONCURSO_ANEXO (
 );
 
 CREATE TABLE CONCURSO_ANEXO_CENTRO (
-    centro INTEGER NOT NULL,
+    centro   INTEGER NOT NULL,
     concurso TEXT NOT NULL,
-    anexo INTEGER NOT NULL,
+    anexo    INTEGER NOT NULL,
     PRIMARY KEY (centro, concurso, anexo),
     CONSTRAINT fk_concurso_centro
         FOREIGN KEY (centro)
@@ -142,7 +141,8 @@ INSERT INTO AREA VALUES
 ('C', 'Madrid-Capital');
 
 INSERT INTO TITULARIDAD VALUES
+('OTR', 'Otra'),
 ('PUB', 'Público'),
-('CON', 'Privado Concertado'),
+('CON', 'Concertado'),
 ('PRI', 'Privado');
 
