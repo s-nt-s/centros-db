@@ -26,6 +26,7 @@ ARG = parser.parse_args()
 API = Api()
 KWV = {}
 LAST_TUNE = "sql/fix/last"
+DONE = set()
 
 open("build.log", "w").close()
 logging.basicConfig(
@@ -182,6 +183,9 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], _or: str = None):
         return obj
 
     for row in rows:
+        if row.id in DONE:
+            continue
+        DONE.add(row.id)
         db.insert(
             "CENTRO",
             **to_dict(row),
@@ -192,6 +196,20 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], _or: str = None):
                 "EDUCACION_DIFERENCIADA",
                 centro=row.id,
                 tipo=dif,
+                _or=_or
+            )
+        for p in row.planes:
+            db.insert(
+                "PLAN",
+                centro=row.id,
+                nombre=p,
+                _or=_or
+            )
+        for e in row.extraescolares:
+            db.insert(
+                "EXTRAESCOLAR",
+                centro=row.id,
+                nombre=e,
                 _or=_or
             )
 

@@ -100,6 +100,26 @@ CREATE TABLE EDUCACION_DIFERENCIADA (
         ON DELETE CASCADE
 );
 
+CREATE TABLE EXTRAESCOLAR (
+    centro INTEGER NOT NULL,
+    nombre TEXT NOT NULL,
+    PRIMARY KEY (centro, nombre),
+    CONSTRAINT fk_extraescolar_centro
+        FOREIGN KEY (centro)
+        REFERENCES CENTRO(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE PLAN (
+    centro INTEGER NOT NULL,
+    nombre TEXT NOT NULL,
+    PRIMARY KEY (centro, nombre),
+    CONSTRAINT fk_plan_centro
+        FOREIGN KEY (centro)
+        REFERENCES CENTRO(id)
+        ON DELETE CASCADE
+);
+
 CREATE TABLE CONCURSO (
     id  TEXT NOT NULL PRIMARY KEY,
     txt TEXT NOT NULL,

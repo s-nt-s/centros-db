@@ -398,6 +398,22 @@ class SoupCentro:
         )
 
     @cached_property
+    def extraescolares(self):
+        return self.__get_div_td('capaInstitContent')
+
+    @cached_property
+    def planes(self):
+        return self.__get_div_td('capaPlanesEstudioContent')
+
+    def __get_div_td(self, id) -> Tuple[str]:
+        arr = []
+        for td in self.soup.select(f"#{id} td"):
+            txt = re_sp.sub(" ", td.get_text()).strip()
+            if len(txt) and txt not in arr:
+                arr.append(txt)
+        return tuple(arr)
+
+    @cached_property
     def web(self) -> Tuple[str]:
         web = self.inputs.get("tlWeb")
         if web is None:
@@ -780,6 +796,14 @@ class Centro:
     @cached_property
     def educacion_diferenciada(self):
         return self.home.educacion_diferenciada
+
+    @cached_property
+    def extraescolares(self):
+        return self.home.extraescolares
+
+    @cached_property
+    def planes(self):
+        return self.home.planes
 
 
 if __name__ == "__main__":
