@@ -93,8 +93,8 @@ CREATE TABLE ETAPA_NOMBRE_CENTRO (
 
 CREATE TABLE EDUCACION_DIFERENCIADA (
     centro INTEGER NOT NULL,
-    etapa TEXT NOT NULL,
-    PRIMARY KEY (centro, etapa),
+    tipo TEXT NOT NULL,
+    PRIMARY KEY (centro, tipo),
     CONSTRAINT fk_educacion_diferenciada_centro
         FOREIGN KEY (centro)
         REFERENCES CENTRO(id)

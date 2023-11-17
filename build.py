@@ -204,7 +204,7 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], _or: str = None):
             db.insert(
                 "EDUCACION_DIFERENCIADA",
                 centro=row.id,
-                etapa=dif,
+                tipo=dif,
                 _or=_or
             )
 
