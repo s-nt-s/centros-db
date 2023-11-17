@@ -1,15 +1,15 @@
 from core.api import Api
 from core.dblite import DBLite, dict_factory
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict
 from core.types import ParamValueText, QueryCentros
 from core.util import must_one, read_file, tp_join
-from core.centro import Centro, Etapa, SEP
+from core.centro import Centro, SEP
 from core.colegio import Colegio, BulkRequestsColegio
 from core.bulkrequests import BulkRequests
 from core.filemanager import FM
 import argparse
 import logging
-from core.concurso import Concurso, Anexo
+from core.concurso import Concurso
 import re
 
 parser = argparse.ArgumentParser(
@@ -426,7 +426,7 @@ def auto_fix(db: DBLite):
             length({field})>10
     """):
         dr = dr.replace("'", "''")
-        up = f"--UPDATE centro SET latitud=? and logitud=? where {field}='{dr}';"
+        up = f"--UPDATE centro SET latitud=? and longitud=? where latitud is null and longitud is null {field}='{dr}';"
         if up not in sql:
             sql.append(up)
     FM.dump(file, "\n".join(sql).strip())
