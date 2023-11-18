@@ -405,6 +405,10 @@ class SoupCentro:
     def planes(self):
         return self.__get_div_td('capaPlanesEstudioContent')
 
+    @cached_property
+    def proyectos(self):
+        return self.__get_div_td('capaProyPropiosContent')
+
     def __get_div_td(self, id) -> Tuple[str]:
         arr = []
         for td in self.soup.select(f"#{id} td"):
@@ -804,6 +808,10 @@ class Centro:
     @cached_property
     def planes(self):
         return self.home.planes
+
+    @cached_property
+    def proyectos(self):
+        return self.home.proyectos
 
 
 if __name__ == "__main__":

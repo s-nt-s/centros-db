@@ -120,6 +120,16 @@ CREATE TABLE PLAN (
         ON DELETE CASCADE
 );
 
+CREATE TABLE PROYECTO (
+    centro INTEGER NOT NULL,
+    nombre TEXT NOT NULL,
+    PRIMARY KEY (centro, nombre),
+    CONSTRAINT fk_proyecto_centro
+        FOREIGN KEY (centro)
+        REFERENCES CENTRO(id)
+        ON DELETE CASCADE
+);
+
 CREATE TABLE CONCURSO (
     id  TEXT NOT NULL PRIMARY KEY,
     txt TEXT NOT NULL,

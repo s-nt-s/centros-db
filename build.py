@@ -212,6 +212,13 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], _or: str = None):
                 nombre=e,
                 _or=_or
             )
+        for e in row.proyectos:
+            db.insert(
+                "PROYECTO",
+                centro=row.id,
+                nombre=e,
+                _or=_or
+            )
 
 
 def fix_latlon(db: DBLite):
