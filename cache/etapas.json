@@ -1387,6 +1387,20 @@
               "_": "Paisajismo y medio rural (LOE)"
             }
           }
+        },
+        "8077": {
+          "_": "SEGURIDAD Y MEDIO AMBIENTE (LOE)",
+          "cdEnsenanza": {
+            "1150": {
+              "_": "Educaci\u00f3n y Control Ambiental"
+            },
+            "8078": {
+              "_": "Coordinaci\u00f3n de Emergencias y Protecci\u00f3n Civil"
+            },
+            "8110": {
+              "_": "Qu\u00cdmica y Salud Ambiental"
+            }
+          }
         }
       }
     },
