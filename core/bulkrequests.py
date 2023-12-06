@@ -17,7 +17,7 @@ class BulkException(Exception):
 
 class MissingBulkException(BulkException):
     def __init__(self, ko: int):
-        super().__(f"{ko} missing")
+        super().__init__(f"{ko} missing")
         self.ko = ko
 
 
