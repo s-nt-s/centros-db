@@ -13,6 +13,7 @@ import re
 import logging
 from requests.exceptions import ConnectionError
 from .bulkrequests import BulkRequestsFileJob
+from itertools import zip_longest
 
 re_sp = re.compile(r"\s+")
 re_mail = re.compile(r'[\w\.\-_]+@[\w\-_]+\.[\w\-_]+', re.IGNORECASE)
@@ -31,6 +32,8 @@ def _safe_int(x):
 
 
 def _parse(k, v):
+    if v is None:
+        return None
     v = re_sp.sub(" ", v).strip()
     if v in ("", "-", "0", 0):
         return None
@@ -599,7 +602,7 @@ class SoupCentro:
             raise BadMapException(
                 self.id, mapa
             )
-        if not lazy and not self.find_and_check_info_map(self.soup):
+        if not lazy and not self.find_and_check_info_map():
             raise BadMapException(
                 self.id, mapa
             )
@@ -616,7 +619,7 @@ class SoupCentro:
         return None
 
     def find_and_check_info_map(self):
-        urlmap = self.get_url_info_map(self.soup)
+        urlmap = self.get_url_info_map()
         if urlmap is None:
             return True
         if len(urlmap.urls) == 0:
@@ -683,10 +686,9 @@ class Centro:
 
     @classmethod
     def build(cls, head: Tuple, row: Tuple):
-        obj = {h: _parse(h, c) for h, c in zip(head, row)}
+        obj = {h: _parse(h, c) for h, c in zip_longest(head, row)}
         mails = _find_mails(row[head.index("EMAIL"):])
         titularidad = _find_titularidad(row[head.index("EMAIL2")+1:])
-
         return cls(
             area=obj['AREA TERRITORIAL'],
             id=int(obj['CODIGO CENTRO']),
