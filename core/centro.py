@@ -815,6 +815,13 @@ class Centro:
     def proyectos(self):
         return self.home.proyectos
 
+    def isBad(self):
+        if self.titularidad is None:
+            soup = WEB.get(self.info)
+            body = re_sp.sub(" ", soup.find("body").get_text()).strip()
+            if body == "Pagina de Error: null":
+                return True
+
 
 if __name__ == "__main__":
     import sys

@@ -326,7 +326,8 @@ class Api():
         arr = []
         head = rows[1]
         for row in rows[2:]:
-            arr.append(Centro.build(head, row))
+            c = Centro.build(head, row)
+            arr.append(c)
         arr = tuple(arr)
         return arr
 

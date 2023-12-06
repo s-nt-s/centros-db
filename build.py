@@ -2,7 +2,7 @@ from core.api import Api
 from core.dblite import DBLite, dict_factory
 from typing import Tuple, Dict
 from core.types import ParamValueText, QueryCentros
-from core.util import must_one, read_file, tp_join
+from core.util import must_one, read_file, tp_join, logme
 from core.centro import Centro, SEP
 from core.colegio import Colegio, BulkRequestsColegio
 from core.bulkrequests import BulkRequests
@@ -42,6 +42,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+@logme
 def build_db(db: DBLite, tcp_limit: int = 10):
     db.execute("sql/schema.sql")
     API.search_centros()
@@ -73,6 +74,7 @@ def build_db(db: DBLite, tcp_limit: int = 10):
     auto_fix(db)
 
 
+@logme
 def insert_tipos(db: DBLite):
     for k, v in sorted(API.get_form()['cdGenerico'].items()):
         rows = API.search_centros(cdGenerico=k)
@@ -84,6 +86,7 @@ def insert_tipos(db: DBLite):
         multi_insert_centro(db, rows)
 
 
+@logme
 def insert_queries(db: DBLite):
     for name, obj in API.get_form().items():
         if Api.is_redundant_parameter(name):
@@ -98,6 +101,7 @@ def insert_queries(db: DBLite):
                 db.insert("QUERY_CENTRO", query=id_query, centro=id)
 
 
+@logme
 def insert_etapas(db: DBLite):
     for e in walk_etapas():
         db.insert("ETAPA", id=e.id, txt=e.txt)
@@ -120,34 +124,50 @@ def insert_etapas(db: DBLite):
                 )
 
     for c in API.search_centros():
+        if c.isBad():
+            continue
         for e in c.etapas:
             db.insert("ETAPA_NOMBRE_CENTRO", centro=c.id, **e._asdict())
 
 
+@logme
 def insert_all(db: DBLite):
     rows = API.search_centros()
     multi_insert_centro(db, rows, _or="ignore")
 
 
+@logme
 def insert_missing(db: DBLite):
-    sql = []
-    for table in db.tables:
-        if "centro" in db.get_cols(table):
-            sql.append(f"select centro from {table}")
+    tables = [t for t in db.tables if "centro" in db.get_cols(t)]
     missing = db.to_tuple('''
         select distinct centro from ({}) t where not exists (
             select c.id from centro c where t.centro=c.id
         )
-    '''.format(" union ".join(sql)))
-    rows = API.get_centros(*missing)
+    '''.format(" union ".join(map(
+        lambda t: f"select centro from {t}",
+        tables
+    ))))
+
+    def filter_bad(c: Centro):
+        if not c.isBad():
+            return True
+        logger.warning(f'{c.id} descartado por malformado {c.info}')
+        for t in tables:
+            db.execute(f"delete from {t} where centro={c.id}")
+        return False
+
+    rows = tuple(filter(filter_bad, API.get_centros(*missing)))
+
     multi_insert_centro(db, rows)
 
 
+@logme
 def fix_tipo(db: DBLite):
     for abr in db.to_tuple(read_file("sql/fix/tipo.sql")):
         db.insert("TIPO", id=abr, txt=abr, abr=abr)
 
 
+@logme
 def check_titularidad(db: DBLite):
     bad_tit = db.to_tuple(
         read_file("sql/fix/titularidad.sql"),
@@ -162,6 +182,7 @@ def check_titularidad(db: DBLite):
         logger.critical("BAD {id}: {titularidad} <> {query}".format(**e))
 
 
+@logme
 def execute_if_query_is_col(db: DBLite, sql_path: str, *query_in: str):
     query_in = ", ".join(map(lambda x: f"'{x}'", query_in))
     sql = read_file("sql/fix/iscol.sql", query_in)
@@ -186,6 +207,8 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], _or: str = None):
         if row.id in DONE:
             continue
         DONE.add(row.id)
+        if row.isBad():
+            continue
         db.insert(
             "CENTRO",
             **to_dict(row),
@@ -221,6 +244,7 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], _or: str = None):
             )
 
 
+@logme
 def fix_latlon(db: DBLite):
     changes = 1
     while changes > 0:
@@ -244,6 +268,7 @@ def fix_latlon(db: DBLite):
         ])
 
 
+@logme
 def try_complete(db: DBLite, tcp_limit: int = 10):
     def iter_rows(*args: str, andor="and"):
         where = f" {andor} ".join(map(lambda x: f"{x} is null", args))
@@ -333,6 +358,7 @@ def find_val_for_null(db: DBLite, sql1: str, sql2: str) -> Tuple[Tuple[Dict, Dic
     return tuple(arr)
 
 
+@logme
 def walk_etapas():
     etapas: Tuple[ParamValueText] = None
     for etapas in API.iter_etapas():
@@ -356,6 +382,7 @@ def walk_etapas():
         )
 
 
+@logme
 def insert_concurso(db: DBLite):
     re_esp_dif = re.compile(r"centros? de especial dificultad", re.IGNORECASE)
     esp_dif = set()
@@ -413,6 +440,7 @@ def update_centro(db: DBLite, *id: int, **kwargs):
     db.execute(sql, *map(tp_join, kwargs.values()))
 
 
+@logme
 def auto_fix(db: DBLite):
     sql = []
     for f in sorted(FM.resolve_path(LAST_TUNE).glob("*.sql")):

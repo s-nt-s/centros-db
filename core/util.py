@@ -1,5 +1,9 @@
 from hashlib import sha1
 from typing import Union, Tuple, Any
+import functools
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def hashme(s):
@@ -43,3 +47,11 @@ def tp_join(t: Union[Any, Tuple]):
     if len(t) == 0:
         return None
     return " ".join(map(str, t))
+
+
+def logme(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        logger.info(f"{func.__name__}()")
+        return func(*args, **kwargs)
+    return wrapper

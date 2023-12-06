@@ -14,6 +14,7 @@ notas.txt
 debug/
 schemaspy/*
 !schemaspy/schemaspy.properties
+db.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
