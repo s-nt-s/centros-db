@@ -5,6 +5,7 @@
 *.csv
 *.txt
 *.pdf
+.~lock.*#
 !requirements.txt
 sql/subset
 cache/html
