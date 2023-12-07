@@ -73,3 +73,8 @@ jobs:
           git add -A 
           git commit -m "Automated: ${DT}" || exit 0
           git push
+          echo "ok" > /tmp/there_are_changes
+      - name: If there are changes
+        if: ${{ hashFiles('/tmp/there_are_changes') != '' }}
+        run: |
+          echo "there are changes"
