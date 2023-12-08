@@ -1,4 +1,8 @@
-Convierte [gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.icm](https://gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.icm) a una base de datos `sqlite3`.
+Crea una base de datos `sqlite` a partir de:
+
+* [Buscador de centros](https://gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.icm)
+* [Concurso de traslados de Maestros 2023-2024](https://www.comunidad.madrid/servicios/educacion/concurso-traslados-maestros)
+* [Concurso de traslados de Profesores de Secundaria, Formación Profesional y Régimen Especial 2023-2024](https://www.comunidad.madrid/servicios/educacion/concurso-traslados-profesores-secundaria-formacion-profesional-regimen-especial)
 
 El resultado actual se puede consular en [`db.sql`](out/db.sql).
 

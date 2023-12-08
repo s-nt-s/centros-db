@@ -65,6 +65,8 @@ jobs:
           max_attempts: 3
           retry_on: error
           command: "python build.py --tcp-limit ${TCP_LIMIT:-50}"
+      - name: Write README.md
+        run: python3 readme.py
       - name: Commit and push if content changed
         run: |-
           DT=$(date -u +'%Y-%m-%d %H:%M UTC')
@@ -73,8 +75,8 @@ jobs:
           git add -A 
           git commit -m "Automated: ${DT}" || exit 0
           git push
-          echo "ok" > /tmp/there_are_changes
+          echo "ok" > there_are_changes
       - name: If there are changes
-        if: ${{ hashFiles('/tmp/there_are_changes') != '' }}
+        if: ${{ hashFiles('there_are_changes') != '' }}
         run: |
           echo "there are changes"
