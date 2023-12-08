@@ -118,6 +118,7 @@ class BulkRequests:
     def __run(self, *job: BulkRequestsJob, label="items"):
         ko = 0
         tries = max(self.tries, 1) - 1
+        rjust = len(job)
         for i in reversed(range(tries+1)):
             job = tuple(u for u in job if not u.done())
             if len(job) == 0:
@@ -126,9 +127,10 @@ class BulkRequests:
                 u.step = tries - i
                 u.countdown = i
             pre = "" if i == tries else "└─ "
+            ljb = str(len(job)).rjust(rjust)
             logger.info(
                 pre + 'BulkRequests' +
-                f'(tcp_limit={self.tcp_limit}).run({len(job)} {label})'
+                f'(tcp_limit={self.tcp_limit}).run({ljb} {label})'
             )
             if i != tries:
                 time.sleep(self.sleep)

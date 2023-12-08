@@ -123,6 +123,25 @@ class BulkRequestsApi(BulkRequestsFileJob):
         self.data = data
         self.api = api
         self.id_cache: IdCache = getattr(self.api.search_ids, "__cache_obj__")
+        self.ids: Dict[Tuple[int], int] = dict()
+
+    def get_best(self) -> Tuple[int]:
+        if len(self.ids) == 0:
+            return None
+        ids, count = list(sorted(
+            self.ids.items(),
+            key=lambda kv: (kv[1], len(kv[0]), kv[0])
+        ))[-1]
+        if count > 2:
+            return ids
+        if len(ids) and count > 1:
+            return ids
+        if self.countdown == 0:
+            logger.warning(
+                f"{data_to_str(**self.data)} elegido por última oportunidad ({self.step+1} intentos)"
+            )
+            return ids
+        return None
 
     @property
     def url(self):
@@ -133,30 +152,31 @@ class BulkRequestsApi(BulkRequestsFileJob):
         return self.id_cache.parse_file_name(**self.data)
 
     def done(self) -> bool:
-        if not isfile(self.file):
+        if self.__is_bad_cdGenerico():
             return False
-        if self.__is_cdGenerico():
-            return self.__check_cdGenerico()
-        return True
+        return isfile(self.file)
 
-    def __is_cdGenerico(self):
-        return tuple(self.data.keys()) == ('cdGenerico', )
-
-    def __check_cdGenerico(self):
-        ids = set(self.id_cache.read(self.file))
-        if len(ids) == 0:
-            return True
-        files = tuple(glob(self.id_cache.parse_file_name(cdGenerico='*')))
-        if self.file not in files:
-            return True
-        for f in files:
+    def __is_bad_cdGenerico(self, ids: Tuple[int] = None):
+        if tuple(self.data.keys()) != ('cdGenerico', ):
+            return False
+        if ids is None and isfile(self.file):
+            ids = self.id_cache.read(self.file)
+        if ids is None or len(ids) == 0:
+            return False
+        set_ids = set(ids)
+        bad_files = set()
+        for f in tuple(glob(self.id_cache.parse_file_name(cdGenerico='*'))):
             if f == self.file:
                 continue
-            ko = tuple(sorted(ids.intersection(self.id_cache.read(f))))
+            ko = tuple(sorted(set_ids.intersection(self.id_cache.read(f))))
             if len(ko) > 0:
                 logger.error(f"Conflicto entre {self.file} y {f}: {ko}")
-                return False
-        return True
+                bad_files.add(f)
+        if bad_files:
+            for f in filter(isfile, bad_files.union((self.file,))):
+                os.remove(f)
+            return True
+        return False
 
     async def do(self, session: ClientSession) -> Coroutine[Any, Any, bool]:
         async with session.post(self.url, data=self.data) as response:
@@ -164,12 +184,17 @@ class BulkRequestsApi(BulkRequestsFileJob):
             soup = buildSoup(self.url, content)
             try:
                 r = self.api._get_search_response(self.data, soup)
-            except (ApiException, DomNotFoundException):
+            except (ApiException, DomNotFoundException) as e:
                 logger.warn(str(e))
                 return False
-            self.id_cache.save(self.file, r.get_ids())
-            if self.__is_cdGenerico():
-                return self.__check_cdGenerico()
+            ids = r.get_ids()
+            if self.__is_bad_cdGenerico(ids):
+                return False
+            self.ids[ids] = self.ids.get(ids, 0) + 1
+            ids = self.get_best()
+            if ids is None:
+                return False
+            self.id_cache.save(self.file, ids)
             return True
 
 
@@ -256,7 +281,7 @@ class Api():
             codCentrosExp=codCentrosExp,
             frmExportarResultado=frmExportarResultado
         )
-        logger.info(f'{len(r.get_ids()):4d} = '+data_to_str(**data))
+        logger.debug(f'{len(r.get_ids()):4d} = '+data_to_str(**data))
         return r
 
     @CsvCache("cache/csv/", maxOld=5, loglevel=logging.INFO)

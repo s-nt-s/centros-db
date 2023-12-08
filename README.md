@@ -1,4 +1,4 @@
-Crea una base de datos `sqlite` a partir de:
+Crea una base de datos `sqlite` a partir del:
 
 * [Buscador de centros](https://gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.icm)
 * [Concurso de traslados de Maestros 2023-2024](https://www.comunidad.madrid/servicios/educacion/concurso-traslados-maestros)

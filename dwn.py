@@ -58,6 +58,7 @@ def dwn_search(tcp_limit: int = 10):
         queries.append(data)
     BulkRequests(
         tcp_limit=tcp_limit,
+        tries=10,
         tolerance=5
     ).run(*(
         BulkRequestsApi(API, data) for data in queries
