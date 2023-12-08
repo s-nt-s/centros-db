@@ -317,7 +317,7 @@ class Api():
             if dom is not None:
                 dom = dom.attrs["value"].strip()
             if v != dom:
-                raise BadFormException(data, k, v, dom)
+                raise BadFormException(k, v, dom)
 
     def __parse_csv(self, content: str) -> Tuple[Centro]:
         rows = csvstr_to_rows(content)
