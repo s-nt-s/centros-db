@@ -67,6 +67,8 @@ jobs:
           command: "python build.py --tcp-limit ${TCP_LIMIT:-50}"
       - name: Write README.md
         run: python3 readme.py
+      - name: Fix concurso
+        run: python3 concurso.py
       - name: Commit and push if content changed
         run: |-
           DT=$(date -u +'%Y-%m-%d %H:%M UTC')

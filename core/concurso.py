@@ -24,6 +24,8 @@ class Anexo():
 
     @cached_property
     def content(self):
+        if self.url.rsplit(".")[-1].lower() not in "pdf":
+            return ""
         file = FM.resolve_path(
             f"cache/pdf/{self.num:02} - {self.txt} - {hashme(self.url)}.pdf"
         )
@@ -66,6 +68,18 @@ class Concurso:
     @cached_property
     def anexos(self) -> Dict[int, Anexo]:
         anexos = {}
+        bocm = self.home.find(
+            "a",
+            href=re.compile(r"^https?://.*/BOCM-\d+-\d+\.PDF$", re.IGNORECASE)
+        )
+        if bocm:
+            pdf = bocm.attrs["href"].rsplit("/")[-1]
+            bcm = pdf.rsplit(".")[0].upper()
+            anexos[0] = Anexo(
+                num=0,
+                txt=bcm,
+                url="https://www.bocm.es/"+bcm.lower()
+            )
         for lg in self.home.select("fieldset legend a"):
             if "anexos" not in lg.get_text().lower():
                 continue
