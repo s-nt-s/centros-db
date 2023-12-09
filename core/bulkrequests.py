@@ -118,7 +118,7 @@ class BulkRequests:
     def __run(self, *job: BulkRequestsJob, label="items"):
         ko = 0
         tries = max(self.tries, 1) - 1
-        rjust = len(job)
+        rjust = len(str(len(job)))
         for i in reversed(range(tries+1)):
             job = tuple(u for u in job if not u.done())
             if len(job) == 0:
