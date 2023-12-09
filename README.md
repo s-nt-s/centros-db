@@ -10,6 +10,17 @@ El resultado actual se puede consular en [`db.sql`](out/db.sql).
 
 # FAQ
 
+## ¿Cómo se garantiza la calidad de los datos recuperados del [buscador de centros](https://gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.icm)?
+
+El [buscador de centros](https://gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.icm)
+es bastante inestable, ya que en ocasiones dos búsquedas idénticas (o dos visitas a la misma
+ficha de centro) dan resultados diferentes.
+
+Para lidiar con este problema, toda consulta al
+[buscador de centros](https://gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.icm)
+se realiza varias veces hasta que devuelva dos veces o más el mismo resultado,
+siendo este (el resultado devuelto más veces) el que se almacena en la base de datos.
+
 ## ¿Qué es la tabla `QUERY`?
 
 Una `QUERY` es un filtro que se puede hacer en [el buscador de centros](https://gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.icm), y la tabla `QUERY_CENTRO` recoge los centros que aparecen como resultado al hacer esa `query`.
