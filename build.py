@@ -2,7 +2,7 @@ from core.api import Api
 from core.dblite import DBLite, dict_factory
 from typing import Tuple, Dict
 from core.types import ParamValueText, QueryCentros
-from core.util import must_one, read_file, tp_join, logme
+from core.util import must_one, read_file, tp_join, logme, parse_dir, unupper
 from core.centro import Centro, SEP
 from core.colegio import Colegio, BulkRequestsColegio
 from core.bulkrequests import BulkRequests
@@ -81,7 +81,7 @@ def insert_tipos(db: DBLite):
         if len(rows) == 0:
             continue
         abr = must_one((x.tipo for x in rows))
-        db.insert("TIPO", id=k, txt=v, abr=abr)
+        db.insert("TIPO", id=k, txt=unupper(v, rstrip=". "), abr=abr)
         KWV["tipo"][abr] = k
         multi_insert_centro(db, rows)
 
@@ -164,7 +164,7 @@ def insert_missing(db: DBLite):
 @logme
 def fix_tipo(db: DBLite):
     for abr in db.to_tuple(read_file("sql/fix/tipo.sql")):
-        db.insert("TIPO", id=abr, txt=abr, abr=abr)
+        db.insert("TIPO", id=abr, txt=unupper(abr), abr=abr)
 
 
 @logme
@@ -201,6 +201,7 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], _or: str = None):
             obj['longitud'] = row.latlon.longitude
         obj['titular'] = row.titular
         obj['web'] = tp_join(row.web)
+        obj['domicilio'] = parse_dir(row.domicilio)
         return obj
 
     for row in rows:
@@ -396,9 +397,6 @@ def insert_concurso(db: DBLite):
             url=con.url
         )
         for anx in con.anexos.values():
-            if re_esp_dif.search(anx.txt):
-                esp_dif = esp_dif.union(anx.centros)
-                continue
             db.insert(
                 "CONCURSO_ANEXO",
                 concurso=con.abr,
@@ -406,6 +404,9 @@ def insert_concurso(db: DBLite):
                 txt=anx.txt,
                 url=anx.url
             )
+            if re_esp_dif.search(anx.txt):
+                esp_dif = esp_dif.union(anx.centros)
+                continue
             ok_cent = ok_cent.union(anx.centros)
             for c in anx.centros:
                 db.insert(
@@ -444,7 +445,8 @@ def update_centro(db: DBLite, *id: int, **kwargs):
 def auto_fix(db: DBLite):
     sql = []
     for f in sorted(FM.resolve_path(LAST_TUNE).glob("*.sql")):
-        for ln in FM.load(f).split("\n"):
+        content: str = FM.load(f)
+        for ln in content.split("\n"):
             ln = ln.strip()
             if len(ln) > 0 and not ln.startswith("--"):
                 sql.append(ln)
