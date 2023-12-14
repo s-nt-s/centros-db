@@ -2,6 +2,7 @@ from hashlib import sha1
 from typing import Union, Tuple, Any
 import functools
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -55,3 +56,79 @@ def logme(func):
         logger.info(f"{func.__name__}()")
         return func(*args, **kwargs)
     return wrapper
+
+
+def get_abr_dir(w1: str):
+    w1 = w1.lower()
+    if w1 == "avenida":
+        return "Av."
+    if w1 == "bulevar":
+        return "Blvr."
+    if w1 == "calle":
+        return "C/"
+    if w1 == "callejon":
+        return None
+    if w1 == "camino":
+        return None
+    if w1 == "carrera":
+        return None
+    if w1 == "carretera":
+        return "Ctra."
+    if w1 == "paraje":
+        return None
+    if w1 == "parcela":
+        return None
+    if w1 == "pasaje":
+        return None
+    if w1 == "paseo":
+        return None
+    if w1 == "plaza":
+        return "Pl."
+    if w1 == "ronda":
+        return "Rda."
+    if w1 == "senda":
+        return None
+    if w1 == "urbanizacion":
+        return "Urb."
+    return None
+
+
+def parse_dir(dire: str):
+    if dire is None:
+        return None
+    dire = dire.strip()
+    if len(dire) == 0:
+        return None
+    rst = dire.split()
+    for i, w in enumerate(rst):
+        w = w.lower()
+        if w in ("de", "del", "la", "el", "lo", "los"):
+            rst[i] = w
+    rst[0] = get_abr_dir(rst[0]) or rst[0]
+    dire = " ".join(rst)
+    dire = re.sub(
+        r"\b(s/n|c/v)\b",
+        lambda x: x.group().upper(),
+        dire,
+        flags=re.IGNORECASE
+    )
+    return dire
+
+
+def unupper(s: str):
+    if s is None:
+        return None
+    s = s.strip()
+    if len(s) == 0:
+        return None
+    if s.upper() != s:
+        return s
+    s = s[0] + s[1:].lower()
+    s = re.sub(r"españa\b", "España", s)
+    s = re.sub(
+        r"psicopedagógica\. ([a-z])",
+        lambda x: 'psicopedagógica: '+x.group(1).upper(),
+        s,
+        flags=re.IGNORECASE
+    )
+    return s
