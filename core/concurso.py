@@ -66,6 +66,21 @@ class Concurso:
         raise ValueError("Tipo de concurso no reconocido")
 
     @cached_property
+    def cuerpo(self) -> str:
+        crp = set()
+        for a in self.anexos.values():
+            m = re.search(r"\(Cuerpos? [^\)]+", a.txt)
+            if m is None:
+                continue
+            for n in re.findall(r"\d+", m.group()):
+                if len(n) == 4:
+                    crp.add(n)
+        if crp:
+            return " ".join(sorted(crp))
+        if self.abr == "MAE":
+            return "0597"
+
+    @cached_property
     def anexos(self) -> Dict[int, Anexo]:
         anexos = {}
         bocm = self.home.find(

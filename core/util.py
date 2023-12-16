@@ -115,9 +115,11 @@ def parse_dir(dire: str):
     return dire
 
 
-def unupper(s: str):
+def unupper(s: str, rstrip=None):
     if s is None:
         return None
+    if rstrip:
+        s = s.rstrip(rstrip)
     s = s.strip()
     if len(s) == 0:
         return None

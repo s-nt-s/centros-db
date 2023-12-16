@@ -81,7 +81,7 @@ def insert_tipos(db: DBLite):
         if len(rows) == 0:
             continue
         abr = must_one((x.tipo for x in rows))
-        db.insert("TIPO", id=k, txt=unupper(v), abr=abr)
+        db.insert("TIPO", id=k, txt=unupper(v, rstrip=". "), abr=abr)
         KWV["tipo"][abr] = k
         multi_insert_centro(db, rows)
 
@@ -394,7 +394,8 @@ def insert_concurso(db: DBLite):
             "CONCURSO",
             id=con.abr,
             txt=con.titulo,
-            url=con.url
+            url=con.url,
+            cuerpo=con.cuerpo
         )
         for anx in con.anexos.values():
             db.insert(

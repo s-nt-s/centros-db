@@ -99,7 +99,6 @@ def set_cuerpo(db: DBLite):
     check_data(db, ANX, 'CONCURSO_ANEXO where concurso=? and anexo=? and url=?')
 
     db.execute('''
-ALTER TABLE CONCURSO ADD cuerpo TEXT;
 INSERT INTO CONCURSO (url, cuerpo, id, txt) VALUES
 ('{MAE}', '0597',           'maestro',    '{YEAR} Maestro'),
 ('{PRO}', '0590 0511',      'secundaria', '{YEAR} Enseñanza Secundaria'),
