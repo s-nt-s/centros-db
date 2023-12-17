@@ -66,6 +66,7 @@ CREATE TABLE ETAPA_CENTRO (
     centro   INTEGER NOT NULL,
     etapa    TEXT NOT NULL,
     inferido INTEGER DEFAULT 0 NOT NULL,
+    hoja INTEGER DEFAULT 0 NOT NULL,
     PRIMARY KEY (centro, etapa),
     CONSTRAINT fk_etapa_centro_centro
         FOREIGN KEY (centro)
@@ -82,6 +83,7 @@ CREATE TABLE ETAPA_NOMBRE_CENTRO (
     nombre      TEXT NOT NULL,
     titularidad TEXT NOT NULL REFERENCES TITULARIDAD(id),
     tipo        TEXT,
+    hoja        INTEGER DEFAULT 0 NOT NULL,
     -- plazas TEXT,
     PRIMARY KEY (centro, nombre, titularidad),
     CONSTRAINT fk_etapa_centro_centro

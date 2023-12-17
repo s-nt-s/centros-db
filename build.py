@@ -1,6 +1,6 @@
 from core.api import Api
 from core.dblite import DBLite, dict_factory
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Set
 from core.types import ParamValueText, QueryCentros
 from core.util import must_one, read_file, tp_join, logme, parse_dir, unupper
 from core.centro import Centro, SEP
@@ -128,6 +128,8 @@ def insert_etapas(db: DBLite):
             continue
         for e in c.etapas:
             db.insert("ETAPA_NOMBRE_CENTRO", centro=c.id, **e._asdict())
+
+    db.execute("sql/fix/etapa.sql")
 
 
 @logme
