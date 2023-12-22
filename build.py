@@ -275,7 +275,8 @@ def fix_latlon(db: DBLite):
 def try_complete(db: DBLite, tcp_limit: int = 10):
     def iter_rows(*args: str, andor="and"):
         where = f" {andor} ".join(map(lambda x: f"{x} is null", args))
-        ids = db.to_tuple(f"select id from centro where ({where})")
+        sql = f"select id from centro where ({where}) and tipo in ('003', '004', '008', '013', '015', '021', '037', '042', '045', '058', '072', '073', '094', '104', '137', '138', '139', '158', '172', '185', '187', '220', '221', '222', '223', '305', '414')"
+        ids = db.to_tuple(sql)
         if len(ids) > 0:
             BulkRequests(
                 tcp_limit=tcp_limit
