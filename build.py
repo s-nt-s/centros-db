@@ -279,7 +279,8 @@ def try_complete(db: DBLite, tcp_limit: int = 10):
         ids = db.to_tuple(sql)
         if len(ids) > 0:
             BulkRequests(
-                tcp_limit=tcp_limit
+                tcp_limit=tcp_limit,
+                tries=10
             ).run(
                 *map(BulkRequestsColegio, ids),
                 label="colegios"
