@@ -468,7 +468,7 @@ def auto_fix(db: DBLite):
             "cp"
         )
     ))
-    field = f"TRIM(REPLACE({_concat_}, '  ', ' '))"
+    field = f"LOWER(TRIM(REPLACE({_concat_}, '  ', ' ')))"
     sql = []
     for up in (FM.load(file, not_exist_ok=True) or '').split("\n"):
         if not up.strip().startswith("--"):
@@ -486,7 +486,7 @@ def auto_fix(db: DBLite):
             length({field})>10
     """):
         dr = dr.replace("'", "''")
-        up = f"--UPDATE centro SET latitud=? and longitud=? where latitud is null and longitud is null and {field}='{dr}';"
+        up = f"--UPDATE centro SET latitud=?, longitud=? where latitud is null and longitud is null and {field}='{dr}';"
         if up not in sql:
             sql.append(up)
     FM.dump(file, "\n".join(sql).strip())
