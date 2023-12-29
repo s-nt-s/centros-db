@@ -100,7 +100,7 @@ def set_cuerpo(db: DBLite):
 
     db.execute('''
 INSERT INTO CONCURSO (url, cuerpo, id, txt) VALUES
-('{MAE}', '0597',           'maestro',    '{YEAR} Maestro'),
+('{MAE}', '0597',           'magisterio', '{YEAR} Magisterio'),
 ('{PRO}', '0590 0511',      'secundaria', '{YEAR} Enseñanza Secundaria'),
 ('{PRO}', '0598 0591',      'fp',         '{YEAR} Formación Profesional'),
 ('{PRO}', '0592 0512',      'eoi',        '{YEAR} Escuelas Oficiales de Idiomas'),
@@ -110,9 +110,9 @@ INSERT INTO CONCURSO (url, cuerpo, id, txt) VALUES
     '''.format(YEAR=YEAR, PRO=CON_PRO, MAE=CON_MAE))
     db.execute('''
         INSERT INTO CONCURSO_ANEXO (concurso, anexo, txt, url)
-        select 'maestro' concurso, anexo, txt, url
+        select 'magisterio' concurso, anexo, txt, url
         from CONCURSO_ANEXO where concurso='MAE';
-        UPDATE CONCURSO_ANEXO_CENTRO SET concurso='maestro' where concurso='MAE';
+        UPDATE CONCURSO_ANEXO_CENTRO SET concurso='magisterio' where concurso='MAE';
         DELETE FROM CONCURSO_ANEXO where concurso='MAE';
         DELETE FROM CONCURSO where id='MAE';
     ''')
