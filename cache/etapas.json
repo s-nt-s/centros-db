@@ -28,7 +28,21 @@
       "_": "Educaci\u00f3n Secundaria Obligatoria",
       "cdNivelEdu": {
         "6": {
-          "_": "Educaci\u00f3n Secundaria Obligatoria (LOMLOE)"
+          "_": "Educaci\u00f3n Secundaria Obligatoria (LOMLOE)",
+          "cdEnsenanza": {
+            "409": {
+              "_": "Primero"
+            },
+            "416": {
+              "_": "Segundo"
+            },
+            "417": {
+              "_": "Tercero"
+            },
+            "418": {
+              "_": "Cuarto"
+            }
+          }
         }
       }
     },
