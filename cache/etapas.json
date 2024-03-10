@@ -13856,155 +13856,103 @@
     "0150": {
       "_": "Ense\u00f1anzas Deportivas",
       "cdNivelEdu": {
-        "6458": {
-          "_": "Ense\u00f1anzas Deportivas Grado Medio y Superior (LOGSE)",
+        "2654": {
+          "_": "F\u00fatbol",
           "cdEnsenanza": {
-            "2654": {
-              "_": "F\u00fatbol",
+            "4849": {
+              "_": "Grado Medio",
               "cdEspecialidad": {
-                "4849": {
-                  "_": "Grado Medio",
+                "2545": {
+                  "_": "F\u00fatbol",
                   "cdEspecialidadII": {
-                    "2545": {
-                      "_": "F\u00fatbol"
+                    "4850": {
+                      "_": "Primer nivel"
                     },
-                    "2628": {
-                      "_": "F\u00fatbol Sala"
+                    "4851": {
+                      "_": "Segundo nivel"
                     }
                   }
                 },
-                "4854": {
-                  "_": "Grado Superior",
+                "2628": {
+                  "_": "F\u00fatbol Sala",
                   "cdEspecialidadII": {
-                    "4855": {
-                      "_": "F\u00fatbol"
+                    "4852": {
+                      "_": "Primer nivel"
                     },
-                    "4856": {
-                      "_": "F\u00fatbol Sala"
+                    "4853": {
+                      "_": "Segundo nivel"
                     }
                   }
                 }
               }
             },
-            "2655": {
-              "_": "Deportes de Monta\u00f1a y Escalada",
+            "4854": {
+              "_": "Grado Superior",
               "cdEspecialidad": {
-                "4833": {
-                  "_": "Medio",
+                "4855": {
+                  "_": "F\u00fatbol"
+                },
+                "4856": {
+                  "_": "F\u00fatbol Sala"
+                }
+              }
+            }
+          }
+        },
+        "2656": {
+          "_": "Deportes de Invierno",
+          "cdEnsenanza": {
+            "4857": {
+              "_": "Grado Medio",
+              "cdEspecialidad": {
+                "2636": {
+                  "_": "Esqu\u00ed Alpino",
                   "cdEspecialidadII": {
-                    "2546": {
-                      "_": "Alta Monta\u00f1a"
+                    "4862": {
+                      "_": "Primer nivel"
                     },
-                    "2632": {
-                      "_": "Escalada"
-                    },
-                    "4834": {
-                      "_": "Media Monta\u00f1a"
-                    },
-                    "4835": {
-                      "_": "Barrancos"
+                    "4863": {
+                      "_": "Segundo nivel"
                     }
                   }
                 },
-                "4836": {
-                  "_": "Superior",
+                "2640": {
+                  "_": "Esqu\u00ed de Fondo",
                   "cdEspecialidadII": {
-                    "4837": {
-                      "_": "Alta Monta\u00f1a"
+                    "4864": {
+                      "_": "Primer nivel"
                     },
-                    "4838": {
-                      "_": "Media Monta\u00f1a"
+                    "4865": {
+                      "_": "Segundo nivel"
+                    }
+                  }
+                },
+                "2644": {
+                  "_": "Snowboard",
+                  "cdEspecialidadII": {
+                    "4866": {
+                      "_": "Primer nivel"
                     },
-                    "4839": {
-                      "_": "Escalada"
-                    },
-                    "4840": {
-                      "_": "Esqu\u00ed de Monta\u00f1a"
+                    "4867": {
+                      "_": "Segundo nivel"
                     }
                   }
                 }
               }
             },
-            "2656": {
-              "_": "Deportes de Invierno",
+            "4858": {
+              "_": "Grado Superior",
               "cdEspecialidad": {
-                "4857": {
-                  "_": "Grado Medio",
-                  "cdEspecialidadII": {
-                    "2636": {
-                      "_": "Esqu\u00ed Alpino"
-                    },
-                    "2640": {
-                      "_": "Esqu\u00ed de Fondo"
-                    },
-                    "2644": {
-                      "_": "Snowboard"
-                    }
-                  }
+                "4859": {
+                  "_": "Esqu\u00ed Alpino"
                 },
-                "4858": {
-                  "_": "Grado Superior",
-                  "cdEspecialidadII": {
-                    "4859": {
-                      "_": "Esqu\u00ed Alpino"
-                    },
-                    "4860": {
-                      "_": "Esqu\u00ed de Fondo"
-                    },
-                    "4861": {
-                      "_": "Snowboard"
-                    }
-                  }
+                "4860": {
+                  "_": "Esqu\u00ed de Fondo"
+                },
+                "4861": {
+                  "_": "Snowboard"
                 }
               }
-            },
-            "4831": {
-              "_": "Balonmano",
-              "cdEspecialidad": {
-                "4872": {
-                  "_": "Grado Medio",
-                  "cdEspecialidadII": {
-                    "5617": {
-                      "_": "Balonmano"
-                    }
-                  }
-                },
-                "4873": {
-                  "_": "Grado Superior",
-                  "cdEspecialidadII": {
-                    "5618": {
-                      "_": "Balonmano"
-                    }
-                  }
-                }
-              }
-            },
-            "4832": {
-              "_": "Baloncesto",
-              "cdEspecialidad": {
-                "4876": {
-                  "_": "Grado Medio",
-                  "cdEspecialidadII": {
-                    "6225": {
-                      "_": "Baloncesto"
-                    }
-                  }
-                },
-                "4877": {
-                  "_": "Grado Superior",
-                  "cdEspecialidadII": {
-                    "6149": {
-                      "_": "Baloncesto"
-                    }
-                  }
-                }
-              }
-            },
-            "6459": {
-              "_": "Bloque Com\u00fan Grado Medio"
-            },
-            "6460": {
-              "_": "Bloque Com\u00fan Grado Superior"
             }
           }
         },
@@ -14019,6 +13967,9 @@
             },
             "1027": {
               "_": "Media Monta\u00f1a"
+            },
+            "2959": {
+              "_": "Balonmano"
             },
             "6852": {
               "_": "Disciplinas H\u00edpicas de Salto, Doma y Concurso Completo"
@@ -14066,6 +14017,9 @@
             },
             "1035": {
               "_": "Escalada"
+            },
+            "2963": {
+              "_": "Balonmano"
             },
             "6855": {
               "_": "H\u00edpica"
