@@ -1,6 +1,6 @@
 from dataclasses import dataclass, asdict
 from functools import cached_property
-from typing import Dict, Tuple, NamedTuple, List
+from typing import Dict, Tuple, NamedTuple, List, Set
 from aiohttp import ClientResponse, ClientSession
 from bs4 import BeautifulSoup, Tag
 from urllib import parse
@@ -303,6 +303,15 @@ class Etapa(NamedTuple):
             **kwargs
         })
 
+    def notnull(self):
+        return self.merge(
+            nombre=(self.nombre or ''),
+            titularidad=(self.titularidad or ''),
+            tipo=(self.tipo or ''),
+            plazas=(self.plazas or ''),
+            nivel=(self.nivel or -1),
+        )
+
 
 @dataclass(frozen=True)
 class UrlMap:
@@ -538,6 +547,8 @@ class SoupCentro:
                 if len(s) == 0:
                     continue
                 arr.append(", ".join(sorted(s.split(", "))))
+            if len(arr) == 0:
+                return None
             return " / ".join(arr)
 
         etapas: List[Etapa] = []
@@ -559,11 +570,10 @@ class SoupCentro:
             if padre is None:
                 etapas.append(etapa)
                 continue
-            etapas.append(Etapa(**{
-                **etapa._asdict(),
-                **dict(nombre=padre.nombre+SEP+etapa.nombre)
-            }))
-        return tuple(sorted(set(etapas)))
+            etapas.append(etapa.merge(
+                nombre=padre.nombre+SEP+etapa.nombre
+            ))
+        return tuple(sorted(set(etapas), key=lambda e: e.notnull()))
 
     @cached_property
     def educacion_diferenciada(self) -> Tuple[str]:
@@ -786,7 +796,7 @@ class Centro:
                 titularidad=get_tit(self, e)
             ))
         etps = list(
-            sorted(set(etps), key=lambda x: (-x.count(SEP), -len(x), x))
+            sorted(set(etps), key=lambda x: (-x.count(SEP), -len(x), x.notnull()))
         )
         for i, e in enumerate(etps):
             if e.titularidad != 'OTR':
@@ -797,7 +807,16 @@ class Centro:
                     tit.add(x.titularidad)
             if len(tit) == 1:
                 etps[i] = e.merge(titularidad=tit.pop())
-        return tuple(sorted(etps))
+        for i, e in enumerate(etps):
+            if e.tipo is not None:
+                continue
+            tip = set()
+            for x in etps:
+                if x.tipo is not None and (x.nombre, x.titularidad) == (e.nombre, e.titularidad):
+                    tip.add(x.tipo)
+            if len(tip) == 1:
+                etps[i] = e.merge(tipo=tip.pop())
+        return tuple(sorted(set(etps), key=lambda x: x.notnull()))
 
     @cached_property
     def educacion_diferenciada(self):
