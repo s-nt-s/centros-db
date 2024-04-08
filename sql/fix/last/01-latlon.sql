@@ -9,6 +9,7 @@ UPDATE centro SET latitud=40.2593844, longitud=-3.699396  where latitud is null 
 UPDATE centro SET latitud=40.4824995, longitud=-3.3628635 where latitud is null and longitud is null and LOWER(TRIM(REPLACE(IFNULL(domicilio, '') || ' ' || IFNULL(municipio, '') || ' ' || IFNULL(distrito, '') || ' ' || IFNULL(cp, ''), '  ', ' ')))='pl. de san diego, s/n - edificio san ildefonso alcalá de henares 28801';
 
 
+
 --UPDATE centro SET latitud=?, longitud=? where latitud is null and longitud is null and LOWER(TRIM(REPLACE(IFNULL(domicilio, '') || ' ' || IFNULL(municipio, '') || ' ' || IFNULL(distrito, '') || ' ' || IFNULL(cp, ''), '  ', ' ')))='ctra. colmenar viejo, km. 15 madrid 28049';
 --UPDATE centro SET latitud=?, longitud=? where latitud is null and longitud is null and LOWER(TRIM(REPLACE(IFNULL(domicilio, '') || ' ' || IFNULL(municipio, '') || ' ' || IFNULL(distrito, '') || ' ' || IFNULL(cp, ''), '  ', ' ')))='madrid, 126-128 getafe 28903';
 --UPDATE centro SET latitud=?, longitud=? where latitud is null and longitud is null and LOWER(TRIM(REPLACE(IFNULL(domicilio, '') || ' ' || IFNULL(municipio, '') || ' ' || IFNULL(distrito, '') || ' ' || IFNULL(cp, ''), '  ', ' ')))='c/ tulipan, s/n móstoles 28933';
