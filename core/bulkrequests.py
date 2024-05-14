@@ -110,6 +110,8 @@ class BulkRequests:
         return rt
 
     def run(self, *job: BulkRequestsJob, overwrite=False, label="items"):
+        if len(job) == 0:
+            return
         if overwrite:
             for u in job:
                 u.undo()

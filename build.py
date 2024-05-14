@@ -1,6 +1,6 @@
 from core.api import Api
 from core.dblite import DBLite, dict_factory
-from typing import Tuple, Dict, Set
+from typing import Tuple, Dict
 from core.types import ParamValueText, QueryCentros
 from core.util import must_one, read_file, tp_join, logme, parse_dir, unupper
 from core.centro import Centro, SEP
@@ -9,7 +9,7 @@ from core.bulkrequests import BulkRequests
 from core.filemanager import FM
 import argparse
 import logging
-from core.concurso import Concurso
+from core.concurso import Concurso, Concursazo, Concursillo
 import re
 
 parser = argparse.ArgumentParser(
@@ -273,22 +273,23 @@ def fix_latlon(db: DBLite):
 
 @logme
 def try_complete(db: DBLite, tcp_limit: int = 10):
+    tps = tuple("003 004 008 013 015 021 037 042 045 058 072 073 094 104 137 138 139 158 172 185 187 220 221 222 223 305 414".split())
+
     def iter_rows(*args: str, andor="and"):
         where = f" {andor} ".join(map(lambda x: f"{x} is null", args))
-        sql = f"select id from centro where ({where}) and tipo in ('003', '004', '008', '013', '015', '021', '037', '042', '045', '058', '072', '073', '094', '104', '137', '138', '139', '158', '172', '185', '187', '220', '221', '222', '223', '305', '414')"
+        sql = f"select id from centro where ({where}) and tipo in {tps}"
         ids = db.to_tuple(sql)
-        if len(ids) > 0:
-            BulkRequests(
-                tcp_limit=tcp_limit,
-                tries=10
-            ).run(
-                *map(BulkRequestsColegio, ids),
-                label="colegios"
-            )
-            for id in ids:
-                c = Colegio.get(id)
-                if c is not None:
-                    yield c
+        BulkRequests(
+            tcp_limit=tcp_limit,
+            tries=10
+        ).run(
+            *map(BulkRequestsColegio, ids),
+            label="colegios"
+        )
+        for id in ids:
+            c = Colegio.get(id)
+            if c is not None:
+                yield c
 
     list(iter_rows(
         "web", "telefono", "email", "latitud", "longitud",
@@ -392,10 +393,11 @@ def insert_concurso(db: DBLite):
     re_esp_dif = re.compile(r"centros? de especial dificultad", re.IGNORECASE)
     esp_dif = set()
     ok_cent = set(db.to_tuple("select id from centro"))
-    for url in (Concurso.MAESTROS, Concurso.PROFESORES):
-        con = Concurso(url)
+    for con in map(Concurso.build, (Concursazo.MAESTROS, Concursazo.PROFESORES, Concursillo.MAESTROS, Concursillo.PROFESORES)):
         db.insert(
             "CONCURSO",
+            convocatoria=con.convocatoria,
+            tipo=con.tipo,
             id=con.abr,
             txt=con.titulo,
             url=con.url,
@@ -412,8 +414,10 @@ def insert_concurso(db: DBLite):
             if re_esp_dif.search(anx.txt):
                 esp_dif = esp_dif.union(anx.centros)
                 continue
-            ok_cent = ok_cent.union(anx.centros)
             for c in anx.centros:
+                if c not in ok_cent:
+                    logger.warning(f"{c} no existe? (concurso={con.abr} anexo={anx.num}) {anx.url}")
+                    continue
                 db.insert(
                     "CONCURSO_ANEXO_CENTRO",
                     centro=c,

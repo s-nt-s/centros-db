@@ -145,7 +145,11 @@ class DBLite:
         keys = ', '.join(keys)
         prm = ', '.join(['?'] * len(vals))
         sql = f"insert {_or} into {table} ({keys}) values ({prm})"
-        self.con.execute(sql, vals)
+        try:
+            self.con.execute(sql, vals)
+        except sqlite3.IntegrityError as e:
+            msg = re.sub(r"\?", '{}', sql).format(*vals)
+            raise sqlite3.DatabaseError(msg) from e
 
     def _build_select(self, sql: str):
         sql = sql.strip()

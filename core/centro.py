@@ -764,7 +764,7 @@ class Centro:
     )
     def _get_soup(self):
         soup = WEB.get(self.info)
-        SoupCentro(self.id, soup).check_soup()
+        SoupCentro(self.id, soup).check_soup(lazy=True)
         return soup
 
     @cached_property
