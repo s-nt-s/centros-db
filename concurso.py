@@ -109,7 +109,7 @@ def set_cuerpo(db: DBLite):
     db.execute(f'''
 INSERT INTO CONCURSO (convocatoria, tipo, url, cuerpo, id, txt) VALUES
 ('{CON_YEAR}', 'concurso', '{CON_MAE}', '0597',           'magisterio', 'Magisterio'),
-('{CON_YEAR}', 'concurso', '{CON_PRO}', '0590 0511',      'secundaria', 'Enseñanza Secundaria'),
+('{CON_YEAR}', 'concurso', '{CON_PRO}', '0590 0511',      'secundaria', 'Secundaria'),
 ('{CON_YEAR}', 'concurso', '{CON_PRO}', '0598 0591',      'fp',         'Formación Profesional'),
 ('{CON_YEAR}', 'concurso', '{CON_PRO}', '0592 0512',      'eoi',        'Escuelas Oficiales de Idiomas'),
 ('{CON_YEAR}', 'concurso', '{CON_PRO}', '0594 0593',      'musica',     'Música y Artes Escénica'),
@@ -154,6 +154,21 @@ INSERT INTO CONCURSO (convocatoria, tipo, url, cuerpo, id, txt) VALUES
         UPDATE CONCURSO SET txt='Magisterio' where id='{Concursillo.MAE}';
         UPDATE CONCURSO SET txt='Secundaria, FP y régimen especial' where id='{Concursillo.PRO}';
     ''')
+
+    '''
+    rm_cuerpos=set()
+    rm_centros=set()
+    CRP = {
+        "Artes Plásticas y Diseño": (('103', '120', '106'), ('0596', '0595', '0513')),
+        "Escuelas Oficiales de Idiomas": (('080', '081'), ('0592', '0512'))
+    }
+    for con, (tps, cps) in CRP.items():
+        cnt = db.to_tuple(f"select id from centro where tipo in {tps} and id in (select centro from CONCURSO_ANEXO_CENTRO where concurso='{Concursillo.PRO}')")
+        if len(cnt) == 0:
+            continue
+        rm_centros = rm_centros.union(cnt)
+        rm_cuerpos = rm_cuerpos.union(cps)
+    '''
 
 
 if __name__ == "__main__":

@@ -183,8 +183,8 @@ class Concursazo(Concurso):
 class Concursillo(Concurso):
     MAESTROS = "https://www.comunidad.madrid/servicios/educacion/maestros-asignacion-destinos-provisionales-inicio-curso"
     PROFESORES = "https://www.comunidad.madrid/servicios/educacion/secundaria-fp-re-asignacion-destinos-provisionales-inicio-curso"
-    MAE = "maestrillo"
-    PRO = "profesillo"
+    MAE = "concursillo-magisterio"
+    PRO = "concursillo"
 
     @property
     def tipo(self):
