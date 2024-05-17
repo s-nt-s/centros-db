@@ -3,8 +3,8 @@ Crea una base de datos `sqlite` a partir del:
 * [Buscador de centros](https://gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.icm)
 * [Concurso de traslados de Maestros 2023-2024](https://www.comunidad.madrid/servicios/educacion/concurso-traslados-maestros)
 * [Concurso de traslados de Profesores de Secundaria, Formación Profesional y Régimen Especial 2023-2024](https://www.comunidad.madrid/servicios/educacion/concurso-traslados-profesores-secundaria-formacion-profesional-regimen-especial)
-* [Maestros: Asignación de destinos provisionales en inicio de curso (2023-2024)](https://www.comunidad.madrid/servicios/educacion/maestros-asignacion-destinos-provisionales-inicio-curso)
-* [Secundaria, FP y RE: Asignación de destinos provisionales en inicio de curso (2023-2024)](https://www.comunidad.madrid/servicios/educacion/secundaria-fp-re-asignacion-destinos-provisionales-inicio-curso)
+* [Maestros: Asignación de destinos provisionales en inicio de curso (2023-2024)](https://www.comunidad.madrid/servicios/educacion/maestros-asignacion-destinos-provisionales-inicio-curso-2023-2024)
+* [Secundaria, FP y RE: Asignación de destinos provisionales en inicio de curso (2023-2024)](https://www.comunidad.madrid/servicios/educacion/secundaria-fp-re-asignacion-destinos-provisionales-inicio-curso-2023-2024)
 
 El resultado actual se puede consular en [`db.sql`](out/db.sql).
 

@@ -216,7 +216,9 @@ class Concursillo(Concurso):
             n = BeautifulSoup(str(n.find_parent("li")), "html.parser")
             for x in n.findAll(["ul", "ol"]):
                 x.extract()
-            return re_sp.sub(" ", n.get_text()).strip(": ")
+            txt = re_sp.sub(" ", n.get_text()).strip(": ")
+            txt = re.sub(r"\s*\(\d+ de \w+ de 20\d+\s*\)\s*$", "", txt)
+            return txt
         done = set()
         anexos = {}
         resoluciones = {}

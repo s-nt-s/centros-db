@@ -205,13 +205,14 @@ class DBLite:
     def to_tuple(self, *args, **kwargs):
         arr = []
         for i in self.select(*args, **kwargs):
-            if isinstance(i, (tuple, list)) and len(i)==1:
+            if isinstance(i, (tuple, list)) and len(i) == 1:
                 i = i[0]
             arr.append(i)
         return tuple(arr)
 
-    def one(self, sql: str, *args):
+    def one(self, sql: str, *args, row_factory=None):
         sql = self._build_select(sql)
+        self.con.row_factory = row_factory
         cursor = self.con.cursor()
         if len(args):
             cursor.execute(sql, args)
@@ -219,9 +220,10 @@ class DBLite:
             cursor.execute(sql)
         r = cursor.fetchone()
         cursor.close()
+        self.con.row_factory = None
         if not r:
             return None
-        if len(r) == 1:
+        if isinstance(r, (tuple, list)) and len(r) == 1:
             return r[0]
         return r
 

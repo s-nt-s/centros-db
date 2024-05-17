@@ -1,5 +1,5 @@
 from core.api import Api
-from core.dblite import DBLite
+from core.dblite import DBLite, dict_factory
 import argparse
 import logging
 from core.concurso import Concursazo, Concursillo
@@ -105,6 +105,7 @@ def get_pro_anx(db: DBLite) -> Dict[str, Tuple[int]]:
 def set_cuerpo(db: DBLite):
     check_data(db, CON, f"CONCURSO where id=? and txt=? and url=? and convocatoria='{CON_YEAR}'")
     check_data(db, ANX, 'CONCURSO_ANEXO where concurso=? and anexo=? and url=?')
+    check_data(db, ILLO, f"CONCURSO where id=? and txt=? and url=? and convocatoria='{ILLO_YEAR}'")
 
     db.execute(f'''
 INSERT INTO CONCURSO (convocatoria, tipo, url, cuerpo, id, txt) VALUES
@@ -149,26 +150,49 @@ INSERT INTO CONCURSO (convocatoria, tipo, url, cuerpo, id, txt) VALUES
     sql_delete.append(f"DELETE FROM CONCURSO where id='{Concursazo.PRO}';")
     db.execute("\n".join(sql_delete))
 
-    check_data(db, ILLO, f"CONCURSO where id=? and txt=? and url=? and convocatoria='{ILLO_YEAR}'")
     db.execute(f'''
         UPDATE CONCURSO SET txt='Magisterio' where id='{Concursillo.MAE}';
-        UPDATE CONCURSO SET txt='Secundaria, FP y régimen especial' where id='{Concursillo.PRO}';
+        UPDATE CONCURSO SET txt='Secundaria y FP' where id='{Concursillo.PRO}';
     ''')
 
-    '''
-    rm_cuerpos=set()
-    rm_centros=set()
+    rm_cuerpos = set()
+    rm_centros = set()
     CRP = {
-        "Artes Plásticas y Diseño": (('103', '120', '106'), ('0596', '0595', '0513')),
-        "Escuelas Oficiales de Idiomas": (('080', '081'), ('0592', '0512'))
+        "diseno": ("Artes Plásticas y Diseño", '0596 0595 0513', ('103', '120', '106'), ()),
+        "eoi": ("Escuelas Oficiales de Idiomas", '0592 0512', ('080', '081'), ()),
+        "musica": ("Música y Artes Escénica", '0594 0593', ("152", "132", "171", "180"), ("016", "017", "151", "131"))
     }
-    for con, (tps, cps) in CRP.items():
-        cnt = db.to_tuple(f"select id from centro where tipo in {tps} and id in (select centro from CONCURSO_ANEXO_CENTRO where concurso='{Concursillo.PRO}')")
+    url, cuerpos = db.one(f"select url, cuerpo from CONCURSO where id='{Concursillo.PRO}'")
+    for con, (txt, cps, rm_tps, tps) in CRP.items():
+        cnt = db.to_tuple(f"select id from centro where tipo in {rm_tps+tps} and id in (select centro from CONCURSO_ANEXO_CENTRO where concurso='{Concursillo.PRO}')")
         if len(cnt) == 0:
             continue
-        rm_centros = rm_centros.union(cnt)
-        rm_cuerpos = rm_cuerpos.union(cps)
-    '''
+        rm_centros = rm_centros.union(db.to_tuple(f"select id from centro where tipo in {rm_tps} and id in (select centro from CONCURSO_ANEXO_CENTRO where concurso='{Concursillo.PRO}')"))
+        rm_cuerpos = rm_cuerpos.union(cps.split())
+        cid = f'concursillo-{con}'
+        db.execute(f'''
+            INSERT INTO CONCURSO (convocatoria, tipo, url, cuerpo, id, txt) VALUES
+            ('{ILLO_YEAR}', 'concursillo', '{url}', '{cps}', '{cid}', '{txt}')
+            ;
+        ''')
+        db.execute(f'''
+            INSERT INTO CONCURSO_ANEXO (concurso, anexo, txt, url)
+            select '{cid}' concurso, anexo, txt, url
+            from CONCURSO_ANEXO where concurso='{Concursillo.PRO}';
+            INSERT INTO CONCURSO_ANEXO_CENTRO (concurso, anexo, centro)
+            select '{cid}' concurso, anexo, centro
+            from CONCURSO_ANEXO_CENTRO where
+                concurso='{Concursillo.PRO}' and
+                centro in {cnt};
+            ''')
+    if rm_cuerpos:
+        db.execute(f'''
+            DELETE FROM CONCURSO_ANEXO_CENTRO where
+                concurso='{Concursillo.PRO}' and
+                centro in {tuple(sorted(rm_cuerpos))};
+        ''')
+    cuerpos = " ".join(sorted(set(cuerpos.split()).difference(rm_cuerpos)))
+    db.execute(f"UPDATE CONCURSO set cuerpo='{cuerpos}' where id='{Concursillo.PRO}'")
 
 
 if __name__ == "__main__":
