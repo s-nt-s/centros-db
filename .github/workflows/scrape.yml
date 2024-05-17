@@ -38,10 +38,10 @@ jobs:
           JS_TIMEOUT: ${{ vars.JS_TIMEOUT }}
           TCP_LIMIT: ${{ vars.TCP_LIMIT }}
         with:
-          timeout_minutes: 60
+          timeout_minutes: 55
           retry_wait_seconds: 15
           max_attempts: 3
-          retry_on: error
+          retry_on: any
           command: "rm -rf cache/csv/ && python dwn.py --centros --tcp-limit ${TCP_LIMIT:-50}"
       - name: DWN Busquedas
         uses: nick-fields/retry@v2
@@ -49,10 +49,10 @@ jobs:
           JS_TIMEOUT: ${{ vars.JS_TIMEOUT }}
           TCP_LIMIT: ${{ vars.TCP_LIMIT }}
         with:
-          timeout_minutes: 60
+          timeout_minutes: 55
           retry_wait_seconds: 15
           max_attempts: 3
-          retry_on: error
+          retry_on: any
           command: "rm -rf cache/ids/ && python dwn.py --busquedas --tcp-limit ${TCP_LIMIT:-50}"
       - name: Build DB
         uses: nick-fields/retry@v2
@@ -60,10 +60,10 @@ jobs:
           JS_TIMEOUT: ${{ vars.JS_TIMEOUT }}
           TCP_LIMIT: ${{ vars.TCP_LIMIT }}
         with:
-          timeout_minutes: 60
+          timeout_minutes: 55
           retry_wait_seconds: 15
           max_attempts: 3
-          retry_on: error
+          retry_on: any
           command: "python build.py --tcp-limit ${TCP_LIMIT:-50}"
       - name: Write README.md
         run: python3 readme.py
