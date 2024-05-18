@@ -25,6 +25,8 @@ parser.add_argument(
 ARG = parser.parse_args()
 API = Api()
 KWV = {}
+JND = {}
+Q_JND = ("checkOrdinaria", "checkContinua")
 LAST_TUNE = "sql/fix/last"
 DONE = set()
 
@@ -50,6 +52,7 @@ def build_db(db: DBLite, tcp_limit: int = 10):
     KWV["area"] = dict(db.to_tuple("select txt, id from area"))
     KWV["tipo"] = dict()
 
+    insert_jornada(db)
     insert_tipos(db)
     insert_queries(db)
     insert_etapas(db)
@@ -63,15 +66,34 @@ def build_db(db: DBLite, tcp_limit: int = 10):
     # Nos fiamos del campo titularida del csv
     # check_titularidad(db)
 
-    execute_if_query_is_col(
-        db,
-        "sql/fix/jornada.sql",
-        'checkOrdinaria=O',
-        'checkContinua=C'
-    )
-
     insert_concurso(db)
     auto_fix(db)
+
+
+@logme
+def insert_jornada(db: DBLite):
+    keys = set()
+    for name in Q_JND:
+        for val in API.get_form()[name].keys():
+            keys.add(val)
+    keys = tuple(sorted(keys))
+    if keys != ("C", "O"):
+        raise ValueError(f"Hay que revisar las jornadas: {keys}")
+    global JND
+    JND = check_col_query(*Q_JND)
+
+
+@logme
+def check_col_query(*args):
+    id_val = dict()
+    for name in args:
+        obj = API.get_form()[name]
+        for val in sorted(obj.keys()):
+            for id in API.search_ids(**{name: val}):
+                if id in id_val:
+                    raise ValueError(f"{args} no es una columna")
+                id_val[id] = val
+    return id_val
 
 
 @logme
@@ -90,6 +112,8 @@ def insert_tipos(db: DBLite):
 def insert_queries(db: DBLite):
     for name, obj in API.get_form().items():
         if Api.is_redundant_parameter(name):
+            continue
+        if name in Q_JND:
             continue
         for val, txt in sorted(obj.items()):
             ids = API.search_ids(**{name: val})
@@ -204,6 +228,7 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], _or: str = None):
         obj['titular'] = row.titular
         obj['web'] = tp_join(row.web)
         obj['domicilio'] = parse_dir(row.domicilio)
+        obj['jornada'] = JND[row.id]
         return obj
 
     for row in rows:

@@ -19,6 +19,11 @@ CREATE TABLE TITULARIDAD (
     txt TEXT NOT NULL
 );
 
+CREATE TABLE JORNADA (
+    id  TEXT NOT NULL PRIMARY KEY,
+    txt TEXT NOT NULL
+);
+
 CREATE TABLE CENTRO (
     id          INTEGER NOT NULL PRIMARY KEY,
     area        TEXT REFERENCES AREA(id),
@@ -36,6 +41,7 @@ CREATE TABLE CENTRO (
     distrito    TEXT,
     cp          INTEGER,
     dificultad  INTEGER NOT NULL DEFAULT 0,
+    jornada     TEXT NOT NULL REFERENCES JORNADA(id),
     -- fax TEXT,
     CONSTRAINT fk_centro_tipo
         FOREIGN KEY (tipo)
@@ -180,4 +186,8 @@ INSERT INTO TITULARIDAD VALUES
 ('PUB', 'Público'),
 ('CON', 'Concertado'),
 ('PRI', 'Privado');
+
+INSERT INTO JORNADA VALUES
+('C', 'Jornada continua'),
+('O', 'Jornada partida');
 
