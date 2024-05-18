@@ -1,6 +1,6 @@
 from dataclasses import dataclass, asdict
 from functools import cached_property
-from typing import Dict, Tuple, NamedTuple, List, Set
+from typing import Dict, Tuple, NamedTuple, List
 from aiohttp import ClientResponse, ClientSession
 from bs4 import BeautifulSoup, Tag
 from urllib import parse
