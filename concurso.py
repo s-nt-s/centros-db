@@ -185,11 +185,11 @@ INSERT INTO CONCURSO (convocatoria, tipo, url, cuerpo, id, txt) VALUES
                 concurso='{Concursillo.PRO}' and
                 centro in {cnt};
             ''')
-    if rm_cuerpos:
+    if rm_centros:
         db.execute(f'''
             DELETE FROM CONCURSO_ANEXO_CENTRO where
                 concurso='{Concursillo.PRO}' and
-                centro in {tuple(sorted(rm_cuerpos))};
+                centro in {tuple(sorted(rm_centros))};
         ''')
     cuerpos = " ".join(sorted(set(cuerpos.split()).difference(rm_cuerpos)))
     db.execute(f"UPDATE CONCURSO set cuerpo='{cuerpos}' where id='{Concursillo.PRO}'")
