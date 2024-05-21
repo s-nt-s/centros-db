@@ -208,6 +208,8 @@ class Concursillo(Concurso):
             crp = crp.union(ids)
         if crp:
             return " ".join(sorted(crp))
+        if self.abr == Concursillo.PRO:
+            return "0511 0512 0513 0590 0591 0592 0593 0594 0595 0596 0598"
         if self.abr == Concursillo.MAE:
             return "0597"
 
@@ -222,7 +224,7 @@ class Concursillo(Concurso):
         done = set()
         anexos = {}
         resoluciones = {}
-        div: Tag = self.home.select_one("#instrucciones-calendario")
+        div: Tag = self.home.select_one("#instrucciones,#instrucciones-calendario")
         rsl: Tag
         re_reso = re.compile(r"^\s*resoluci[oó]n\s+de\s+(\d+)\s+de\s+(\w+)\s+de\s+(\d+)(.*)$", flags=re.IGNORECASE)
         for rsl in div.findAll("a", string=re_reso):
