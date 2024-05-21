@@ -1,10 +1,11 @@
 Crea una base de datos `sqlite` a partir del:
 
 * [Buscador de centros](https://gestiona.comunidad.madrid/wpad_pub/run/j/BusquedaAvanzada.icm)
+* [Portal de datos abiertos](https://datos.comunidad.madrid/catalogo/dataset/centros_educativos/resource/9578660d-f9de-48f4-a387-7f1a8333338b)
 * [Concurso de traslados de Maestros 2023-2024](https://www.comunidad.madrid/servicios/educacion/concurso-traslados-maestros)
 * [Concurso de traslados de Profesores de Secundaria, Formación Profesional y Régimen Especial 2023-2024](https://www.comunidad.madrid/servicios/educacion/concurso-traslados-profesores-secundaria-formacion-profesional-regimen-especial)
-* [Maestros: Asignación de destinos provisionales en inicio de curso (2023-2024)](https://www.comunidad.madrid/servicios/educacion/maestros-asignacion-destinos-provisionales-inicio-curso-2023-2024)
-* [Secundaria, FP y RE: Asignación de destinos provisionales en inicio de curso (2023-2024)](https://www.comunidad.madrid/servicios/educacion/secundaria-fp-re-asignacion-destinos-provisionales-inicio-curso-2023-2024)
+* [Maestros: Asignación de destinos provisionales en inicio de curso (2024-2025)](https://www.comunidad.madrid/servicios/educacion/maestros-asignacion-destinos-provisionales-inicio-curso)
+* [Secundaria, FP y RE: Asignación de destinos provisionales en inicio de curso (2024-2025)](https://www.comunidad.madrid/servicios/educacion/secundaria-fp-re-asignacion-destinos-provisionales-inicio-curso)
 
 El resultado actual se puede consular en [`db.sql`](out/db.sql).
 

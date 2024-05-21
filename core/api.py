@@ -2,13 +2,15 @@ import re
 from functools import cache, cached_property
 from urllib.parse import urljoin
 from typing import Any, Coroutine, Tuple, Dict, List
-from aiohttp import ClientResponse, ClientSession
+from aiohttp import ClientSession
+import requests
 from bs4 import BeautifulSoup, Tag
 from os.path import dirname, isfile
 from glob import glob
 import os
 import logging
 from requests.exceptions import ConnectionError
+from itertools import zip_longest
 
 from .web import Web, Driver, buildSoup, select_attr, DomNotFoundException
 from .types import ParamValueText, QueryResponse
@@ -16,7 +18,7 @@ from .centro import Centro
 from .cache import Cache
 from .retry import retry
 from .bulkrequests import BulkRequestsFileJob
-from .util import hashme
+from .util import hashme, fix_char
 
 
 logger = logging.getLogger(__name__)
@@ -116,6 +118,20 @@ def csvstr_to_rows(content: str) -> Tuple[Tuple[str]]:
         if len(row) > 0:
             rows.append(tuple(re_csv_fl.split(row)))
     return tuple(rows)
+
+
+def csvstr_to_dict(content: str) -> Tuple[Dict[str, Any]]:
+    rows = []
+    arr = csvstr_to_rows(content)
+    head = arr[0]
+    for item in arr[1:]:
+        c = {}
+        for h, i in zip_longest(head, item):
+            if isinstance(i, str) and len(i) == 0:
+                i = None
+            c[h] = i
+        rows.append(c)
+    return rows
 
 
 class BulkRequestsApi(BulkRequestsFileJob):
@@ -239,6 +255,18 @@ class Api():
         ids = self.search_ids(**kargv)
         return self.get_centros(*ids)
 
+    @Cache("cache/csv/opendata.csv")
+    def get_opendata_csv_as_str(self):
+        r = requests.get("https://datos.comunidad.madrid/catalogo/dataset/ae433b7e-98f7-4547-8aa5-6ada557a429f/resource/9578660d-f9de-48f4-a387-7f1a8333338b/download/centros_educativos.csv")
+        return r.text
+
+    @cache
+    def get_opendata(self):
+        obj = {}
+        for i in csvstr_to_dict(self.get_opendata_csv_as_str()):
+            obj[int(i['centro_codigo'])] = i
+        return obj
+
     @IdCache("cache/ids/", maxOld=5)
     def search_ids(self, **data) -> Tuple[int]:
         r = self.__do_search(**data)
@@ -351,10 +379,15 @@ class Api():
         arr = []
         head = rows[1]
         for row in rows[2:]:
-            c = Centro.build(head, row)
+            c = self.__build_centro(head, row)
             arr.append(c)
         arr = tuple(arr)
         return arr
+
+    def __build_centro(self, head: Tuple, row: Tuple):
+        c = Centro.build(head, row)
+        c = c.merge(self.get_opendata().get(c.id))
+        return c
 
     @cached_property
     @retry(
@@ -416,9 +449,7 @@ class Api():
         def _get_text(n: Tag):
             txt = n.get_text()
             txt = re_sp.sub(" ", txt).strip()
-            txt = txt.replace("ń", "ñ")
-            txt = txt.replace("Ń", "Ñ")
-            return txt
+            return fix_char(txt)
 
         frm = self.home.select_one(f'#{id}')
         for n in frm.select("select"):

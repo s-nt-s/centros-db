@@ -22,7 +22,8 @@ def read(file):
 
 
 urls = [
-    ("Buscador de centros", Api.URL)
+    ("Buscador de centros", Api.URL),
+    ("Portal de datos abiertos", "https://datos.comunidad.madrid/catalogo/dataset/centros_educativos/resource/9578660d-f9de-48f4-a387-7f1a8333338b")
 ]
 with DBLite(ARG.db, readonly=True) as db:
     urls.extend(

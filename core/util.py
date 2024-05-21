@@ -50,6 +50,21 @@ def tp_join(t: Union[Any, Tuple]):
     return " ".join(map(str, t))
 
 
+def fix_char(txt: str):
+    if txt is None:
+        return None
+    for k, v in (
+        "ńñ",
+        "įá",
+        "şº",
+        "ŗº",
+        "ķí"
+    ):
+        txt = txt.replace(k, v)
+        txt = txt.replace(k.upper(), v.upper())
+    return txt
+
+
 def logme(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):

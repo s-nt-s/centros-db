@@ -1,6 +1,6 @@
-from dataclasses import dataclass, asdict
-from functools import cached_property
-from typing import Dict, Tuple, NamedTuple, List
+from dataclasses import dataclass, asdict, field, replace
+from functools import cached_property, cache
+from typing import Dict, Tuple, NamedTuple, List, Union
 from aiohttp import ClientResponse, ClientSession
 from bs4 import BeautifulSoup, Tag
 from urllib import parse
@@ -14,6 +14,7 @@ import logging
 from requests.exceptions import ConnectionError
 from .bulkrequests import BulkRequestsFileJob
 from itertools import zip_longest
+from .util import fix_char
 
 re_sp = re.compile(r"\s+")
 re_mail = re.compile(r'[\w\.\-_]+@[\w\-_]+\.[\w\-_]+', re.IGNORECASE)
@@ -25,23 +26,19 @@ WEB = Web()
 SEP = " -> "
 
 
-def _safe_int(x):
-    if x is None:
-        return None
-    return int(x)
-
-
-def _parse(k, v):
+def _parse(k: str, v: str):
     if v is None:
         return None
     v = re_sp.sub(" ", v).strip()
-    if v in ("", "-", "0", 0):
+    lw = v.lower()
+    if lw.lower() in ("", "0", "http://", "https://", "http://no") or re.match(r"^-+$", lw):
         return None
-    x = re_sp.sub(" ", v).lower()
-    if k == 'FAX' and x in ("sinfax", "nohayfax", "no", "x"):
+    if k == 'FAX' and lw in ("sinfax", "nohayfax", "no", "x"):
         return None
-    if k == "COD. POSTAL" and int(v) == 0:
-        return None
+    if k in ('centro_codigo', 'centro_tipo_codigo', 'dat_codigo', 'direccion_codigo_postal', 'distrito_codigo', 'direccion_coor_x', 'direccion_coor_y', 'CODIGO CENTRO', 'COD. POSTAL'):
+        return int(v)
+    if isinstance(v, str):
+        v = fix_char(v)
     return v
 
 
@@ -64,6 +61,19 @@ def _get_telefono(s: str) -> Tuple[int]:
     for t in s.split():
         if len(t) > 8 and t not in arr and t.isdigit():
             arr.append(int(t))
+    return tuple(arr)
+
+
+def _get_web(web: str) -> Tuple[str]:
+    if web is None:
+        return tuple()
+    web = re.sub(r",?\s+|\s+[oó]\s+", " ", web).strip()
+    arr = []
+    for w in web.split():
+        w = re.sub(r"^https?://\s*|[/#\?]+$", "", w, flags=re.IGNORECASE)
+        w = w.lower()
+        if len(w) and w not in arr:
+            arr.append(w)
     return tuple(arr)
 
 
@@ -151,7 +161,7 @@ class BulkRequestsCentro(BulkRequestsFileJob):
             "__cache_obj__"
         )
         self.okkomap: Dict[str, bool] = {}
-        self.oksoup: Dict[tuple(), CountSoupCentro] = dict()
+        self.oksoup: Dict[Tuple, CountSoupCentro] = dict()
 
     def add_ok_before_map(self, spct: "SoupCentro"):
         if spct.as_tuple not in self.oksoup:
@@ -425,6 +435,7 @@ class SoupCentro:
         arr = []
         for td in self.soup.select(f"#{id} td"):
             txt = re_sp.sub(" ", td.get_text()).strip()
+            txt = fix_char(txt)
             if len(txt) and txt not in arr:
                 arr.append(txt)
         return tuple(arr)
@@ -435,12 +446,8 @@ class SoupCentro:
         if web is None:
             return tuple()
         web = re.sub(r",?\s+|\s+[oó]\s+", " ", web).strip()
-        arr = []
-        for w in web.split():
-            w = re.sub(r"^https?://\s*|[/#\?]+$", "", w, flags=re.IGNORECASE)
-            if len(w) and w not in arr:
-                arr.append(w)
-        return tuple(arr)
+        web = fix_char(web)
+        return _get_web(web)
 
     @cached_property
     def email(self) -> Tuple[str]:
@@ -468,7 +475,9 @@ class SoupCentro:
             if strong.find(["strong", "td", "span"]):
                 continue
             for txt in strong.findAll(text=True):
-                yield txt.get_text()
+                txt = txt.get_text()
+                txt = fix_char(txt)
+                yield txt
 
     @cached_property
     def inputs(self) -> Dict[str, str]:
@@ -486,7 +495,7 @@ class SoupCentro:
                 continue
             if n == "tlWeb" and "." not in v:
                 continue
-            data[n] = v
+            data[n] = fix_char(v)
         return data
 
     @cached_property
@@ -519,6 +528,7 @@ class SoupCentro:
             val = val[-1].strip()
             if val.strip() in ('', 'null'):
                 return None
+            val = fix_char(val)
             val = {
                 'COMUNDAD DE MADRID': 'COMUNIDAD DE MADRID'
             }.get(val, val)
@@ -528,7 +538,7 @@ class SoupCentro:
     def etapas(self):
         def get_text(n: Tag):
             txt = re_sp.sub(" ", n.get_text()).strip()
-            return txt if len(txt) else None
+            return fix_char(txt) if len(txt) else None
 
         def find_padre(etapas: List[Etapa], nivel: int):
             for e in reversed(etapas):
@@ -586,6 +596,7 @@ class SoupCentro:
         re_sp.sub(" ", txt).strip()
         if txt.lower() in ('', 'null'):
             return tuple()
+        txt = fix_char(txt)
         arr = set()
         for t in txt.split(", "):
             t = t.strip()
@@ -622,6 +633,7 @@ class SoupCentro:
             if td.find("td"):
                 continue
             txt = re_sp.sub(" ", td.get_text()).strip()
+            txt = fix_char(txt)
             if txt.startswith("Dirección: "):
                 txt = txt.split(": ", 1)[-1].strip()
                 if len(txt) > 10:
@@ -679,6 +691,48 @@ class SoupCentro:
         )
 
 
+class OpenDataCentro(NamedTuple):
+    centro_codigo: int
+    centro_nombre: str
+    centro_tipo_codigo: int
+    centro_tipo_desc_abreviada: str
+    centro_tipo_descripcion: str
+    centro_titularidad: str
+    centro_titular: str
+    dat_codigo: int
+    dat_nombre: str
+    direccion_via_tipo: str
+    direccion_via_nombre: str
+    direccion_numero: str
+    direccion_codigo_postal: int
+    municipio_codigo: str
+    municipio_nombre: str
+    distrito_codigo: int
+    distrito_nombre: str
+    contacto_telefono1: str
+    contacto_telefono2: str
+    contacto_telefono3: str
+    contacto_telefono4: str
+    contacto_fax: str
+    contacto_web: str
+    contacto_email1: str
+    direccion_coor_x: int
+    direccion_coor_y: int
+
+    @staticmethod
+    def build(obj: Dict):
+        if obj is None:
+            return None
+        return OpenDataCentro(**{k: _parse(k, v) for k, v in obj.items()})
+
+    @cache
+    def get_latlon(self) -> LatLon:
+        if None in (self.direccion_coor_x, self.direccion_coor_y):
+            return None
+        latlon = utm_to_geo("ED50", 30, self.direccion_coor_x, self.direccion_coor_y)
+        return latlon.round(7)
+
+
 @dataclass(frozen=True)
 class Centro:
     id: int
@@ -692,7 +746,9 @@ class Centro:
     telefono: Tuple[int] = None
     email: Tuple[str] = tuple()
     titularidad: str = None
-    # fax: Tuple[int] = tuple()
+    fax: Tuple[int] = tuple()
+    _latlon: LatLon = field(repr=False, init=False, default=None)
+    _webs: Tuple[str] = field(repr=False, init=False, default=tuple())
 
     @classmethod
     def build(cls, head: Tuple, row: Tuple):
@@ -701,18 +757,43 @@ class Centro:
         titularidad = _find_titularidad(row[head.index("EMAIL2")+1:])
         return cls(
             area=obj['AREA TERRITORIAL'],
-            id=int(obj['CODIGO CENTRO']),
+            id=obj['CODIGO CENTRO'],
             tipo=obj['TIPO DE CENTRO'],
             nombre=obj['CENTRO'],
             domicilio=obj['DOMICILIO'],
             municipio=obj['MUNICIPIO'],
             distrito=obj['DISTRITO MUNICIPAL'],
-            cp=_safe_int(obj['COD. POSTAL']),
+            cp=obj['COD. POSTAL'],
             telefono=_get_telefono(obj['TELEFONO']),
             email=mails,
             titularidad=titularidad,
-            # fax=_get_telefono(obj['FAX']),
+            fax=_get_telefono(obj['FAX']),
         )
+
+    def merge(self, o: Union[OpenDataCentro, Dict]):
+        if o is None:
+            return self
+        if isinstance(o, dict):
+            o = OpenDataCentro.build(o)
+        telefono = list(self.telefono)
+        email = list(self.email)
+        fax = list(self.fax)
+        for txt in (o.contacto_email1 or "", o.contacto_web or ""):
+            for m in re_mail.findall(txt):
+                if m not in email:
+                    email.append(m)
+        for t in _get_telefono(o.contacto_fax):
+            if t not in fax:
+                fax.append(t)
+        for tlf in (o.contacto_telefono1, o.contacto_telefono2, o.contacto_telefono3, o.contacto_telefono4):
+            for t in _get_telefono(tlf):
+                if t not in telefono and t not in fax:
+                    telefono.append(t)
+
+        c = replace(self, telefono=tuple(telefono), email=tuple(email), fax=tuple(fax))
+        object.__setattr__(c, '_latlon', o.get_latlon())
+        object.__setattr__(c, '_web', _get_web(o.contacto_web))
+        return c
 
     def _asdict(self):
         return asdict(self)
@@ -723,7 +804,7 @@ class Centro:
 
     def fix_mail(self):
         is_mail = list(self.email)
-        for w in self.home.web:
+        for w in (self.home.web + self._webs):
             w = re.sub(r"^www\.?", "", w)
             if "@" in w and w not in is_mail:
                 is_mail.append(w)
@@ -767,15 +848,21 @@ class Centro:
         SoupCentro(self.id, soup).check_soup(lazy=True)
         return soup
 
-    @cached_property
+    @property
     def web(self):
-        return tuple(
+        webs = list(
             w for w in self.home.web if "@" not in w
         )
+        for w in self._webs:
+            if w not in webs and "@" not in w:
+                webs.append(w)
+        return tuple(webs)
 
-    @cached_property
+    @property
     def latlon(self):
-        return self.home.latlon
+        if self.home.latlon is not None:
+            return self.home.latlon
+        return self._latlon
 
     @cached_property
     def titular(self):
