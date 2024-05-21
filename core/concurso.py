@@ -220,6 +220,7 @@ class Concursillo(Concurso):
                 x.extract()
             txt = re_sp.sub(" ", n.get_text()).strip(": ")
             txt = re.sub(r"\s*\(\d+ de \w+ de 20\d+\s*\)\s*$", "", txt)
+            txt = re.sub(r"\s*\(anexo [\dI]+\)\s*$", "", txt)
             return txt
         done = set()
         anexos = {}
