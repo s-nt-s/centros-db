@@ -2234,6 +2234,14 @@
             "7522": {
               "_": "Ingl\u00e9s",
               "cdEspecialidad": {
+                "2974": {
+                  "_": "Presencial Anual Vespertino Intenso",
+                  "cdEspecialidadII": {
+                    "2975": {
+                      "_": "A1"
+                    }
+                  }
+                },
                 "7526": {
                   "_": "Semipresencial"
                 },
@@ -2986,6 +2994,14 @@
                   "cdEspecialidadII": {
                     "2916": {
                       "_": "A2"
+                    }
+                  }
+                },
+                "2968": {
+                  "_": "Presencial Anual Vespertino Intensivo",
+                  "cdEspecialidadII": {
+                    "2969": {
+                      "_": "A2.1"
                     }
                   }
                 },
@@ -5929,6 +5945,14 @@
                     }
                   }
                 },
+                "2972": {
+                  "_": "Semipresencial Anual Vespertino Intenso",
+                  "cdEspecialidadII": {
+                    "2973": {
+                      "_": "B1"
+                    }
+                  }
+                },
                 "7781": {
                   "_": "Semipresencial"
                 },
@@ -8040,6 +8064,14 @@
                     },
                     "2885": {
                       "_": "B2.2"
+                    }
+                  }
+                },
+                "2970": {
+                  "_": "Semipresencial Anual Vespertino Intensivo",
+                  "cdEspecialidadII": {
+                    "2971": {
+                      "_": "B1"
                     }
                   }
                 },
