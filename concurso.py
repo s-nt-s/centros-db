@@ -113,7 +113,7 @@ INSERT INTO CONCURSO (convocatoria, tipo, url, cuerpo, id, txt) VALUES
 ('{CON_YEAR}', 'concurso', '{CON_PRO}', '0590 0511',      'secundaria', 'Secundaria'),
 ('{CON_YEAR}', 'concurso', '{CON_PRO}', '0598 0591',      'fp',         'Formación Profesional'),
 ('{CON_YEAR}', 'concurso', '{CON_PRO}', '0592 0512',      'eoi',        'Escuelas Oficiales de Idiomas'),
-('{CON_YEAR}', 'concurso', '{CON_PRO}', '0594 0593',      'musica',     'Música y Artes Escénica'),
+('{CON_YEAR}', 'concurso', '{CON_PRO}', '0594 0593',      'musica',     'Música y Artes Escénicas'),
 ('{CON_YEAR}', 'concurso', '{CON_PRO}', '0596 0595 0513', 'diseno',     'Artes Plásticas y Diseño')
 ;
     ''')
@@ -160,7 +160,7 @@ INSERT INTO CONCURSO (convocatoria, tipo, url, cuerpo, id, txt) VALUES
     CRP = {
         "diseno": ("Artes Plásticas y Diseño", '0596 0595 0513', ('103', '120', '106'), ()),
         "eoi": ("Escuelas Oficiales de Idiomas", '0592 0512', ('080', '081'), ()),
-        "musica": ("Música y Artes Escénica", '0594 0593', ("152", "132", "171", "180"), ("016", "017", "151", "131"))
+        "musica": ("Música y Artes Escénicas", '0594 0593', ("152", "132", "171", "180"), ("016", "017", "151", "131"))
     }
     url, cuerpos = db.one(f"select url, cuerpo from CONCURSO where id='{Concursillo.PRO}'")
     for con, (txt, cps, rm_tps, tps) in CRP.items():
