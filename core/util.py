@@ -56,8 +56,9 @@ def fix_char(txt: str):
     for k, v in (
         "ńñ",
         "įá",
-        "şº",
+        "şª",
         "ŗº",
+        "ˇ¡",
         "ķí"
     ):
         txt = txt.replace(k, v)
