@@ -221,6 +221,7 @@ class Concursillo(Concurso):
             txt = re_sp.sub(" ", n.get_text()).strip(": ")
             txt = re.sub(r"\s*\(\d+ de \w+ de 20\d+\s*\)\s*$", "", txt)
             txt = re.sub(r"\s*\(anexo [\dI]+\)\s*$", "", txt)
+            txt = re.sub(r"^Corrección de errores: Resolución", "Resolución", txt)
             return txt
         done = set()
         anexos = {}
@@ -239,25 +240,36 @@ class Concursillo(Concurso):
             rsl.string = re_reso.sub("Resolución "+txt+tail, rsl.string)
             resoluciones[txt] = rsl
 
+        def _add(a: Tag):
+            url = a.attrs["href"]
+            if self.url == Concursillo.PROFESORES and url.endswith("_mae.pdf"):
+                url = url.rsplit("_", 1)[0] + "_sec.pdf"
+            if url in done:
+                return
+            done.add(url)
+            num = len(anexos)
+            anexos[num] = Anexo(
+                num=num,
+                txt=_txt(a),
+                url=url
+            )
+
+        for r, rsl in sorted(resoluciones.items()):
+            root: Tag = rsl.find_parent("li")
+            for a in root.select("a"):
+                _add(a)
+
         for r, rsl in sorted(resoluciones.items()):
             root: Tag = rsl.find_parent("ul")
             while root.find_parent("ul"):
                 root = root.find_parent("ul")
             for a in root.select("li a"):
-                url = a.attrs["href"]
-                if url in done:
-                    continue
-                done.add(url)
-                num = len(anexos)
-                anexos[num] = Anexo(
-                    num=num,
-                    txt=_txt(a),
-                    url=url
-                )
+                _add(a)
+
         return anexos
 
 
 if __name__ == "__main__":
     for con in map(Concurso.build, (Concursazo.MAESTROS, Concursazo.PROFESORES, Concursillo.MAESTROS, Concursillo.PROFESORES)):
         for a in con.anexos.values():
-            print(con.convocatoria, con.abr, a.num, len(a.centros))
+            print(con.convocatoria, con.abr, a.num, a.url)

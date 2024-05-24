@@ -1,9 +1,10 @@
 from core.api import Api
-from core.dblite import DBLite, dict_factory
+from core.dblite import DBLite
 import argparse
 import logging
 from core.concurso import Concursazo, Concursillo
 from typing import Dict, Tuple
+import re
 
 parser = argparse.ArgumentParser(
     description='Añade la información sobre los cuerpos',
@@ -107,7 +108,11 @@ def set_cuerpo(db: DBLite):
     check_data(db, ANX, 'CONCURSO_ANEXO where concurso=? and anexo=? and url=?')
     check_data(db, ILLO, f"CONCURSO where id=? and txt=? and url=? and convocatoria='{ILLO_YEAR}'")
 
-    db.execute(f'''
+    def exe(sql: str):
+        sql = re.sub(r"(\s+in\s+\([^\)]+,)\)", r"\1 -999)", sql)
+        return db.execute(sql)
+
+    exe(f'''
 INSERT INTO CONCURSO (convocatoria, tipo, url, cuerpo, id, txt) VALUES
 ('{CON_YEAR}', 'concurso', '{CON_MAE}', '0597',           'magisterio', 'Magisterio'),
 ('{CON_YEAR}', 'concurso', '{CON_PRO}', '0590 0511',      'secundaria', 'Secundaria'),
@@ -117,7 +122,7 @@ INSERT INTO CONCURSO (convocatoria, tipo, url, cuerpo, id, txt) VALUES
 ('{CON_YEAR}', 'concurso', '{CON_PRO}', '0596 0595 0513', 'diseno',     'Artes Plásticas y Diseño')
 ;
     ''')
-    db.execute(f'''
+    exe(f'''
         INSERT INTO CONCURSO_ANEXO (concurso, anexo, txt, url)
         select 'magisterio' concurso, anexo, txt, url
         from CONCURSO_ANEXO where concurso='{Concursazo.MAE}';
@@ -127,7 +132,7 @@ INSERT INTO CONCURSO (convocatoria, tipo, url, cuerpo, id, txt) VALUES
     ''')
     sql_delete = []
     for con, anx in get_pro_anx(db).items():
-        db.execute(f'''
+        exe(f'''
             INSERT INTO CONCURSO_ANEXO (concurso, anexo, txt, url)
             select '{con}' concurso, anexo, txt, url
             from CONCURSO_ANEXO where
@@ -148,9 +153,9 @@ INSERT INTO CONCURSO (convocatoria, tipo, url, cuerpo, id, txt) VALUES
                 anexo in {anx};
         ''')
     sql_delete.append(f"DELETE FROM CONCURSO where id='{Concursazo.PRO}';")
-    db.execute("\n".join(sql_delete))
+    exe("\n".join(sql_delete))
 
-    db.execute(f'''
+    exe(f'''
         UPDATE CONCURSO SET txt='Magisterio' where id='{Concursillo.MAE}';
         UPDATE CONCURSO SET txt='Secundaria y FP' where id='{Concursillo.PRO}';
     ''')
@@ -170,12 +175,12 @@ INSERT INTO CONCURSO (convocatoria, tipo, url, cuerpo, id, txt) VALUES
         rm_centros = rm_centros.union(db.to_tuple(f"select id from centro where tipo in {rm_tps} and id in (select centro from CONCURSO_ANEXO_CENTRO where concurso='{Concursillo.PRO}')"))
         rm_cuerpos = rm_cuerpos.union(cps.split())
         cid = f'concursillo-{con}'
-        db.execute(f'''
+        exe(f'''
             INSERT INTO CONCURSO (convocatoria, tipo, url, cuerpo, id, txt) VALUES
             ('{ILLO_YEAR}', 'concursillo', '{url}', '{cps}', '{cid}', '{txt}')
             ;
         ''')
-        db.execute(f'''
+        exe(f'''
             INSERT INTO CONCURSO_ANEXO (concurso, anexo, txt, url)
             select '{cid}' concurso, anexo, txt, url
             from CONCURSO_ANEXO where concurso='{Concursillo.PRO}';
@@ -186,13 +191,13 @@ INSERT INTO CONCURSO (convocatoria, tipo, url, cuerpo, id, txt) VALUES
                 centro in {cnt};
             ''')
     if rm_centros:
-        db.execute(f'''
+        exe(f'''
             DELETE FROM CONCURSO_ANEXO_CENTRO where
                 concurso='{Concursillo.PRO}' and
                 centro in {tuple(sorted(rm_centros))};
         ''')
     cuerpos = " ".join(sorted(set(cuerpos.split()).difference(rm_cuerpos)))
-    db.execute(f"UPDATE CONCURSO set cuerpo='{cuerpos}' where id='{Concursillo.PRO}'")
+    exe(f"UPDATE CONCURSO set cuerpo='{cuerpos}' where id='{Concursillo.PRO}'")
 
 
 if __name__ == "__main__":
