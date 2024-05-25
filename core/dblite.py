@@ -10,14 +10,14 @@ import re
 logger = logging.getLogger(__name__)
 
 
-def dict_factory(cursor, row):
+def dict_factory(cursor: sqlite3.Cursor, row):
     d = {}
     for idx, col in enumerate(cursor.description):
         d[col[0]] = row[idx]
     return d
 
 
-def ResultIter(cursor, size=1000):
+def ResultIter(cursor: sqlite3.Cursor, size=1000):
     while True:
         results = cursor.fetchmany(size)
         if not results:
