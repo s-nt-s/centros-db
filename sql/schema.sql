@@ -191,3 +191,12 @@ INSERT INTO JORNADA VALUES
 ('C', 'Jornada continua'),
 ('O', 'Jornada partida');
 
+CREATE VIEW CENTRO_TXT as
+select * from (
+    select centro, nombre txt from ETAPA_NOMBRE_CENTRO
+    union
+    select ec.centro, e.txt from ETAPA e join ETAPA_CENTRO ec on ec.etapa=e.id
+    union
+    select c.id centro, t.txt from CENTRO c join TIPO t on c.tipo=t.id
+) order by centro
+;
