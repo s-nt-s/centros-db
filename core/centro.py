@@ -17,7 +17,7 @@ from itertools import zip_longest
 from .util import fix_char
 
 re_sp = re.compile(r"\s+")
-re_mail = re.compile(r'[\w\.\-_]+@[\w\-_]+\.[\w\-_]+', re.IGNORECASE)
+re_mail = re.compile(r'[\w\.\-_]+@[\w\-_\.]+\.[\w\-_]+', re.IGNORECASE)
 re_coord = re.compile(r"&xIni=([\d\.]+)&yIni=([\d\.]+)")
 
 logger = logging.getLogger(__name__)
