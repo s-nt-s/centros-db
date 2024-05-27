@@ -42,10 +42,11 @@ def _parse(k: str, v: str):
     return v
 
 
-def _find_mails(arr):
+def _find_mails(*arr: str):
     mails = []
     for v in arr:
         for m in re_mail.findall(v):
+            m = m.lower()
             if m not in mails:
                 mails.append(m)
     return tuple(mails)
@@ -451,14 +452,10 @@ class SoupCentro:
 
     @cached_property
     def email(self) -> Tuple[str]:
-        mails = re_mail.findall(
-            (self.inputs.get("tlMail") or '')
+        return _find_mails(
+            (self.inputs.get("tlMail") or ''),
+            *self.__iter_strong_text()
         )
-        for txt in self.__iter_strong_text():
-            for m in re_mail.findall(txt):
-                if m not in mails:
-                    mails.append(m)
-        return tuple(mails)
 
     @cached_property
     def telefono(self) -> Tuple[str]:
@@ -753,7 +750,7 @@ class Centro:
     @classmethod
     def build(cls, head: Tuple, row: Tuple):
         obj = {h: _parse(h, c) for h, c in zip_longest(head, row)}
-        mails = _find_mails(row[head.index("EMAIL"):])
+        mails = _find_mails(*row[head.index("EMAIL"):])
         titularidad = _find_titularidad(row[head.index("EMAIL2")+1:])
         return cls(
             area=obj['AREA TERRITORIAL'],
@@ -780,6 +777,7 @@ class Centro:
         fax = list(self.fax)
         for txt in (o.contacto_email1 or "", o.contacto_web or ""):
             for m in re_mail.findall(txt):
+                m = m.lower()
                 if m not in email:
                     email.append(m)
         for t in _get_telefono(o.contacto_fax):
