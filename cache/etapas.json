@@ -2055,6 +2055,14 @@
             "7505": {
               "_": "Franc\u00e9s",
               "cdEspecialidad": {
+                "2980": {
+                  "_": "Presencial Anual Vespertino Intensivo",
+                  "cdEspecialidadII": {
+                    "2981": {
+                      "_": "A1"
+                    }
+                  }
+                },
                 "7509": {
                   "_": "Semipresencial"
                 },
@@ -12283,6 +12291,17 @@
               "cdEspecialidad": {
                 "2503": {
                   "_": "Prueba de Certificaci\u00f3n"
+                },
+                "2982": {
+                  "_": "Distancia Anual Vespertino",
+                  "cdEspecialidadII": {
+                    "2983": {
+                      "_": "C2.1"
+                    },
+                    "2984": {
+                      "_": "C2.2"
+                    }
+                  }
                 },
                 "8054": {
                   "_": "Semipresencial"
