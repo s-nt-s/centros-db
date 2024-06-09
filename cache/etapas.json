@@ -3085,6 +3085,14 @@
                 "2316": {
                   "_": "Prueba de Certificaci\u00f3n"
                 },
+                "2992": {
+                  "_": "Distancia Anual Vespertino",
+                  "cdEspecialidadII": {
+                    "2993": {
+                      "_": "A2"
+                    }
+                  }
+                },
                 "7597": {
                   "_": "Semipresencial"
                 },
@@ -5401,6 +5409,9 @@
                   "cdEspecialidadII": {
                     "2835": {
                       "_": "B1.1"
+                    },
+                    "2999": {
+                      "_": "B1.2"
                     }
                   }
                 },
@@ -6222,6 +6233,17 @@
               "cdEspecialidad": {
                 "2467": {
                   "_": "Prueba de Certificaci\u00f3n"
+                },
+                "2994": {
+                  "_": "Distancia Anual Vespertino",
+                  "cdEspecialidadII": {
+                    "2995": {
+                      "_": "B1.1"
+                    },
+                    "2996": {
+                      "_": "B1.2"
+                    }
+                  }
                 },
                 "7798": {
                   "_": "Semipresencial"
@@ -7119,7 +7141,7 @@
                   "_": "Distancia Anual Vespertino",
                   "cdEspecialidadII": {
                     "2826": {
-                      "_": "B.2.1"
+                      "_": "B2.1"
                     },
                     "2827": {
                       "_": "B2.2"
@@ -10499,6 +10521,14 @@
             "8013": {
               "_": "Rumano",
               "cdEspecialidad": {
+                "2997": {
+                  "_": "Distancia Anual Vespertino",
+                  "cdEspecialidadII": {
+                    "2998": {
+                      "_": "C1"
+                    }
+                  }
+                },
                 "8016": {
                   "_": "Semipresencial"
                 },
