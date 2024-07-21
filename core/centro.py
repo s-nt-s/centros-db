@@ -26,6 +26,11 @@ WEB = Web()
 SEP = " -> "
 
 
+def get_text(n: Tag):
+    txt = re_sp.sub(" ", n.get_text()).strip()
+    return fix_char(txt) if len(txt) else None
+
+
 def _parse(k: str, v: str):
     if v is None:
         return None
@@ -434,10 +439,8 @@ class SoupCentro:
 
     def __get_div_td(self, id) -> Tuple[str]:
         arr = []
-        for td in self.soup.select(f"#{id} td"):
-            txt = re_sp.sub(" ", td.get_text()).strip()
-            txt = fix_char(txt)
-            if len(txt) and txt not in arr:
+        for txt in map(get_text, self.soup.select(f"#{id} td")):
+            if txt is not None and txt not in arr:
                 arr.append(txt)
         return tuple(arr)
 
@@ -472,9 +475,9 @@ class SoupCentro:
             if strong.find(["strong", "td", "span"]):
                 continue
             for txt in strong.findAll(text=True):
-                txt = txt.get_text()
-                txt = fix_char(txt)
-                yield txt
+                txt = get_text(txt)
+                if txt is not None:
+                    yield txt
 
     @cached_property
     def inputs(self) -> Dict[str, str]:
@@ -518,14 +521,13 @@ class SoupCentro:
         for td in self.soup.select("#capaDatIdentContent td"):
             if td.find("td"):
                 continue
-            txt = re_sp.sub(" ", td.get_text()).strip()
+            txt = get_text(td)
             val = txt.split("Titular:")
             if len(val) < 2:
                 continue
             val = val[-1].strip()
             if val.strip() in ('', 'null'):
                 return None
-            val = fix_char(val)
             val = {
                 'COMUNDAD DE MADRID': 'COMUNIDAD DE MADRID'
             }.get(val, val)
@@ -533,10 +535,6 @@ class SoupCentro:
 
     @cached_property
     def etapas(self):
-        def get_text(n: Tag):
-            txt = re_sp.sub(" ", n.get_text()).strip()
-            return fix_char(txt) if len(txt) else None
-
         def find_padre(etapas: List[Etapa], nivel: int):
             for e in reversed(etapas):
                 if e.nivel < nivel:
@@ -610,7 +608,11 @@ class SoupCentro:
         if not body.select_one(":scope *"):
             txt = re_sp.sub(" ", body.get_text()).strip()
             raise DomNotFoundException("body *", url=info, more_info=txt)
-        cdCentro = select_attr(self.soup, "#cdCentro", "value")
+        try:
+            cdCentro = select_attr(self.soup, "#cdCentro", "value")
+        except DomNotFoundException:
+            more_info = get_text(body.select_one("#detalle_error"))
+            raise DomNotFoundException("#cdCentro", url=info, more_info=more_info)
         if cdCentro != str(self.id):
             raise CentroException(f"cdCentro={cdCentro} en {info}")
         mapa = select_attr(self.soup, "#Mapa img", "src", safe=True)

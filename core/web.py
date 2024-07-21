@@ -56,7 +56,7 @@ class DomNotFoundException(Exception):
         if url is not None:
             msg = msg + f' en {url}'
         if more_info:
-            msg = msg + f'  ver: {more_info}'
+            msg = msg + f' ver: {more_info}'
         super().__init__(msg)
 
 
