@@ -386,7 +386,8 @@ class Api():
 
     def __build_centro(self, head: Tuple, row: Tuple):
         c = Centro.build(head, row)
-        c = c.merge(self.get_opendata().get(c.id))
+        o = self.get_opendata().get(c.id)
+        c = c.merge(o)
         return c
 
     @cached_property

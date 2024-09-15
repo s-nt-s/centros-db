@@ -15,6 +15,7 @@ from requests.exceptions import ConnectionError
 from .bulkrequests import BulkRequestsFileJob
 from itertools import zip_longest
 from .util import fix_char
+from unidecode import unidecode
 
 re_sp = re.compile(r"\s+")
 re_mail = re.compile(r'[\w\.\-_]+@[\w\-_\.]+\.[\w\-_]+', re.IGNORECASE)
@@ -522,6 +523,8 @@ class SoupCentro:
             if td.find("td"):
                 continue
             txt = get_text(td)
+            if txt is None:
+                continue
             val = txt.split("Titular:")
             if len(val) < 2:
                 continue
@@ -698,6 +701,8 @@ class OpenDataCentro(NamedTuple):
     centro_tipo_descripcion: str
     centro_titularidad: str
     centro_titular: str
+    nif_titular: str
+    nif_centro: str
     dat_codigo: int
     dat_nombre: str
     direccion_via_tipo: str
@@ -712,9 +717,12 @@ class OpenDataCentro(NamedTuple):
     contacto_telefono2: str
     contacto_telefono3: str
     contacto_telefono4: str
+    contacto_email1: str
+    contacto_email2: str
+    situacion: str
     contacto_fax: str
     contacto_web: str
-    contacto_email1: str
+    fecha_constitucion: str
     direccion_coor_x: int
     direccion_coor_y: int
 
@@ -722,7 +730,7 @@ class OpenDataCentro(NamedTuple):
     def build(obj: Dict):
         if obj is None:
             return None
-        return OpenDataCentro(**{k: _parse(k, v) for k, v in obj.items()})
+        return OpenDataCentro(**{unidecode(k).lower(): _parse(k, v) for k, v in obj.items()})
 
     @cache
     def get_latlon(self) -> LatLon:
