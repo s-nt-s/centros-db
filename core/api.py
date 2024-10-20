@@ -257,7 +257,7 @@ class Api():
 
     @Cache("cache/csv/opendata.csv")
     def get_opendata_csv_as_str(self):
-        r = requests.get("https://datos.comunidad.madrid/catalogo/dataset/ae433b7e-98f7-4547-8aa5-6ada557a429f/resource/9578660d-f9de-48f4-a387-7f1a8333338b/download/centros_educativos.csv")
+        r = requests.get("https://datos.comunidad.madrid/catalogo/dataset/c750856d-3166-4dac-8e80-d1b824c968b5/resource/28d60557-1d73-4281-ab08-6cfd3b2f5f83/download/centros_educativos.csv")
         return r.text
 
     @cache
