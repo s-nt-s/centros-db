@@ -31,7 +31,7 @@ class Anexo():
         if self.url.rsplit(".")[-1].lower() not in "pdf":
             return ""
         file = FM.resolve_path(
-            f"cache/pdf/{self.num:02} - {self.txt} - {hashme(self.url)}.pdf"
+            f"cache/pdf/{self.num:02} - {self.txt[:30]} - {hashme(self.url)}.pdf"
         )
         if not isfile(file):
             FM.makedirs(file)
