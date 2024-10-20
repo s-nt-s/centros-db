@@ -3,6 +3,7 @@ import re
 import time
 from urllib.parse import parse_qsl, urljoin, urlsplit
 from os.path import dirname, isfile, join
+import stat
 
 import requests
 from bs4 import BeautifulSoup, Tag
@@ -212,7 +213,8 @@ class Driver:
             ).install()
             dr = dirname(Driver.DRIVER_PATH)
             dp = join(dr, 'chromedriver')
-            if isfile(dp):
+            if isfile(dp) and dp != Driver.DRIVER_PATH:
+                os.chmod(dp, os.stat(dp).st_mode | stat.S_IXUSR)
                 Driver.DRIVER_PATH = dp
         return Driver.DRIVER_PATH
 
