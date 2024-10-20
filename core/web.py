@@ -2,6 +2,7 @@ import os
 import re
 import time
 from urllib.parse import parse_qsl, urljoin, urlsplit
+from os.path import dirname, isfile, join
 
 import requests
 from bs4 import BeautifulSoup, Tag
@@ -209,6 +210,10 @@ class Driver:
                 driver_version=get_version("/usr/bin/chromium"),
                 chrome_type=ChromeType.CHROMIUM
             ).install()
+            dr = dirname(Driver.DRIVER_PATH)
+            dp = join(dr, 'chromedriver')
+            if isfile(dp):
+                Driver.DRIVER_PATH = dp
         return Driver.DRIVER_PATH
 
     def __init__(self, wait=60, useragent=None):
