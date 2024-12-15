@@ -10,7 +10,9 @@
     "0060": "Formaci\u00f3n Profesional Grado Medio",
     "0075": "Curso preparatorio prueba acces F.P.G.M.",
     "0078": "Curso prueba acceso ciclos F.P.G.S.",
-    "0080": "Formaci\u00f3n Profesional Grado Superior",
+    "0080": "FORMACI\u00d3N PROFESIONAL GRADO SUPERIOR",
+    "0081": "CURSOS DE ESPECIALIZACI\u00d3N GRADO MEDIO",
+    "0082": "CURSOS DE ESPECIALIZACI\u00d3N GRADO SUPERIOR",
     "0090": "Educaci\u00f3n Especial",
     "0100": "Ense\u00f1anza de Idiomas",
     "0110": "Ense\u00f1anzas Art\u00edsticas M\u00fasica",
@@ -20,7 +22,8 @@
     "0143": "Master en Ense\u00f1anzas Art\u00edsticas",
     "0150": "Ense\u00f1anzas Deportivas",
     "0160": "Educaci\u00f3n Personas Adultas",
-    "0170": "Ense\u00f1anzas Extranjeras"
+    "0170": "Ense\u00f1anzas Extranjeras",
+    "060": "FORMACI\u00d3N PROFESIONAL GRADO MEDIO"
   },
   "comboDistritos": {
     "02": "Arganzuela",
