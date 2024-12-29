@@ -1325,7 +1325,7 @@
           "_": "INFORM\u00c1TICA Y COMUNICACIONES",
           "cdEnsenanza": {
             "1065": {
-              "_": "Desarrollo de Aplicaciones Multiplataforma y Desarrollo de Aplicaciones Web"
+              "_": "Administraci\u00f3n de Sistemas Inform\u00e1ticos en Red y Desarrollo de Aplicaciones Web"
             },
             "1115": {
               "_": "Desarrollo de Aplicaciones Multiplataforma y Desarrollo de Aplicaciones Web"
@@ -14953,7 +14953,7 @@
           "_": "INSTALACI\u00d3N Y MANTENIMIENTO",
           "cdEnsenanza": {
             "1130": {
-              "_": "Instalaciones de Producci\u00f3n de calor y Instalaciones Frigor\u00edficas y de de Climatizaci\u00f3n"
+              "_": "Instalaciones de Producci\u00f3n de calor e Instalaciones Frigor\u00edficas y de de Climatizaci\u00f3n"
             },
             "284": {
               "_": "Mantenimiento Electromec\u00e1nico"
@@ -14997,14 +14997,6 @@
             },
             "331": {
               "_": "Operaciones subacu\u00e1ticas e hiperb\u00e1ricas"
-            }
-          }
-        },
-        "33": {
-          "_": "INSTALACI\u00d3N Y MANTENIMIENTO",
-          "cdEnsenanza": {
-            "36": {
-              "_": "Mantenimiento Electromec\u00e1nico"
             }
           }
         },
