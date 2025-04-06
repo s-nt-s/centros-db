@@ -276,8 +276,10 @@ class Driver:
             try:
                 self._driver = self.__create_chrome()
             except SessionNotCreatedException:
+                tmp = tempfile.mkdtemp()
+                logger.warning(f"SessionNotCreatedException, se intentará con --user-data-dir={tmp}")
                 self._driver = self.__create_chrome(
-                    user_data_dir=tempfile.mkdtemp()
+                    user_data_dir=tmp
                 )
         return self._driver
 
