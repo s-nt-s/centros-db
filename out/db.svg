@@ -412,10 +412,43 @@
 <polygon fill="black" stroke="black" points="390.51,-667.38 398.67,-670.6 394.5,-667.19 398.5,-667 398.5,-667 398.5,-667 394.5,-667.19 398.33,-663.4 390.51,-667.38 390.51,-667.38"/>
 <ellipse fill="none" stroke="black" cx="387.31" cy="-667.53" rx="3.2" ry="3.2"/>
 </g>
-<!-- ETAPA_CENTRO -->
+<!-- PROYECTO -->
 <g id="node12" class="node">
-<title>ETAPA_CENTRO</title>
+<title>PROYECTO</title>
 <g id="a_node12">
+<polygon fill="#ffffff" stroke="transparent" points="447.5,-445 447.5,-529 559.5,-529 559.5,-445 447.5,-445"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="447.5,-507 447.5,-529 559.5,-529 559.5,-507 447.5,-507"/>
+<polygon fill="none" stroke="black" points="447.5,-507 447.5,-529 559.5,-529 559.5,-507 447.5,-507"/>
+<text text-anchor="start" x="452.5" y="-516.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">PROYECTO</text>
+<text text-anchor="start" x="524.5" y="-515.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="447.5,-485 447.5,-507 559.5,-507 559.5,-485 447.5,-485"/>
+<image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQUAAAEFCAMAAADdSAKjAAACOlBMVEXX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wFF2lRLAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfhBAUMGhfpdrINAAADFUlEQVR42u3dW08UQRAG0PrPvikPRB98MMHExChgwAuagKBEQrho/zcRNEEu7tx23a4+33tPtg/FzkzV7myEiCxFdsqNtAZQ7s9jBK0URemYxATnpUcaL4PMDmVIIORzKMPzDkKicihjAyGJQykYVkrBcFAKhrNSMEyKUCvDfikYotfGTpIy9N7URkKGITvayMYwazuHw5a9SYUw/cIKFebhlwkhEcO4jTSiMOflORBi2OllyXI0+m+ZoRhm7OH7vN9XErw1UkjEsE1h4F1U74N8qF1hbWGUtZcChWEdGgo1ttneUpjqHNHpCrQBhWUuhk0K0XMEMffDLLNCmeYwL7MrrFY+r+v08vcnOUrtCrNe/7fKFX5MMnyufYLddQR/MsVBqlcozyc4Rv0K5ev4QyRQuG8TpTGFMnb9WgqFUrZHrd5JovArD65WHvdfeZ5IYXiOKFzkE4WLrFJIc6akQCG9wgaFRRcDBQoUrmWdwpKPaylQoPBfFCIwUKBQzYdfKVBYKENQKCm+INEEAoXFMASFkuULlW0gxOd5IpzVohBKYc4MERjKVlUKp0phfsUQgSHnA5saQJieIQJDvc82hDAxQ9ScTQjTlUMEhsiQ1xBGl8NepMmT5gvhMl8YDP+noJAQgQKFUQpBgcJVDigUv7pFgUJ2BAqXeU9hSDEEBQoUKPydRxSKH++lQIFCKwgU+itkRYhXEPoVQ1BIbdBZYZ1C+lKgQIECBQoUKFCYmWcUuhcDBQoUKDhVUtBsaplB+5UCBQo3s0fhIk8pOFVSoECBAgUKbq0nVHhBQeOxCYSAQKGHQlCgQKEpBAoUKFC4lV0KioGCyya3UxoMmk3jFXy+SxOaAoXbOaZgREeBAoXcT8i/Ix+VgkvofgpbFNxUajBoNmk8akIby7SLQIECBQoU7swKhQ7FQIECBQoUKFCgQIGCGwkKt/IQQ5di0H/VizeXMaOjYGpNgQIFChSuZ4WCCwYKFChQoEBhVg4p6DZRoNCf4ZSCyQwFk+smEWYwBIaWEP7xZeNoLAj+5Oj39ndDZBnyE1+ee5nlZNq3AAAAAElFTkSuQmCC" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="452.5" y="-502"/>
+<text text-anchor="start" x="477.5" y="-493.2" font-family="Helvetica,sans-Serif" font-size="11.00">centro</text>
+<polygon fill="none" stroke="black" points="447.5,-463 447.5,-485 559.5,-485 559.5,-463 447.5,-463"/>
+<image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQUAAAEFCAMAAADdSAKjAAACOlBMVEXX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wFF2lRLAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfhBAUMGhfpdrINAAADFUlEQVR42u3dW08UQRAG0PrPvikPRB98MMHExChgwAuagKBEQrho/zcRNEEu7tx23a4+33tPtg/FzkzV7myEiCxFdsqNtAZQ7s9jBK0URemYxATnpUcaL4PMDmVIIORzKMPzDkKicihjAyGJQykYVkrBcFAKhrNSMEyKUCvDfikYotfGTpIy9N7URkKGITvayMYwazuHw5a9SYUw/cIKFebhlwkhEcO4jTSiMOflORBi2OllyXI0+m+ZoRhm7OH7vN9XErw1UkjEsE1h4F1U74N8qF1hbWGUtZcChWEdGgo1ttneUpjqHNHpCrQBhWUuhk0K0XMEMffDLLNCmeYwL7MrrFY+r+v08vcnOUrtCrNe/7fKFX5MMnyufYLddQR/MsVBqlcozyc4Rv0K5ev4QyRQuG8TpTGFMnb9WgqFUrZHrd5JovArD65WHvdfeZ5IYXiOKFzkE4WLrFJIc6akQCG9wgaFRRcDBQoUrmWdwpKPaylQoPBfFCIwUKBQzYdfKVBYKENQKCm+INEEAoXFMASFkuULlW0gxOd5IpzVohBKYc4MERjKVlUKp0phfsUQgSHnA5saQJieIQJDvc82hDAxQ9ScTQjTlUMEhsiQ1xBGl8NepMmT5gvhMl8YDP+noJAQgQKFUQpBgcJVDigUv7pFgUJ2BAqXeU9hSDEEBQoUKPydRxSKH++lQIFCKwgU+itkRYhXEPoVQ1BIbdBZYZ1C+lKgQIECBQoUKFCYmWcUuhcDBQoUKDhVUtBsaplB+5UCBQo3s0fhIk8pOFVSoECBAgUKbq0nVHhBQeOxCYSAQKGHQlCgQKEpBAoUKFC4lV0KioGCyya3UxoMmk3jFXy+SxOaAoXbOaZgREeBAoXcT8i/Ix+VgkvofgpbFNxUajBoNmk8akIby7SLQIECBQoU7swKhQ7FQIECBQoUKFCgQIGCGwkKt/IQQ5di0H/VizeXMaOjYGpNgQIFChSuZ4WCCwYKFChQoEBhVg4p6DZRoNCf4ZSCyQwFk+smEWYwBIaWEP7xZeNoLAj+5Oj39ndDZBnyE1+ee5nlZNq3AAAAAElFTkSuQmCC" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="452.5" y="-480"/>
+<text text-anchor="start" x="477.5" y="-471.2" font-family="Helvetica,sans-Serif" font-size="11.00">nombre</text>
+<polygon fill="#ffffff" stroke="transparent" points="447.5,-445 447.5,-463 501.5,-463 501.5,-445 447.5,-445"/>
+<polygon fill="none" stroke="black" points="447.5,-445 447.5,-463 501.5,-463 501.5,-445 447.5,-445"/>
+<text text-anchor="start" x="450.5" y="-451.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="501.5,-445 501.5,-463 530.5,-463 530.5,-445 501.5,-445"/>
+<polygon fill="none" stroke="black" points="501.5,-445 501.5,-463 530.5,-463 530.5,-445 501.5,-445"/>
+<text text-anchor="start" x="520.5" y="-451.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="530.5,-445 530.5,-463 559.5,-463 559.5,-445 530.5,-445"/>
+<polygon fill="none" stroke="black" points="530.5,-445 530.5,-463 559.5,-463 559.5,-445 530.5,-445"/>
+<text text-anchor="start" x="549.5" y="-451.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</g>
+</g>
+<!-- PROYECTO&#45;&gt;CENTRO -->
+<g id="edge11" class="edge">
+<title>PROYECTO:w&#45;&gt;CENTRO:e</title>
+<path fill="none" stroke="black" d="M431.96,-497.28C408.88,-501.83 400.88,-518.08 381,-540 332.51,-593.47 376.18,-683 304,-683"/>
+<polygon fill="black" stroke="black" points="438.53,-496.7 446.82,-499.59 442.52,-496.35 446.5,-496 446.5,-496 446.5,-496 442.52,-496.35 446.18,-492.41 438.53,-496.7 438.53,-496.7"/>
+<ellipse fill="none" stroke="black" cx="435.34" cy="-496.98" rx="3.2" ry="3.2"/>
+</g>
+<!-- ETAPA_CENTRO -->
+<g id="node13" class="node">
+<title>ETAPA_CENTRO</title>
+<g id="a_node13">
 <polygon fill="#ffffff" stroke="transparent" points="431.5,-37 431.5,-165 575.5,-165 575.5,-37 431.5,-37"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="431.5,-143 431.5,-165 575.5,-165 575.5,-143 431.5,-143"/>
 <polygon fill="none" stroke="black" points="431.5,-143 431.5,-165 575.5,-165 575.5,-143 431.5,-143"/>
@@ -455,39 +488,6 @@
 <path fill="none" stroke="black" d="M416.01,-109.76C369.01,-108.15 352.49,-99 299,-99"/>
 <polygon fill="black" stroke="black" points="422.5,-109.87 430.44,-113.6 426.5,-109.93 430.5,-110 430.5,-110 430.5,-110 426.5,-109.93 430.56,-106.4 422.5,-109.87 422.5,-109.87"/>
 <ellipse fill="none" stroke="black" cx="419.3" cy="-109.81" rx="3.2" ry="3.2"/>
-</g>
-<!-- PROYECTO -->
-<g id="node13" class="node">
-<title>PROYECTO</title>
-<g id="a_node13">
-<polygon fill="#ffffff" stroke="transparent" points="447.5,-445 447.5,-529 559.5,-529 559.5,-445 447.5,-445"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="447.5,-507 447.5,-529 559.5,-529 559.5,-507 447.5,-507"/>
-<polygon fill="none" stroke="black" points="447.5,-507 447.5,-529 559.5,-529 559.5,-507 447.5,-507"/>
-<text text-anchor="start" x="452.5" y="-516.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">PROYECTO</text>
-<text text-anchor="start" x="524.5" y="-515.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="447.5,-485 447.5,-507 559.5,-507 559.5,-485 447.5,-485"/>
-<image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQUAAAEFCAMAAADdSAKjAAACOlBMVEXX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wFF2lRLAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfhBAUMGhfpdrINAAADFUlEQVR42u3dW08UQRAG0PrPvikPRB98MMHExChgwAuagKBEQrho/zcRNEEu7tx23a4+33tPtg/FzkzV7myEiCxFdsqNtAZQ7s9jBK0URemYxATnpUcaL4PMDmVIIORzKMPzDkKicihjAyGJQykYVkrBcFAKhrNSMEyKUCvDfikYotfGTpIy9N7URkKGITvayMYwazuHw5a9SYUw/cIKFebhlwkhEcO4jTSiMOflORBi2OllyXI0+m+ZoRhm7OH7vN9XErw1UkjEsE1h4F1U74N8qF1hbWGUtZcChWEdGgo1ttneUpjqHNHpCrQBhWUuhk0K0XMEMffDLLNCmeYwL7MrrFY+r+v08vcnOUrtCrNe/7fKFX5MMnyufYLddQR/MsVBqlcozyc4Rv0K5ev4QyRQuG8TpTGFMnb9WgqFUrZHrd5JovArD65WHvdfeZ5IYXiOKFzkE4WLrFJIc6akQCG9wgaFRRcDBQoUrmWdwpKPaylQoPBfFCIwUKBQzYdfKVBYKENQKCm+INEEAoXFMASFkuULlW0gxOd5IpzVohBKYc4MERjKVlUKp0phfsUQgSHnA5saQJieIQJDvc82hDAxQ9ScTQjTlUMEhsiQ1xBGl8NepMmT5gvhMl8YDP+noJAQgQKFUQpBgcJVDigUv7pFgUJ2BAqXeU9hSDEEBQoUKPydRxSKH++lQIFCKwgU+itkRYhXEPoVQ1BIbdBZYZ1C+lKgQIECBQoUKFCYmWcUuhcDBQoUKDhVUtBsaplB+5UCBQo3s0fhIk8pOFVSoECBAgUKbq0nVHhBQeOxCYSAQKGHQlCgQKEpBAoUKFC4lV0KioGCyya3UxoMmk3jFXy+SxOaAoXbOaZgREeBAoXcT8i/Ix+VgkvofgpbFNxUajBoNmk8akIby7SLQIECBQoU7swKhQ7FQIECBQoUKFCgQIGCGwkKt/IQQ5di0H/VizeXMaOjYGpNgQIFChSuZ4WCCwYKFChQoEBhVg4p6DZRoNCf4ZSCyQwFk+smEWYwBIaWEP7xZeNoLAj+5Oj39ndDZBnyE1+ee5nlZNq3AAAAAElFTkSuQmCC" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="452.5" y="-502"/>
-<text text-anchor="start" x="477.5" y="-493.2" font-family="Helvetica,sans-Serif" font-size="11.00">centro</text>
-<polygon fill="none" stroke="black" points="447.5,-463 447.5,-485 559.5,-485 559.5,-463 447.5,-463"/>
-<image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQUAAAEFCAMAAADdSAKjAAACOlBMVEXX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wHX3wFF2lRLAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfhBAUMGhfpdrINAAADFUlEQVR42u3dW08UQRAG0PrPvikPRB98MMHExChgwAuagKBEQrho/zcRNEEu7tx23a4+33tPtg/FzkzV7myEiCxFdsqNtAZQ7s9jBK0URemYxATnpUcaL4PMDmVIIORzKMPzDkKicihjAyGJQykYVkrBcFAKhrNSMEyKUCvDfikYotfGTpIy9N7URkKGITvayMYwazuHw5a9SYUw/cIKFebhlwkhEcO4jTSiMOflORBi2OllyXI0+m+ZoRhm7OH7vN9XErw1UkjEsE1h4F1U74N8qF1hbWGUtZcChWEdGgo1ttneUpjqHNHpCrQBhWUuhk0K0XMEMffDLLNCmeYwL7MrrFY+r+v08vcnOUrtCrNe/7fKFX5MMnyufYLddQR/MsVBqlcozyc4Rv0K5ev4QyRQuG8TpTGFMnb9WgqFUrZHrd5JovArD65WHvdfeZ5IYXiOKFzkE4WLrFJIc6akQCG9wgaFRRcDBQoUrmWdwpKPaylQoPBfFCIwUKBQzYdfKVBYKENQKCm+INEEAoXFMASFkuULlW0gxOd5IpzVohBKYc4MERjKVlUKp0phfsUQgSHnA5saQJieIQJDvc82hDAxQ9ScTQjTlUMEhsiQ1xBGl8NepMmT5gvhMl8YDP+noJAQgQKFUQpBgcJVDigUv7pFgUJ2BAqXeU9hSDEEBQoUKPydRxSKH++lQIFCKwgU+itkRYhXEPoVQ1BIbdBZYZ1C+lKgQIECBQoUKFCYmWcUuhcDBQoUKDhVUtBsaplB+5UCBQo3s0fhIk8pOFVSoECBAgUKbq0nVHhBQeOxCYSAQKGHQlCgQKEpBAoUKFC4lV0KioGCyya3UxoMmk3jFXy+SxOaAoXbOaZgREeBAoXcT8i/Ix+VgkvofgpbFNxUajBoNmk8akIby7SLQIECBQoU7swKhQ7FQIECBQoUKFCgQIGCGwkKt/IQQ5di0H/VizeXMaOjYGpNgQIFChSuZ4WCCwYKFChQoEBhVg4p6DZRoNCf4ZSCyQwFk+smEWYwBIaWEP7xZeNoLAj+5Oj39ndDZBnyE1+ee5nlZNq3AAAAAElFTkSuQmCC" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="452.5" y="-480"/>
-<text text-anchor="start" x="477.5" y="-471.2" font-family="Helvetica,sans-Serif" font-size="11.00">nombre</text>
-<polygon fill="#ffffff" stroke="transparent" points="447.5,-445 447.5,-463 501.5,-463 501.5,-445 447.5,-445"/>
-<polygon fill="none" stroke="black" points="447.5,-445 447.5,-463 501.5,-463 501.5,-445 447.5,-445"/>
-<text text-anchor="start" x="450.5" y="-451.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="501.5,-445 501.5,-463 530.5,-463 530.5,-445 501.5,-445"/>
-<polygon fill="none" stroke="black" points="501.5,-445 501.5,-463 530.5,-463 530.5,-445 501.5,-445"/>
-<text text-anchor="start" x="520.5" y="-451.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="530.5,-445 530.5,-463 559.5,-463 559.5,-445 530.5,-445"/>
-<polygon fill="none" stroke="black" points="530.5,-445 530.5,-463 559.5,-463 559.5,-445 530.5,-445"/>
-<text text-anchor="start" x="549.5" y="-451.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</g>
-</g>
-<!-- PROYECTO&#45;&gt;CENTRO -->
-<g id="edge11" class="edge">
-<title>PROYECTO:w&#45;&gt;CENTRO:e</title>
-<path fill="none" stroke="black" d="M431.96,-497.28C408.88,-501.83 400.88,-518.08 381,-540 332.51,-593.47 376.18,-683 304,-683"/>
-<polygon fill="black" stroke="black" points="438.53,-496.7 446.82,-499.59 442.52,-496.35 446.5,-496 446.5,-496 446.5,-496 442.52,-496.35 446.18,-492.41 438.53,-496.7 438.53,-496.7"/>
-<ellipse fill="none" stroke="black" cx="435.34" cy="-496.98" rx="3.2" ry="3.2"/>
 </g>
 </g>
 </svg>
