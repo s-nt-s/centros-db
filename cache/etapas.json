@@ -994,7 +994,7 @@
       }
     },
     "0080": {
-      "_": "Formaci\u00f3n Profesional Grado Superior",
+      "_": "FORMACI\u00d3N PROFESIONAL GRADO SUPERIOR",
       "cdNivelEdu": {
         "111": {
           "_": "ACTIVIDADES F\u00cdSICAS Y DEPORTIVAS",
@@ -1267,6 +1267,202 @@
         "130": {
           "_": "VIDRIO Y CER\u00c1MICA"
         },
+        "24": {
+          "_": "AGRARIA",
+          "cdEnsenanza": {
+            "41": {
+              "_": "Gesti\u00f3n Forestal y del Medio Natural"
+            },
+            "492": {
+              "_": "Ganader\u00eda y Asistencia en Sanidad Animal"
+            },
+            "493": {
+              "_": "Paisajismo y Medio Rural"
+            }
+          }
+        },
+        "25": {
+          "_": "ARTES GR\u00c1FICAS"
+        },
+        "26": {
+          "_": "EDIFICACI\u00d3N Y OBRA CIVIL",
+          "cdEnsenanza": {
+            "1080": {
+              "_": "Proyectos de Edificaci\u00f3n y Proyectos de Obra Civil"
+            },
+            "44": {
+              "_": "Proyectos de Edificaci\u00f3n"
+            },
+            "555": {
+              "_": "Organizaci\u00f3n y Control de Obras de Construcci\u00f3n"
+            },
+            "556": {
+              "_": "Proyectos de Obra Civil"
+            }
+          }
+        },
+        "27": {
+          "_": "ELECTRICIDAD Y ELECTR\u00d3NICA",
+          "cdEnsenanza": {
+            "45": {
+              "_": "Automatizaci\u00f3n y Rob\u00f3tica Industrial"
+            },
+            "46": {
+              "_": "Mantenimiento Electr\u00f3nico"
+            },
+            "47": {
+              "_": "Sistemas de Telecomunicaciones e Inform\u00e1ticos"
+            },
+            "56": {
+              "_": "Sistemas Electrot\u00e9cnicos y Automatizados"
+            },
+            "575": {
+              "_": "Electromedicina Cl\u00ednica"
+            }
+          }
+        },
+        "28": {
+          "_": "INFORM\u00c1TICA Y COMUNICACIONES",
+          "cdEnsenanza": {
+            "1065": {
+              "_": "Administraci\u00f3n de Sistemas Inform\u00e1ticos en Red y Desarrollo de Aplicaciones Web"
+            },
+            "1115": {
+              "_": "Desarrollo de Aplicaciones Multiplataforma y Desarrollo de Aplicaciones Web"
+            },
+            "48": {
+              "_": "Desarrollo de Aplicaciones Multiplataforma"
+            },
+            "49": {
+              "_": "Desarrollo de Aplicaciones Web"
+            },
+            "766": {
+              "_": "Administraci\u00f3n de Sistemas Inform\u00e1ticos en Red"
+            }
+          }
+        },
+        "29": {
+          "_": "INSTALACI\u00d3N Y MANTENIMIENTO",
+          "cdEnsenanza": {
+            "50": {
+              "_": "Mecatr\u00f3nica Industrial"
+            },
+            "984": {
+              "_": "Desarrollo de Proyectos de Instalaciones T\u00e9rmicas y de Fluidos"
+            },
+            "985": {
+              "_": "Mantenimiento de Instalaciones T\u00e9rmicas y de Fluidos"
+            }
+          }
+        },
+        "30": {
+          "_": "QU\u00cdMICA",
+          "cdEnsenanza": {
+            "51": {
+              "_": "Laboratorio de An\u00e1lisis y de Control de Calidad"
+            },
+            "724": {
+              "_": "Fabricaci\u00f3n de productos farmac\u00e9uticos, biotecnol\u00f3gicos y afines"
+            },
+            "725": {
+              "_": "Qu\u00edmica Industrial"
+            }
+          }
+        },
+        "31": {
+          "_": "SANIDAD",
+          "cdEnsenanza": {
+            "1004": {
+              "_": "Anatom\u00eda Patol\u00f3gica y Citodiagn\u00f3stico"
+            },
+            "1005": {
+              "_": "Documentaci\u00f3n y Administraci\u00f3n Sanitarias"
+            },
+            "1006": {
+              "_": "Higiene Bucodental"
+            },
+            "1007": {
+              "_": "Imagen para el Diagn\u00f3stico y Medicina Nuclear"
+            },
+            "1008": {
+              "_": "Laboratorio Cl\u00ednico y Biom\u00e9dico"
+            },
+            "1009": {
+              "_": "Ortopr\u00f3tesis y Productos de Apoyo"
+            },
+            "1010": {
+              "_": "Radioterapia y Dosimetr\u00eda"
+            },
+            "1116": {
+              "_": "Anatom\u00eda Patol\u00f3gica y Citodiagn\u00f3stico y Laboratorio Cl\u00ednico y Biom\u00e9dico"
+            },
+            "52": {
+              "_": "Pr\u00f3tesis Dentales"
+            },
+            "53": {
+              "_": "Audiolog\u00eda Prot\u00e9sica"
+            }
+          }
+        },
+        "32": {
+          "_": "SERVICIOS SOCIOCULTURALES Y A LA COMUNIDAD",
+          "cdEnsenanza": {
+            "54": {
+              "_": "Integraci\u00f3n Social"
+            },
+            "55": {
+              "_": "Mediaci\u00f3n Comunicativa"
+            },
+            "878": {
+              "_": "Animaci\u00f3n Sociocultural y Tur\u00edstica"
+            },
+            "879": {
+              "_": "Educaci\u00f3n Infantil"
+            },
+            "880": {
+              "_": "Formaci\u00f3n para la movilidad segura y sostenible"
+            },
+            "881": {
+              "_": "Promoci\u00f3n de Igualdad de G\u00e9nero"
+            }
+          }
+        },
+        "367": {
+          "_": "TEXTIL, CONFECCI\u00d3N Y PIEL",
+          "cdEnsenanza": {
+            "368": {
+              "_": "Calzado y Complementos de Moda"
+            },
+            "369": {
+              "_": "Confecci\u00f3n y Moda"
+            },
+            "370": {
+              "_": "Fabricaci\u00f3n y Ennoblecimiento de Productos Textiles"
+            }
+          }
+        },
+        "469": {
+          "_": "ADMINISTRACI\u00d3N Y GESTI\u00d3N",
+          "cdEnsenanza": {
+            "1066": {
+              "_": "Asistencia a la Direcci\u00f3n y Administraci\u00f3n y Finanzas"
+            },
+            "470": {
+              "_": "Administraci\u00f3n y Finanzas"
+            },
+            "471": {
+              "_": "Asistencia a la Direcci\u00f3n"
+            }
+          }
+        },
+        "484": {
+          "_": "VIDRIO Y CER\u00c1MICA",
+          "cdEnsenanza": {
+            "485": {
+              "_": "Desarrollo y Fabricaci\u00f3n de Productos Cer\u00e1micos"
+            }
+          }
+        },
         "5077": {
           "_": "INSTALACI\u00d3N Y MANTENIMIENTO (LOE)",
           "cdEnsenanza": {
@@ -1292,6 +1488,34 @@
             },
             "7413": {
               "_": "Gesti\u00f3n del Agua (LOE)"
+            }
+          }
+        },
+        "524": {
+          "_": "ARTES Y ARTESAN\u00cdAS",
+          "cdEnsenanza": {
+            "525": {
+              "_": "Artista Fallero y Construcci\u00f3n de Escenograf\u00edas"
+            }
+          }
+        },
+        "526": {
+          "_": "COMERCIO Y MARKETING",
+          "cdEnsenanza": {
+            "1073": {
+              "_": "Gesti\u00f3n de Ventas y Espacios Comerciales y Marketing y Publicidad"
+            },
+            "527": {
+              "_": "Comercio Internacional"
+            },
+            "528": {
+              "_": "Gesti\u00f3n de Ventas y Espacios Comerciales"
+            },
+            "529": {
+              "_": "Marketing y Publicidad"
+            },
+            "530": {
+              "_": "Transporte y Log\u00edstica"
             }
           }
         },
@@ -1402,6 +1626,210 @@
             }
           }
         },
+        "634": {
+          "_": "ENERG\u00cdA Y AGUA",
+          "cdEnsenanza": {
+            "635": {
+              "_": "Centrales El\u00e9ctricas"
+            },
+            "636": {
+              "_": "Eficiencia Energ\u00e9tica y Energ\u00eda Solar T\u00e9rmica"
+            },
+            "637": {
+              "_": "Energ\u00edas Renovables"
+            },
+            "638": {
+              "_": "Gesti\u00f3n del agua"
+            }
+          }
+        },
+        "66": {
+          "_": "ACTIVIDADES F\u00cdSICAS Y DEPORTIVAS",
+          "cdEnsenanza": {
+            "67": {
+              "_": "Actividades ecuestres"
+            },
+            "68": {
+              "_": "Gu\u00eda en el medio natural y de tiempo libre"
+            }
+          }
+        },
+        "663": {
+          "_": "FABRICACI\u00d3N MEC\u00c1NICA",
+          "cdEnsenanza": {
+            "664": {
+              "_": "Construcciones Met\u00e1licas"
+            },
+            "665": {
+              "_": "Dise\u00f1o en Fabricaci\u00f3n Mec\u00e1nica"
+            },
+            "666": {
+              "_": "Programaci\u00f3n de la Producci\u00f3n en Fabricaci\u00f3n Mec\u00e1nica"
+            },
+            "667": {
+              "_": "Programaci\u00f3n de la Producci\u00f3n en Moldeo de Metales y Pol\u00edmeros"
+            }
+          }
+        },
+        "680": {
+          "_": "HOSTELERIA Y TURISMO",
+          "cdEnsenanza": {
+            "1087": {
+              "_": "Direcci\u00f3n de Cocina y Direcci\u00f3n de Servicios de Restauraci\u00f3n"
+            },
+            "1094": {
+              "_": "Gesti\u00f3n de Alojamientos Tur\u00edsticos y Direcci\u00f3n de Servicios de Restauraci\u00f3n"
+            },
+            "1101": {
+              "_": "Gu\u00eda, Informaci\u00f3n y Asistencias Tur\u00edsticas y Agencia de Viajes y Gesti\u00f3n de Eventos"
+            },
+            "1108": {
+              "_": "Gesti\u00f3n de Alojamientos Tur\u00edsticos y Gu\u00eda, Informaci\u00f3n y Asistencias Tur\u00edsticas"
+            },
+            "681": {
+              "_": "Agencias de Viajes y Gesti\u00f3n de Eventos"
+            },
+            "682": {
+              "_": "Direcci\u00f3n de Cocina"
+            },
+            "683": {
+              "_": "Direcci\u00f3n de Servicios en Restauraci\u00f3n"
+            },
+            "684": {
+              "_": "Gesti\u00f3n de Alojamientos Tur\u00edsticos"
+            },
+            "685": {
+              "_": "Gu\u00eda, Informaci\u00f3n y Asistencia Tur\u00edsticas"
+            }
+          }
+        },
+        "716": {
+          "_": "IMAGEN PERSONAL",
+          "cdEnsenanza": {
+            "918": {
+              "_": "Asesor\u00eda de Imagen Personal y Corporativa"
+            },
+            "919": {
+              "_": "Caracterizaci\u00f3n y Maquillaje Profesional"
+            },
+            "920": {
+              "_": "Est\u00e9tica Integral y Bienestar"
+            },
+            "921": {
+              "_": "Estilismo y Direcci\u00f3n de Peluquer\u00eda"
+            },
+            "922": {
+              "_": "Termalismo y bienestar"
+            }
+          }
+        },
+        "717": {
+          "_": "IMAGEN Y SONIDO",
+          "cdEnsenanza": {
+            "953": {
+              "_": "Animaciones 3D, Juegos y Entornos Interactivos"
+            },
+            "954": {
+              "_": "Iluminaci\u00f3n, Captaci\u00f3n y Tratamiento de Imagen"
+            },
+            "955": {
+              "_": "Producci\u00f3n de Audiovisuales y Espect\u00e1culos"
+            },
+            "956": {
+              "_": "Realizaci\u00f3n de Proyectos de Audiovisuales y Espect\u00e1culos"
+            },
+            "957": {
+              "_": "Sonido para Audiovisuales y Espect\u00e1culos"
+            }
+          }
+        },
+        "718": {
+          "_": "INDUSTRIA ALIMENTARIA",
+          "cdEnsenanza": {
+            "773": {
+              "_": "Procesos y Calidad en la Industria Alimentaria"
+            },
+            "774": {
+              "_": "Vitivinicultura"
+            }
+          }
+        },
+        "719": {
+          "_": "MADERA, MUEBLE Y CORCHO",
+          "cdEnsenanza": {
+            "747": {
+              "_": "Dise\u00f1o y Amueblamiento"
+            }
+          }
+        },
+        "720": {
+          "_": "MAR\u00cdTIMO PESQUERA",
+          "cdEnsenanza": {
+            "744": {
+              "_": "Acuicultura"
+            },
+            "745": {
+              "_": "Organizaci\u00f3n del Mantenimiento de Maquinaria de Buques y Embarcaciones"
+            },
+            "746": {
+              "_": "Transporte Mar\u00edtimo y Pesca de Altura"
+            }
+          }
+        },
+        "721": {
+          "_": "SEGURIDAD Y MEDIO AMBIENTE",
+          "cdEnsenanza": {
+            "787": {
+              "_": "Coordinaci\u00f3n de Emergencias y Protecci\u00f3n Civil"
+            },
+            "788": {
+              "_": "Educaci\u00f3n y Control Ambiental"
+            },
+            "789": {
+              "_": "Qu\u00edmica y Salud Ambiental"
+            }
+          }
+        },
+        "722": {
+          "_": "TEXTIL, CONFECCI\u00d3N Y PIEL",
+          "cdEnsenanza": {
+            "850": {
+              "_": "Dise\u00f1o y Producci\u00f3n de Calzado y Complementos"
+            },
+            "851": {
+              "_": "Dise\u00f1o T\u00e9cnico en Textil y Piel"
+            },
+            "852": {
+              "_": "Patronaje y Moda"
+            },
+            "853": {
+              "_": "Vestuario a Medida y de Espect\u00e1culos"
+            }
+          }
+        },
+        "723": {
+          "_": "TRANSPORTE Y MANTENIMIENTO DE VEH\u00cdCULOS",
+          "cdEnsenanza": {
+            "808": {
+              "_": "Automoci\u00f3n"
+            },
+            "809": {
+              "_": "Mantenimiento Aeromec\u00e1nico de Aviones con Motor de Pist\u00f3n"
+            },
+            "810": {
+              "_": "Mantenimiento Aeromec\u00e1nico de Aviones con Motor de Turbina"
+            },
+            "811": {
+              "_": "Mantenimiento Aeromec\u00e1nico de Helic\u00f3pteros con Motor de Pist\u00f3n"
+            },
+            "812": {
+              "_": "Mantenimiento Aeromec\u00e1nico de Helic\u00f3pteros con Motor de Turbina"
+            },
+            "813": {
+              "_": "Mantenimiento de Sistemas Electr\u00f3nicos y Avi\u00f3nicos en Aeronaves"
+            }
+          }
+        },
         "8077": {
           "_": "SEGURIDAD Y MEDIO AMBIENTE (LOE)",
           "cdEnsenanza": {
@@ -1415,6 +1843,112 @@
               "_": "Qu\u00cdmica y Salud Ambiental"
             }
           }
+        }
+      }
+    },
+    "0081": {
+      "_": "CURSOS DE ESPECIALIZACI\u00d3N GRADO MEDIO",
+      "cdNivelEdu": {
+        "19": {
+          "_": "ELECTRICIDAD Y ELECTR\u00d3NICA",
+          "cdEnsenanza": {
+            "21": {
+              "_": "Instalaci\u00f3n y mantenimiento de sistemas conectados a internet (iot)"
+            },
+            "22": {
+              "_": "Implementaci\u00f3n de redes 5g"
+            }
+          }
+        },
+        "20": {
+          "_": "HOSTELER\u00cdA Y TURISMO",
+          "cdEnsenanza": {
+            "58": {
+              "_": "Panader\u00eda y boller\u00eda artesanales"
+            }
+          }
+        }
+      }
+    },
+    "0082": {
+      "_": "CURSOS DE ESPECIALIZACI\u00d3N GRADO SUPERIOR",
+      "cdNivelEdu": {
+        "10": {
+          "_": "INFORM\u00c1TICA Y COMUNICACIONES",
+          "cdEnsenanza": {
+            "1144": {
+              "_": "Desarrollo de Aplicaciones en Lenguaje Python"
+            },
+            "61": {
+              "_": "Desarrollo de videojuegos y realidad virtual"
+            },
+            "62": {
+              "_": "Inteligencia artificial y big data"
+            },
+            "63": {
+              "_": "Ciberseguridad en entornos de las tecnolog\u00edas de la informaci\u00f3n"
+            }
+          }
+        },
+        "11": {
+          "_": "QU\u00cdMICA",
+          "cdEnsenanza": {
+            "57": {
+              "_": "Cultivos celulares"
+            }
+          }
+        },
+        "1151": {
+          "_": "FABRICACI\u00d3N MEC\u00c1NICA",
+          "cdEnsenanza": {
+            "1152": {
+              "_": "Materiales Compuestos en la Industria Aeroespacial"
+            }
+          }
+        },
+        "12": {
+          "_": "TRANSPORTE Y MANTENIMIENTO DE VEH\u00cdCULOS",
+          "cdEnsenanza": {
+            "64": {
+              "_": "Mantenimiento y seguridad en sistemas de veh\u00edculos h\u00edbridos y el\u00e9ctricos"
+            },
+            "65": {
+              "_": "Aeronaves pilotadas de forma remota-drones"
+            }
+          }
+        },
+        "13": {
+          "_": "COMERCIO Y MARKETING",
+          "cdEnsenanza": {
+            "1137": {
+              "_": "Comercio Electr\u00f3nico"
+            },
+            "14": {
+              "_": "Posicionamiento en buscadores (SEO/SEM) y comunicaci\u00f3n en redes sociales"
+            },
+            "15": {
+              "_": "Redacci\u00f3n de contenidos digitales para marketing y ventas"
+            }
+          }
+        },
+        "6": {
+          "_": "ELECTRICIDAD Y ELECTR\u00d3NICA",
+          "cdEnsenanza": {
+            "59": {
+              "_": "Rob\u00f3tica colaborativa"
+            }
+          }
+        },
+        "7": {
+          "_": "ENERG\u00cdA Y AGUA",
+          "cdEnsenanza": {
+            "60": {
+              "_": "Auditor\u00eda energ\u00e9tica"
+            }
+          }
+        },
+        "9": {
+          "_": "IMAGEN Y SONIDO"
         }
       }
     },
@@ -14275,6 +14809,330 @@
                   "_": "Bachibac: Humanidades y Ciencias Sociales - Bachillerato (LOMCE)"
                 }
               }
+            }
+          }
+        }
+      }
+    },
+    "060": {
+      "_": "FORMACI\u00d3N PROFESIONAL GRADO MEDIO",
+      "cdNivelEdu": {
+        "118": {
+          "_": "ARTES GR\u00c1FICAS",
+          "cdEnsenanza": {
+            "119": {
+              "_": "Impresi\u00f3n Gr\u00e1fica"
+            },
+            "120": {
+              "_": "Postimpresi\u00f3n y Acabados Gr\u00e1ficos"
+            },
+            "121": {
+              "_": "Preimpresi\u00f3n Digital"
+            }
+          }
+        },
+        "140": {
+          "_": "COMERCIO Y MARKETING",
+          "cdEnsenanza": {
+            "141": {
+              "_": "Actividades Comerciales"
+            },
+            "142": {
+              "_": "Comercializaci\u00f3n de productos alimentarios"
+            }
+          }
+        },
+        "143": {
+          "_": "EDIFICACI\u00d3N Y OBRA CIVIL",
+          "cdEnsenanza": {
+            "144": {
+              "_": "Construcci\u00f3n"
+            },
+            "145": {
+              "_": "Obras de Interior, Decoraci\u00f3n y Rehabilitaci\u00f3n"
+            }
+          }
+        },
+        "158": {
+          "_": "ELECTRICIDAD Y ELECTR\u00d3NICA",
+          "cdEnsenanza": {
+            "159": {
+              "_": "Instalaciones de Telecomunicaciones"
+            },
+            "160": {
+              "_": "Instalaciones El\u00e9ctricas y Autom\u00e1ticas"
+            }
+          }
+        },
+        "173": {
+          "_": "ENERG\u00cdA Y AGUA",
+          "cdEnsenanza": {
+            "174": {
+              "_": "Redes y Estaciones de Tratamiento de aguas"
+            }
+          }
+        },
+        "181": {
+          "_": "FABRICACI\u00d3N MEC\u00c1NICA",
+          "cdEnsenanza": {
+            "182": {
+              "_": "Conformado por Moldeo de Metales y Pol\u00edmeros"
+            },
+            "183": {
+              "_": "Mecanizado"
+            },
+            "184": {
+              "_": "Soldadura y Calderer\u00eda"
+            }
+          }
+        },
+        "203": {
+          "_": "HOSTELER\u00cdA Y TURISMO",
+          "cdEnsenanza": {
+            "204": {
+              "_": "Cocina y Gastronom\u00eda"
+            },
+            "205": {
+              "_": "Servicios en Restauraci\u00f3n"
+            }
+          }
+        },
+        "218": {
+          "_": "IMAGEN PERSONAL",
+          "cdEnsenanza": {
+            "219": {
+              "_": "Est\u00e9tica y Belleza"
+            },
+            "220": {
+              "_": "Peluquer\u00eda y Cosm\u00e9tica Capilar"
+            }
+          }
+        },
+        "233": {
+          "_": "IMAGEN Y SONIDO",
+          "cdEnsenanza": {
+            "234": {
+              "_": "V\u00eddeo Disc-jockey y Sonido"
+            }
+          }
+        },
+        "241": {
+          "_": "INDUSTRIA ALIMENTARIA",
+          "cdEnsenanza": {
+            "242": {
+              "_": "Aceites de Oliva y Vinos"
+            },
+            "243": {
+              "_": "Elaboraci\u00f3n de Productos Alimenticios"
+            },
+            "244": {
+              "_": "Panader\u00eda, Reposter\u00eda y Confiter\u00eda"
+            }
+          }
+        },
+        "260": {
+          "_": "INDUSTRIAS EXTRACTIVAS",
+          "cdEnsenanza": {
+            "261": {
+              "_": "Excavaciones y Sondeos"
+            },
+            "262": {
+              "_": "Piedra Natural"
+            }
+          }
+        },
+        "275": {
+          "_": "INFORM\u00c1TICA Y COMUNICACIONES",
+          "cdEnsenanza": {
+            "276": {
+              "_": "Sistemas Microinform\u00e1ticos y Redes"
+            }
+          }
+        },
+        "283": {
+          "_": "INSTALACI\u00d3N Y MANTENIMIENTO",
+          "cdEnsenanza": {
+            "1130": {
+              "_": "Instalaciones de Producci\u00f3n de calor e Instalaciones Frigor\u00edficas y de de Climatizaci\u00f3n"
+            },
+            "284": {
+              "_": "Mantenimiento Electromec\u00e1nico"
+            },
+            "285": {
+              "_": "Instalaciones de Producci\u00f3n de Calor"
+            },
+            "286": {
+              "_": "Instalaciones Frigor\u00edficas y de Climatizaci\u00f3n"
+            }
+          }
+        },
+        "305": {
+          "_": "MADERA, MUEBLE Y CORCHO",
+          "cdEnsenanza": {
+            "1123": {
+              "_": "Carpinter\u00eda y Mueble e Instalaci\u00f3n y Amueblamiento"
+            },
+            "306": {
+              "_": "Carpinter\u00eda y Mueble"
+            },
+            "307": {
+              "_": "Instalaci\u00f3n y Amueblamiento"
+            },
+            "308": {
+              "_": "Procesado y transformaci\u00f3n de la madera"
+            }
+          }
+        },
+        "327": {
+          "_": "MAR\u00cdTIMO PESQUERAS",
+          "cdEnsenanza": {
+            "328": {
+              "_": "Cultivos Acu\u00edcolas"
+            },
+            "329": {
+              "_": "Mantenimiento y Control de la Maquinaria de Buques y Embarcaciones"
+            },
+            "330": {
+              "_": "Navegaci\u00f3n y Pesca de Litoral"
+            },
+            "331": {
+              "_": "Operaciones subacu\u00e1ticas e hiperb\u00e1ricas"
+            }
+          }
+        },
+        "33": {
+          "_": "TRANSPORTE Y MANTENIMIENTO DE VEH\u00cdCULOS (LOE) Y FABRICACI\u00d3N MEC\u00c1NICA",
+          "cdEnsenanza": {
+            "36": {
+              "_": "Electromec\u00e1nica de Veh\u00edculos Autom\u00f3viles y Mecanizado"
+            }
+          }
+        },
+        "34": {
+          "_": "QU\u00cdMICA",
+          "cdEnsenanza": {
+            "37": {
+              "_": "Operaciones de Laboratorio"
+            },
+            "38": {
+              "_": "Planta Qu\u00edmica"
+            }
+          }
+        },
+        "344": {
+          "_": "SEGURIDAD Y MEDIO AMBIENTE",
+          "cdEnsenanza": {
+            "345": {
+              "_": "Seguridad"
+            },
+            "346": {
+              "_": "Emergencias y Protecci\u00f3n Civil"
+            }
+          }
+        },
+        "35": {
+          "_": "SANIDAD",
+          "cdEnsenanza": {
+            "39": {
+              "_": "Farmacia y Parafarmacia"
+            },
+            "40": {
+              "_": "Emergencias Sanitarias"
+            }
+          }
+        },
+        "359": {
+          "_": "SERVICIOS SOCIOCULTURALES Y A LA COMUNIDAD",
+          "cdEnsenanza": {
+            "360": {
+              "_": "Atenci\u00f3n a Personas en Situaci\u00f3n de Dependencia"
+            }
+          }
+        },
+        "367": {
+          "_": "TEXTIL, CONFECCI\u00d3N Y PIEL",
+          "cdEnsenanza": {
+            "368": {
+              "_": "Calzado y Complementos de Moda"
+            },
+            "369": {
+              "_": "Confecci\u00f3n y Moda"
+            },
+            "370": {
+              "_": "Fabricaci\u00f3n y Ennoblecimiento de Productos Textiles"
+            }
+          }
+        },
+        "389": {
+          "_": "TRANSPORTE Y MANTENIMIENTO DE VEH\u00cdCULOS",
+          "cdEnsenanza": {
+            "398": {
+              "_": "Carrocer\u00eda"
+            },
+            "399": {
+              "_": "Conducci\u00f3n de Veh\u00edculos de Transporte por Carretera"
+            },
+            "400": {
+              "_": "Electromec\u00e1nica de Maquinaria"
+            },
+            "401": {
+              "_": "Electromec\u00e1nica de Veh\u00edculos Autom\u00f3viles"
+            },
+            "402": {
+              "_": "Mantenimiento de embarcaciones de recreo"
+            },
+            "403": {
+              "_": "Mantenimiento de estructuras de madera y mobiliario de embarcaciones"
+            },
+            "404": {
+              "_": "Mantenimiento de Material Rodante Ferroviario"
+            },
+            "405": {
+              "_": "Montaje de estructuras e instalaci\u00f3n de sistemas aeron\u00e1uticos"
+            }
+          }
+        },
+        "390": {
+          "_": "VIDRIO Y CER\u00c1MICA",
+          "cdEnsenanza": {
+            "391": {
+              "_": "Fabricaci\u00f3n de Productos Cer\u00e1micos"
+            }
+          }
+        },
+        "66": {
+          "_": "ACTIVIDADES F\u00cdSICAS Y DEPORTIVAS",
+          "cdEnsenanza": {
+            "67": {
+              "_": "Actividades ecuestres"
+            },
+            "68": {
+              "_": "Gu\u00eda en el medio natural y de tiempo libre"
+            }
+          }
+        },
+        "81": {
+          "_": "ADMINISTRACI\u00d3N Y GESTI\u00d3N",
+          "cdEnsenanza": {
+            "82": {
+              "_": "Gesti\u00f3n Administrativa"
+            }
+          }
+        },
+        "89": {
+          "_": "AGRARIA",
+          "cdEnsenanza": {
+            "90": {
+              "_": "Aprovechamiento y Conservaci\u00f3n del Medio Natural"
+            },
+            "91": {
+              "_": "Jardiner\u00eda y Florister\u00eda"
+            },
+            "92": {
+              "_": "Producci\u00f3n Agroecol\u00f3gica"
+            },
+            "93": {
+              "_": "Producci\u00f3n Agropecuaria"
             }
           }
         }
