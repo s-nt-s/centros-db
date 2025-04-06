@@ -4,6 +4,7 @@ import time
 from urllib.parse import parse_qsl, urljoin, urlsplit
 from os.path import dirname, isfile, join
 import stat
+import tempfile
 
 import requests
 from bs4 import BeautifulSoup, Tag
@@ -15,7 +16,7 @@ from selenium import webdriver
 from selenium.common.exceptions import (ElementNotInteractableException,
                                         ElementNotVisibleException,
                                         StaleElementReferenceException,
-                                        TimeoutException, WebDriverException)
+                                        TimeoutException, WebDriverException, SessionNotCreatedException)
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options as CMoptions
 from selenium.webdriver.common.by import By
@@ -231,7 +232,7 @@ class Driver:
     def __exit__(self, *args, **kwargs):
         self.close()
 
-    def __create_chrome(self):
+    def __create_chrome(self, user_data_dir=None):
         options = CMoptions()
         if not self.visible:
             options.add_argument('headless')
@@ -241,7 +242,10 @@ class Driver:
         options.add_argument("--disable-extensions")
         options.add_argument('--disable-blink-features=AutomationControlled')
         options.add_argument("--lang=es-ES")
-        options.add_argument("--incognito")
+        if user_data_dir:
+            options.add_argument(f"--user-data-dir={user_data_dir}")
+        else:
+            options.add_argument("--incognito")
         options.add_experimental_option(
             'excludeSwitches', ['enable-automation'])
         options.add_experimental_option('useAutomationExtension', False)
@@ -269,7 +273,12 @@ class Driver:
 
     def get_dirver(self) -> WebDriver:
         if self._driver is None:
-            self._driver = self.__create_chrome()
+            try:
+                self._driver = self.__create_chrome()
+            except SessionNotCreatedException:
+                self._driver = self.__create_chrome(
+                    user_data_dir=tempfile.mkdtemp()
+                )
         return self._driver
 
     @property
