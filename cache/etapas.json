@@ -1863,6 +1863,9 @@
         "20": {
           "_": "HOSTELER\u00cdA Y TURISMO",
           "cdEnsenanza": {
+            "1161": {
+              "_": "Coordinaci\u00f3n del Personal en Reuniones Profesionales, Congresos, Ferias, Exposiciones y Eventos"
+            },
             "58": {
               "_": "Panader\u00eda y boller\u00eda artesanales"
             }
@@ -1903,14 +1906,20 @@
           "cdEnsenanza": {
             "1152": {
               "_": "Materiales Compuestos en la Industria Aeroespacial"
+            },
+            "1160": {
+              "_": "Fabricaci\u00f3n Aditiva"
             }
           }
         },
         "12": {
           "_": "TRANSPORTE Y MANTENIMIENTO DE VEH\u00cdCULOS",
           "cdEnsenanza": {
+            "1168": {
+              "_": "Mantenimiento Avanzado de Sistemas de Material Rodante Ferroviario"
+            },
             "64": {
-              "_": "Mantenimiento y seguridad en sistemas de veh\u00edculos h\u00edbridos y el\u00e9ctricos"
+              "_": "Mantenimiento y Seguridad en Sistemas de Veh\u00edculos H\u00edbridos y El\u00e9ctricos"
             },
             "65": {
               "_": "Aeronaves pilotadas de forma remota-drones"
@@ -1934,8 +1943,14 @@
         "6": {
           "_": "ELECTRICIDAD Y ELECTR\u00d3NICA",
           "cdEnsenanza": {
+            "1158": {
+              "_": "Ciberseguridad en Entornos de las Tecnolog\u00edas de Operaci\u00f3n"
+            },
+            "1159": {
+              "_": "Sistemas de Se\u00f1alizaci\u00f3n y Telecomunicaciones Ferroviarias"
+            },
             "59": {
-              "_": "Rob\u00f3tica colaborativa"
+              "_": "Rob\u00f3tica Colaborativa"
             }
           }
         },
@@ -14697,6 +14712,20 @@
             },
             "7363": {
               "_": "Baloncesto"
+            }
+          }
+        },
+        "7235": {
+          "_": "Bloque Com\u00fan y Espec\u00edfico de las Ense\u00f1anzas Deportivas (LOE)",
+          "cdEnsenanza": {
+            "7237": {
+              "_": "Inicial del Grado Medio o Nivel I"
+            },
+            "7238": {
+              "_": "Final del Grado Medio o Nivel II"
+            },
+            "7239": {
+              "_": "Del Grado Superior o nivel III"
             }
           }
         }
