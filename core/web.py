@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import base64
 from urllib.parse import parse_qsl, urljoin, urlsplit
 from os.path import dirname, isfile, join
 import stat
@@ -13,6 +14,7 @@ from webdriver_manager.chrome import ChromeType
 from webdriver_manager.core.utils import read_version_from_cmd
 from webdriver_manager.core.os_manager import PATTERN
 from selenium import webdriver
+from json.decoder import JSONDecodeError
 from selenium.common.exceptions import (ElementNotInteractableException,
                                         ElementNotVisibleException,
                                         StaleElementReferenceException,
@@ -27,7 +29,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 import logging
-from typing import Union
+from typing import Union, Tuple, Dict, Any, List
+import json
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
@@ -70,8 +74,8 @@ def get_query(url):
     return q
 
 
-def iterhref(soup):
-    """Recorre los atriburos href o src de los tags"""
+def iterhref(soup: BeautifulSoup):
+    """Recorre los atributos href o src de los tags"""
     n: Tag
     for n in soup.findAll(["img", "form", "a", "iframe", "frame", "link", "script", "input"]):
         attr = "href" if n.name in ("a", "link") else "src"
@@ -130,20 +134,20 @@ class Web:
         self.refer = refer
         self.verify = verify
 
-    def _get(self, url, allow_redirects=True, auth=None, **kvargs):
-        if kvargs:
-            return self.s.post(url, data=kvargs, allow_redirects=allow_redirects, verify=self.verify, auth=auth)
+    def _get(self, url, allow_redirects=True, auth=None, **kwargs):
+        if kwargs:
+            return self.s.post(url, data=kwargs, allow_redirects=allow_redirects, verify=self.verify, auth=auth)
         return self.s.get(url, allow_redirects=allow_redirects, verify=self.verify, auth=auth)
 
-    def get(self, url, auth=None, parser="lxml", **kvargs):
+    def get(self, url, auth=None, parser="lxml", **kwargs):
         if self.refer:
             self.s.headers.update({'referer': self.refer})
-        self.response = self._get(url, auth=auth, **kvargs)
+        self.response = self._get(url, auth=auth, **kwargs)
         self.refer = self.response.url
         self.soup = buildSoup(url, self.response.content, parser=parser)
         return self.soup
 
-    def prepare_submit(self, slc, silent_in_fail=False, **kvargs):
+    def prepare_submit(self, slc, silent_in_fail=False, **kwargs):
         data = {}
         self.form = self.soup.select_one(slc)
         if silent_in_fail and self.form is None:
@@ -156,16 +160,16 @@ class Web:
             slc = i.select_one("option[selected]")
             slc = slc.attrs.get("value") if slc else None
             data[name] = slc
-        data = {**data, **kvargs}
+        data = {**data, **kwargs}
         action = self.form.attrs.get("action")
         action = action.rstrip() if action else None
         if action is None:
             action = self.response.url
         return action, data
 
-    def submit(self, slc, silent_in_fail=False, **kvargs):
+    def submit(self, slc, silent_in_fail=False, **kwargs):
         action, data = self.prepare_submit(
-            slc, silent_in_fail=silent_in_fail, **kvargs)
+            slc, silent_in_fail=silent_in_fail, **kwargs)
         if silent_in_fail and not action:
             return None
         return self.get(action, **data)
@@ -184,16 +188,24 @@ class Web:
             return None
         return self.response.url
 
-    def json(self, url, **kvargs):
-        r = self._get(url, **kvargs)
+    def json(self, url, **kwargs):
+        r = self._get(url, **kwargs)
         return r.json()
 
-    def resolve(self, url, **kvargs):
+    def resolve(self, url, **kwargs):
         if self.refer:
             self.s.headers.update({'referer': self.refer})
-        r = self._get(url, allow_redirects=False, **kvargs)
+        r = self._get(url, allow_redirects=False, **kwargs)
         if r.status_code in (302, 301):
             return r.headers['location']
+
+
+FF_DEFAULT_PROFILE = {
+    "browser.tabs.drawInTitlebar": True,
+    "browser.uidensity": 1,
+    "dom.webdriver.enabled": False,
+    "useAutomationExtension": False
+}
 
 
 class Driver:
@@ -219,12 +231,13 @@ class Driver:
                 Driver.DRIVER_PATH = dp
         return Driver.DRIVER_PATH
 
-    def __init__(self, wait=60, useragent=None):
-        Driver.find_driver_path()
-        self._driver: WebDriver = None
+    def __init__(self, browser=None, wait=60, useragent=None):
         self.visible = (os.environ.get("DRIVER_VISIBLE") == "1")
+        logger.debug(f"Driver(browser={browser}, visible={self.visible})")
+        self._driver: WebDriver = None
         self._wait = wait
         self.useragent = useragent
+        self.browser = browser
 
     def __enter__(self, *args, **kwargs):
         return self
@@ -232,7 +245,46 @@ class Driver:
     def __exit__(self, *args, **kwargs):
         self.close()
 
-    def __create_chrome(self, user_data_dir=None):
+    def __get_ff_options(self):
+        options = FFoptions()
+        options.set_preference("dom.webdriver.enabled", False)
+        options.set_preference("useAutomationExtension", False)
+        options.set_preference("general.platform.override", "Win32")
+        options.add_argument("--lang=es-ES") 
+        options.add_argument("--disable-blink-features=AutomationControlled")
+        return options
+
+    def _create_firefox(self):
+        options = self.__get_ff_options()
+        options.headless = not self.visible
+        profile = webdriver.FirefoxProfile()
+        if self.useragent:
+            profile.set_preference(
+                "general.useragent.override", self.useragent)
+        for k, v in FF_DEFAULT_PROFILE.items():
+            profile.set_preference(k, v)
+            profile.DEFAULT_PREFERENCES['frozen'][k] = v
+        profile.update_preferences()
+        driver = webdriver.Firefox(
+            options=options, firefox_profile=profile)
+        driver.maximize_window()
+        driver.implicitly_wait(5)
+        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});")
+        return driver
+
+    def __create_chrome(self) -> WebDriver:
+        if self._driver is None:
+            try:
+                self._driver = self.__build_create_chrome()
+            except SessionNotCreatedException:
+                tmp = tempfile.mkdtemp()
+                logger.warning(f"SessionNotCreatedException, se intentará con --user-data-dir={tmp}")
+                self._driver = self.__build_create_chrome(
+                    user_data_dir=tmp
+                )
+        return self._driver
+
+    def __build_create_chrome(self, user_data_dir=None):
         options = CMoptions()
         if not self.visible:
             options.add_argument('headless')
@@ -273,14 +325,10 @@ class Driver:
 
     def get_dirver(self) -> WebDriver:
         if self._driver is None:
-            try:
-                self._driver = self.__create_chrome()
-            except SessionNotCreatedException:
-                tmp = tempfile.mkdtemp()
-                logger.warning(f"SessionNotCreatedException, se intentará con --user-data-dir={tmp}")
-                self._driver = self.__create_chrome(
-                    user_data_dir=tmp
-                )
+            crt = getattr(self, "_create_" + str(self.browser), None)
+            if crt is None:
+                raise NotImplementedError("Not implemented yet: %s" % self.browser)
+            self._driver = crt()
         return self._driver
 
     @property
@@ -352,10 +400,10 @@ class Driver:
         if isinstance(id, (int, float)):
             time.sleep(id)
             return
+        if seconds is None:
+            seconds = self._wait
         if by is None:
             by = By.ID
-            if seconds is None:
-                seconds = self._wait
             if id.startswith("//"):
                 by = By.XPATH
             if id.startswith("."):

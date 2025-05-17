@@ -414,7 +414,7 @@ class Api():
     @Cache("cache/etapas.json", loglevel=logging.INFO)
     def get_etapas(self) -> Dict[str, Dict]:
         logger.info("get form etapas")
-        with Driver(wait=10) as w:
+        with Driver(browser="firefox", wait=10) as w:
             w.get(Api.URL)
             w.wait("comboTipoEnsenanza", presence=True)
             w.driver.set_script_timeout(JS_TIMEOUT)
