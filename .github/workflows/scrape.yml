@@ -7,25 +7,15 @@ jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
+      - name: Set TimeZone
+        run: |
+          sudo timedatectl set-timezone "Europe/Madrid"
       - name: Check out this repo
         uses: actions/checkout@v2
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.10'
-      - name: Remove Chrome
-        run: sudo apt purge google-chrome-stable
-      - name: Remove default Chromium
-        run: sudo apt purge chromium-browser
-      - name: Autoclean
-        run: |
-          sudo apt clean -y 
-          sudo apt autoclean -y 
-          sudo apt autoremove -y
-          sudo apt update
-          sudo apt install --fix-missing
-      - name: Install a new Chromium
-        run: sudo apt install -y chromium-browser
       - name: Install dependencies
         run: sudo apt install -y libpoppler-cpp-dev
       - name: Install pip packages
