@@ -1,7 +1,6 @@
 import os
 import re
 import time
-import base64
 from urllib.parse import parse_qsl, urljoin, urlsplit
 from os.path import dirname, isfile, join
 import stat
@@ -14,11 +13,12 @@ from webdriver_manager.chrome import ChromeType
 from webdriver_manager.core.utils import read_version_from_cmd
 from webdriver_manager.core.os_manager import PATTERN
 from selenium import webdriver
-from json.decoder import JSONDecodeError
 from selenium.common.exceptions import (ElementNotInteractableException,
                                         ElementNotVisibleException,
                                         StaleElementReferenceException,
-                                        TimeoutException, WebDriverException, SessionNotCreatedException)
+                                        TimeoutException, WebDriverException,
+                                        SessionNotCreatedException)
+from selenium.webdriver.firefox.options import Options as FFoptions
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options as CMoptions
 from selenium.webdriver.common.by import By
@@ -29,9 +29,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 import logging
-from typing import Union, Tuple, Dict, Any, List
-import json
-from collections import defaultdict
+from typing import Union
 
 logger = logging.getLogger(__name__)
 
