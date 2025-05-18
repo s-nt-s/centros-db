@@ -2030,6 +2030,27 @@
         "7455": {
           "_": "B\u00e1sico A1",
           "cdEnsenanza": {
+            "3019": {
+              "_": "Coreano",
+              "cdEspecialidad": {
+                "3020": {
+                  "_": "Presencial Anual Diurno",
+                  "cdEspecialidadII": {
+                    "3021": {
+                      "_": "A1"
+                    }
+                  }
+                },
+                "3022": {
+                  "_": "Presencial Anual Vespertino",
+                  "cdEspecialidadII": {
+                    "3023": {
+                      "_": "A1"
+                    }
+                  }
+                }
+              }
+            },
             "7456": {
               "_": "Alem\u00e1n",
               "cdEspecialidad": {
@@ -2037,6 +2058,14 @@
                   "_": "Presencial Anual Vespertino Intensivo",
                   "cdEspecialidadII": {
                     "2928": {
+                      "_": "A1"
+                    }
+                  }
+                },
+                "3024": {
+                  "_": "Semipresencial Anual Vespertino Intensivo",
+                  "cdEspecialidadII": {
+                    "3025": {
                       "_": "A1"
                     }
                   }
@@ -2612,6 +2641,14 @@
                     }
                   }
                 },
+                "3030": {
+                  "_": "Semipresencial Anual Vespertino Intensivo",
+                  "cdEspecialidadII": {
+                    "3031": {
+                      "_": "A1"
+                    }
+                  }
+                },
                 "7509": {
                   "_": "Semipresencial"
                 },
@@ -2719,6 +2756,14 @@
             "7516": {
               "_": "Griego",
               "cdEspecialidad": {
+                "3015": {
+                  "_": "A Distancia Anual Diurno",
+                  "cdEspecialidadII": {
+                    "3016": {
+                      "_": "A1"
+                    }
+                  }
+                },
                 "7520": {
                   "_": "Semipresencial"
                 },
@@ -2803,6 +2848,14 @@
                   "_": "Presencial Anual Vespertino Intensivo",
                   "cdEspecialidadII": {
                     "2975": {
+                      "_": "A1"
+                    }
+                  }
+                },
+                "3032": {
+                  "_": "Semipresencial Anual Vespertino Intensivo",
+                  "cdEspecialidadII": {
+                    "3033": {
                       "_": "A1"
                     }
                   }
@@ -3559,6 +3612,14 @@
                     }
                   }
                 },
+                "3026": {
+                  "_": "Semipresencial Anual Vespertino Intensivo",
+                  "cdEspecialidadII": {
+                    "3027": {
+                      "_": "A2"
+                    }
+                  }
+                },
                 "7587": {
                   "_": "Semipresencial"
                 },
@@ -4219,6 +4280,14 @@
                   "_": "Semipresencial Intensivo",
                   "cdEspecialidadII": {
                     "2918": {
+                      "_": "A2"
+                    }
+                  }
+                },
+                "3028": {
+                  "_": "Semipresencial Anual Vespertino Intensivo",
+                  "cdEspecialidadII": {
+                    "3029": {
                       "_": "A2"
                     }
                   }
@@ -5495,6 +5564,14 @@
                 "2473": {
                   "_": "Prueba de Certificaci\u00f3n"
                 },
+                "3013": {
+                  "_": "A distancia Anual Diurno",
+                  "cdEspecialidadII": {
+                    "3014": {
+                      "_": "B1"
+                    }
+                  }
+                },
                 "7720": {
                   "_": "Semipresencial"
                 },
@@ -6707,6 +6784,14 @@
               "cdEspecialidad": {
                 "2457": {
                   "_": "Prueba de Certificaci\u00f3n"
+                },
+                "3017": {
+                  "_": "A Distancia Anual Vespertino",
+                  "cdEspecialidadII": {
+                    "3018": {
+                      "_": "B1"
+                    }
+                  }
                 },
                 "7792": {
                   "_": "Semipresencial"
@@ -8674,7 +8759,7 @@
                   "_": "Semipresencial Anual Vespertino Intensivo",
                   "cdEspecialidadII": {
                     "2971": {
-                      "_": "B1"
+                      "_": "B2.1"
                     }
                   }
                 },
@@ -10654,6 +10739,14 @@
                   "_": "Distancia Anual Diurno",
                   "cdEspecialidadII": {
                     "2880": {
+                      "_": "C1"
+                    }
+                  }
+                },
+                "3034": {
+                  "_": "Semipresencial Anual Vespertino Intensivo",
+                  "cdEspecialidadII": {
+                    "3035": {
                       "_": "C1"
                     }
                   }
