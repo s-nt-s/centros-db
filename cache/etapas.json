@@ -3380,6 +3380,14 @@
             "7564": {
               "_": "Rumano",
               "cdEspecialidad": {
+                "3036": {
+                  "_": "Distancia Anual Vespertino",
+                  "cdEspecialidadII": {
+                    "3037": {
+                      "_": "A1"
+                    }
+                  }
+                },
                 "7568": {
                   "_": "Semipresencial"
                 },
@@ -8519,14 +8527,6 @@
                     }
                   }
                 },
-                "2551": {
-                  "_": "A Distancia Anual Vespertino",
-                  "cdEspecialidadII": {
-                    "2552": {
-                      "_": "B2.1"
-                    }
-                  }
-                },
                 "2866": {
                   "_": "Distancia Anual Vespertino",
                   "cdEspecialidadII": {
@@ -10774,9 +10774,6 @@
                   "_": "Semipresencial Anual Vespertino",
                   "cdEspecialidadII": {
                     "2913": {
-                      "_": "C1"
-                    },
-                    "496": {
                       "_": "C1"
                     }
                   }
@@ -14781,6 +14778,9 @@
             },
             "2963": {
               "_": "Balonmano"
+            },
+            "496": {
+              "_": "Pirag\u00fcismo de Aguas Tranquilas"
             },
             "6855": {
               "_": "H\u00edpica"
