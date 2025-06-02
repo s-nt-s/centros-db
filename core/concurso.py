@@ -223,7 +223,7 @@ class Concursillo(Concurso):
             txt = re.sub(r"\s*\(anexo [\dI]+\)\s*$", "", txt)
             txt = re.sub(r"^Corrección de errores: Resolución", "Resolución", txt)
             return txt
-        done = set()
+        done = set(('https://gestiona.comunidad.madrid/gpic_solicitud', ))
         anexos = {}
         resoluciones = {}
         div: Tag = self.home.select_one("#instrucciones,#instrucciones-calendario")
