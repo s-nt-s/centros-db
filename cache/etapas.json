@@ -1779,6 +1779,14 @@
         "721": {
           "_": "SEGURIDAD Y MEDIO AMBIENTE",
           "cdEnsenanza": {
+            "1171": {
+              "_": "Prevenci\u00f3n de Riesgos Profesionales",
+              "cdEspecialidad": {
+                "1173": {
+                  "_": "Distncia"
+                }
+              }
+            },
             "787": {
               "_": "Coordinaci\u00f3n de Emergencias y Protecci\u00f3n Civil"
             },
