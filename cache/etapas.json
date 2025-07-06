@@ -14899,6 +14899,9 @@
                 "2958": {
                   "_": "Formaci\u00f3n Profesional grado Superior Ext"
                 },
+                "3038": {
+                  "_": "Formaci\u00f3n Profesional de grado B\u00e1sico Ext"
+                },
                 "4814": {
                   "_": "Educaci\u00f3n Secundaria Obligatoria Ext.",
                   "cdEspecialidadII": {
@@ -14914,7 +14917,7 @@
                   "_": "Bachillerato Ext."
                 },
                 "4816": {
-                  "_": "Formaci\u00f3n Profesional de grado medio Ext."
+                  "_": "Formaci\u00f3n Profesional de grado Medio Ext."
                 }
               }
             },
