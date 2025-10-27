@@ -4,16 +4,22 @@ from os import makedirs
 from os.path import dirname, realpath
 from pathlib import Path
 import pdftotext
+import fitz
+from pytesseract import image_to_string
+from PIL import Image
+import re
 
 from bs4 import BeautifulSoup, Tag
 
 logger = logging.getLogger(__name__)
+re_sp = re.compile(r"\s+")
 
 
 class FileManager:
     """
     Da funcionalidad de lectura (load) y escritura (dump) de ficheros
     """
+    OCR_SUFFIX = ".ocr.txt"
 
     def __init__(self, root=None):
         """
@@ -146,12 +152,39 @@ class FileManager:
         with open(file, "w") as f:
             f.write(txt)
 
-    def load_pdf(self, file, *args, as_list=False, **kvargs):
+    def load_pdf(self, file, *args, **kwargs):
         with open(file, 'rb') as fl:
-            pdf = pdftotext.PDF(fl, **kvargs)
-            if as_list:
-                return list(pdf)
-            return "\n".join(pdf)
+            pdf = list(pdftotext.PDF(fl, **kwargs))
+            all_text = "\n".join(pdf).rstrip()
+            plain_text = "".join(c for c in all_text if c.isprintable()).strip()
+            plain_text = re.sub(r"([Pp][aá]gina\s+\d+\s*de\s*\d+|\s+|\x0c)", " ", plain_text)
+            plain_text = re_sp.sub("", plain_text)
+            if len(plain_text) == 0 or startswith(all_text, "$QH[R", "$1(;2", ""):
+                return self.__load_pdf_ocr(file)
+            return all_text
+
+    def __load_pdf_ocr(self, file: Path):
+        file_ocr = file.with_suffix(FileManager.OCR_SUFFIX)
+        if file_ocr.exists():
+            return self.load_txt(file_ocr)
+        pages: list[str] = []
+        pdf = fitz.open(file)
+
+        for page in pdf:
+            pix = page.get_pixmap(dpi=300)
+            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+            txt = image_to_string(img, lang="spa")
+            pages.append(txt)
+        content = "\n".join(pages)
+        self.dump_txt(file_ocr, content)
+        return content
+
+
+def startswith(text: str, *prefixes: str) -> bool:
+    for p in prefixes:
+        if text.startswith(p):
+            return True
+    return False
 
 
 # Mejoras dinamicas en la documentacion

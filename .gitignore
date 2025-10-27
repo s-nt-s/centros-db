@@ -6,6 +6,7 @@
 *.txt
 *.pdf
 .~lock.*#
+!*2c9182446c13602bfeb25e2d33953ecdf916231f.ctr.txt
 !requirements.txt
 sql/subset
 cache/html

@@ -4,20 +4,20 @@ from typing import Dict
 import logging
 from dataclasses import dataclass
 from os.path import isfile
-from .filemanager import FM
-from .web import Web
-from urllib.request import urlretrieve
+from .filemanager import FM, FileManager
+from .web import Driver
 from .util import hashme
 from abc import ABC, abstractmethod
 from bs4 import Tag, BeautifulSoup
+from time import sleep
+from pathlib import Path
 
 MONTH = ('ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic')
 
 logger = logging.getLogger(__name__)
 
 re_sp = re.compile(r"\s+")
-re_anexo = re.compile(r"^Anexo (\d+)\. (.+)$")
-WEB = Web()
+re_anexo = re.compile(r"^Anexo (\d+)([a-z])?\. (.+)$")
 
 
 @dataclass(frozen=True)
@@ -25,23 +25,53 @@ class Anexo():
     num: int
     txt: str
     url: str
+    letter: str = None
+
+    @cached_property
+    def local_pdf(self):
+        if self.url.rsplit(".")[-1].lower() not in ("pdf",):
+            return None
+        return FM.resolve_path(
+            f"cache/pdf/{self.num:02}{self.letter or ''} - {self.txt[:30]} - {hashme(self.url)}.pdf"
+        )
 
     @cached_property
     def content(self):
-        if self.url.rsplit(".")[-1].lower() not in "pdf":
+        if self.local_pdf is None:
             return ""
-        file = FM.resolve_path(
-            f"cache/pdf/{self.num:02} - {self.txt[:30]} - {hashme(self.url)}.pdf"
-        )
-        if not isfile(file):
-            FM.makedirs(file)
-            urlretrieve(self.url, file)
-        return FM.load(file)
+        if not isfile(self.local_pdf):
+            FM.makedirs(self.local_pdf)
+            with Driver(browser="firefox") as WEB:
+                WEB.get(self.url)
+                sleep(5)
+                s = WEB.pass_cookies()
+                r = s.get(self.url)
+                with open(self.local_pdf, "wb") as f:
+                    f.write(r.content)
+        txt: str = FM.load(self.local_pdf)
+        txt = txt.strip()
+        return txt
+
+    def __get_centros(self):
+        ids = re.findall(r"\b28\d{6}\b", self.content)
+        arr: list[int] = []
+        for i in map(int, ids):
+            if i not in arr:
+                arr.append(i)
+        return tuple(arr)
 
     @cached_property
     def centros(self):
-        ids = re.findall(r"\b28\d{6}\b", self.content)
-        return tuple(sorted(set(map(int, ids))))
+        local_ctr: None | Path = None
+        if self.local_pdf is not None and self.local_pdf.with_suffix(FileManager.OCR_SUFFIX).exists():
+            local_ctr = self.local_pdf.with_suffix(".ctr.txt")
+        if local_ctr is not None and local_ctr.exists():
+            lines = FM.load_txt(local_ctr).strip().split()
+            return tuple(sorted(map(int, lines)))
+        ctr = self.__get_centros()
+        if ctr and local_ctr is not None:
+            FM.dump_txt(local_ctr, "\n".join(map(str, ctr)))
+        return tuple(sorted(ctr))
 
 
 class Concurso(ABC):
@@ -59,14 +89,22 @@ class Concurso(ABC):
 
     @cached_property
     def home(self):
-        return WEB.get(self.url)
+        with Driver(browser="firefox") as WEB:
+            WEB.get(self.url)
+            sleep(5)
+            WEB.wait_ready()
+            return WEB.get_soup()
 
     @cached_property
     def convocatoria(self):
         m = re.search(r"\b20\d\d-20\d\d\b", self.titulo)
-        if m is None:
-            raise ValueError(f"No se encuentra convocatoria en {self.url}")
-        return m.group()
+        if m is not None:
+            return m.group()
+        m = re.search(r" \((20\d\d)\)", self.titulo)
+        if m is not None:
+            y = int(m.group(1))
+            return f"{y}-{y+1}"
+        raise ValueError(f"No se encuentra convocatoria en {self.url} {self.titulo}")
 
     @cached_property
     def titulo(self):
@@ -166,15 +204,21 @@ class Concursazo(Concurso):
                 if m is None:
                     continue
                 url = a.attrs["href"]
+                num, letter, txt = m.groups()
+                if isinstance(letter, str):
+                    letter = letter.strip()
+                    if len(letter) == 0:
+                        letter = None
                 a = Anexo(
-                    num=int(m.group(1)),
-                    txt=m.group(2).strip(),
+                    num=int(num),
+                    letter=letter,
+                    txt=txt.strip(),
                     url=url
                 )
                 if a.num in anexos:
-                    logger.warning(f"Anexo duplicado {a.num} {a.txt} {a.url}")
+                    logger.warning(f"Anexo duplicado {a.num}{a.letter or ''} {a.txt} {a.url}")
                     o: Anexo = anexos[a.num]
-                    logger.warning(f"Anexo duplicado {o.num} {o.txt} {o.url}")
+                    logger.warning(f"Anexo duplicado {o.num}{a.letter or ''} {o.txt} {o.url}")
                     continue
                 anexos[a.num] = a
         return anexos
@@ -270,6 +314,6 @@ class Concursillo(Concurso):
 
 
 if __name__ == "__main__":
-    for con in map(Concurso.build, (Concursazo.MAESTROS, Concursazo.PROFESORES, Concursillo.MAESTROS, Concursillo.PROFESORES)):
+    for con in map(Concurso.build, (Concursazo.PROFESORES, )):#(Concursazo.MAESTROS, Concursazo.PROFESORES, Concursillo.MAESTROS, Concursillo.PROFESORES)):
         for a in con.anexos.values():
-            print(con.convocatoria, con.abr, a.num, a.url)
+            print(con.convocatoria, con.abr, a.num, a.url, len(a.centros))
