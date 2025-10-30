@@ -180,19 +180,25 @@ class Concursazo(Concurso):
         if self.abr == Concursazo.MAE:
             return "0597"
 
-    def _anexos(self) -> Dict[int, Anexo]:
-        anexos = {}
-        bocm = self.home.find(
+    def _bocm(self):
+        set_bocm: set[str] = set()
+        for bocm in self.home.find_all(
             "a",
             href=re.compile(r"^https?://.*/BOCM-\d+-\d+\.PDF$", re.IGNORECASE)
-        )
-        if bocm:
+        ):
             pdf = bocm.attrs["href"].rsplit("/")[-1]
             bcm = pdf.rsplit(".")[0].upper()
-            anexos[0] = Anexo(
-                num=0,
+            set_bocm.add(bcm.lower())
+        return tuple(sorted(set_bocm))
+
+    def _anexos(self) -> Dict[int, Anexo]:
+        anexos = {}
+        tp_bocm = self._bocm()
+        for i, bcm in enumerate(tp_bocm, start=-(len(tp_bocm)-1)):
+            anexos[i] = Anexo(
+                num=i,
                 txt=bcm,
-                url="https://www.bocm.es/"+bcm.lower()
+                url="https://www.bocm.es/"+bcm
             )
         for lg in self.home.select("fieldset legend a"):
             if "anexos" not in lg.get_text().lower():
