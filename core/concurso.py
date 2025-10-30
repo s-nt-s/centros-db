@@ -188,7 +188,7 @@ class Concursazo(Concurso):
         ):
             pdf = bocm.attrs["href"].rsplit("/")[-1]
             bcm = pdf.rsplit(".")[0].upper()
-            set_bocm.add(bcm.lower())
+            set_bocm.add(bcm)
         return tuple(sorted(set_bocm))
 
     def _anexos(self) -> Dict[int, Anexo]:
@@ -198,7 +198,7 @@ class Concursazo(Concurso):
             anexos[i] = Anexo(
                 num=i,
                 txt=bcm,
-                url="https://www.bocm.es/"+bcm
+                url="https://www.bocm.es/"+bcm.lower()
             )
         for lg in self.home.select("fieldset legend a"):
             if "anexos" not in lg.get_text().lower():
