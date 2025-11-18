@@ -104,7 +104,7 @@ class Concurso(ABC):
         if m is not None:
             y = int(m.group(1))
             return f"{y}-{y+1}"
-        raise ValueError(f"No se encuentra convocatoria en {self.url} {self.titulo}")
+        raise ValueError(f"No se encuentra convocatoria en {self.url} {self.titulo} -- {self.home.get_text()}")
 
     @cached_property
     def titulo(self):
