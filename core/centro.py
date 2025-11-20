@@ -16,6 +16,7 @@ from .bulkrequests import BulkRequestsFileJob
 from itertools import zip_longest
 from .util import fix_char
 from unidecode import unidecode
+from core.geo import GEO
 
 re_sp = re.compile(r"\s+")
 re_mail = re.compile(r'[\w\.\-_]+@[\w\-_\.]+\.[\w\-_]+', re.IGNORECASE)
@@ -504,7 +505,8 @@ class SoupCentro:
         if self.utm_ed50_huso_30_x_y is None:
             return None
         latlon = utm_to_geo("ED50", 30, *self.utm_ed50_huso_30_x_y)
-        return latlon.round(7)
+        if latlon is not None:
+            return latlon.round(7)
 
     @cached_property
     def utm_ed50_huso_30_x_y(self):
@@ -737,7 +739,8 @@ class OpenDataCentro(NamedTuple):
         if None in (self.direccion_coor_x, self.direccion_coor_y):
             return None
         latlon = utm_to_geo("ED50", 30, self.direccion_coor_x, self.direccion_coor_y)
-        return latlon.round(7)
+        if latlon is not None:
+            return latlon.round(7)
 
 
 @dataclass(frozen=True)
@@ -868,9 +871,21 @@ class Centro:
 
     @property
     def latlon(self):
-        if self.home.latlon is not None:
-            return self.home.latlon
-        return self._latlon
+        ko: set[Tuple[LatLon, str]] = set()
+        for latlon in (self.home.latlon, self._latlon):
+            if latlon is None:
+                continue
+            if self.cp is None:
+                return latlon
+            cp = GEO.get_cp(latlon.latitude, latlon.longitude)
+            if cp and cp != self.cp:
+                ko.add((latlon.round(5), cp))
+                continue
+            return latlon
+        for c, cp in sorted(ko):
+            logger.warning(
+                f"{self.id} Coordenadas descartadas por CP: {c.latitude},{c.longitude} (CP={self.cp} != {cp})"
+            )
 
     @cached_property
     def titular(self):

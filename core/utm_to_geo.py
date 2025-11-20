@@ -53,10 +53,10 @@ def get_epsg(datum, huso):
 
 def utm_to_geo(DATUM, HUSO, UTM_X, UTM_Y):
     if HUSO is None or DATUM is None or UTM_X is None or UTM_Y is None:
-        return (None, None)
+        return None
     epsg = get_epsg(DATUM, HUSO)
     if epsg is None:
-        return (None, None)
+        return None
     transformer = pyproj.Transformer.from_crs('epsg:' + str(epsg), 'epsg:4326')
     lat, lon = transformer.transform(UTM_X, UTM_Y)
     return LatLon(
