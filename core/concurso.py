@@ -5,12 +5,13 @@ import logging
 from dataclasses import dataclass
 from os.path import isfile
 from .filemanager import FM, FileManager
-from .web import Driver
+from .web import Driver, Web
 from .util import hashme
 from abc import ABC, abstractmethod
 from bs4 import Tag, BeautifulSoup
 from time import sleep
 from pathlib import Path
+from os import environ
 
 MONTH = ('ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic')
 
@@ -89,11 +90,11 @@ class Concurso(ABC):
 
     @cached_property
     def home(self):
-        with Driver(browser="firefox") as WEB:
-            WEB.get(self.url)
-            sleep(5)
-            WEB.wait_ready()
-            return WEB.get_soup()
+        w = Web()
+        proxy = environ.get("SPAIN_PROXY")
+        if proxy is not None:
+            w.s.proxies = {"http": proxy, "https": proxy}
+        return w.get(self.url)
 
     @cached_property
     def convocatoria(self):

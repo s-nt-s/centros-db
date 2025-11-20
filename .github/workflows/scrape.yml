@@ -33,6 +33,7 @@ jobs:
         env:
           JS_TIMEOUT: ${{ vars.JS_TIMEOUT }}
           TCP_LIMIT: ${{ vars.TCP_LIMIT }}
+          SPAIN_PROXY: ${{ secrets.SPAIN_PROXY }}
         with:
           timeout_minutes: 55
           retry_wait_seconds: 15
@@ -44,6 +45,7 @@ jobs:
         env:
           JS_TIMEOUT: ${{ vars.JS_TIMEOUT }}
           TCP_LIMIT: ${{ vars.TCP_LIMIT }}
+          SPAIN_PROXY: ${{ secrets.SPAIN_PROXY }}
         with:
           timeout_minutes: 55
           retry_wait_seconds: 15
@@ -55,6 +57,7 @@ jobs:
         env:
           JS_TIMEOUT: ${{ vars.JS_TIMEOUT }}
           TCP_LIMIT: ${{ vars.TCP_LIMIT }}
+          SPAIN_PROXY: ${{ secrets.SPAIN_PROXY }}
         with:
           timeout_minutes: 55
           retry_wait_seconds: 15
@@ -62,8 +65,12 @@ jobs:
           retry_on: any
           command: "python build.py --tcp-limit ${TCP_LIMIT:-50}"
       - name: Write README.md
+        env:
+            SPAIN_PROXY: ${{ secrets.SPAIN_PROXY }}
         run: python3 readme.py
       - name: Fix concurso
+        env:
+            SPAIN_PROXY: ${{ secrets.SPAIN_PROXY }}
         run: python3 concurso.py
       - name: Commit and push if content changed
         run: |-
