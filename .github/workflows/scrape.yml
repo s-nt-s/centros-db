@@ -68,6 +68,8 @@ jobs:
         env:
             SPAIN_PROXY: ${{ secrets.SPAIN_PROXY }}
         run: python3 readme.py
+      - name: Create geojson
+        run: python3 area.py
       - name: Fix concurso
         env:
             SPAIN_PROXY: ${{ secrets.SPAIN_PROXY }}

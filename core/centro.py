@@ -871,21 +871,9 @@ class Centro:
 
     @property
     def latlon(self):
-        ko: set[Tuple[LatLon, str]] = set()
         for latlon in (self.home.latlon, self._latlon):
-            if latlon is None:
-                continue
-            if self.cp is None:
+            if GEO.is_in(latlon, self.cp, self.municipio, self.distrito):
                 return latlon
-            cp = GEO.get_cp(latlon.latitude, latlon.longitude)
-            if cp and cp != self.cp:
-                ko.add((latlon.round(5), cp))
-                continue
-            return latlon
-        for c, cp in sorted(ko):
-            logger.warning(
-                f"{self.id} Coordenadas descartadas por CP: {c.latitude},{c.longitude} (CP={self.cp} != {cp})"
-            )
 
     @cached_property
     def titular(self):

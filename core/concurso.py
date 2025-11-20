@@ -16,6 +16,7 @@ from os import environ
 MONTH = ('ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic')
 
 logger = logging.getLogger(__name__)
+SPAIN_PROXY = environ.get("SPAIN_PROXY")
 
 re_sp = re.compile(r"\s+")
 re_anexo = re.compile(r"^Anexo (\d+)([a-z])?\. (.+)$")
@@ -91,9 +92,8 @@ class Concurso(ABC):
     @cached_property
     def home(self):
         w = Web()
-        proxy = environ.get("SPAIN_PROXY")
-        if proxy is not None:
-            w.s.proxies = {"http": proxy, "https": proxy}
+        if SPAIN_PROXY is not None:
+            w.s.proxies = {"http": SPAIN_PROXY, "https": SPAIN_PROXY}
         return w.get(self.url)
 
     @cached_property

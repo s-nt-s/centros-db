@@ -11,6 +11,7 @@ import argparse
 import logging
 from core.concurso import Concurso, Concursazo, Concursillo
 import re
+from core.geo import GEO
 
 parser = argparse.ArgumentParser(
     description='Crea db a partir de '+Api.URL,
@@ -502,9 +503,9 @@ def auto_fix(db: DBLite):
     for up in (FM.load(file, not_exist_ok=True) or '').split("\n"):
         if not up.strip().startswith("--"):
             sql.append(up)
-    for dr in db.to_tuple(f"""
+    for distrito, municipio, cp, address in db.to_tuple(f"""
         select distinct
-            {field}
+            distrito, municipio, cp, {field}
         from
             centro
         where
@@ -514,7 +515,19 @@ def auto_fix(db: DBLite):
             municipio is not null and
             length({field})>10
     """):
-        dr = dr.replace("'", "''")
+        if distrito is not None or municipio is not None or cp is not None:
+            latlon = GEO.safe_find(address, cp, municipio, distrito)
+            if latlon:
+                logger.info(f"{latlon.latitude}, {latlon.longitude} = {address}")
+                db.execute(f"""
+                    UPDATE centro SET latitud=?, longitud=?
+                    where
+                    latitud is null and longitud is null and
+                    cp = ? and
+                    {field}=?
+                """, latlon.latitude, latlon.longitude, cp, address)
+                continue
+        dr = address.replace("'", "''")
         up = f"--UPDATE centro SET latitud=?, longitud=? where latitud is null and longitud is null and {field}='{dr}';"
         if up not in sql:
             sql.append(up)

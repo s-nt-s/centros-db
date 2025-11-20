@@ -71,7 +71,8 @@ class FileManager:
             "js": "json",
             "sql": "txt",
             "csv": "txt",
-            "htm": "html"
+            "htm": "html",
+            "geojson": "json"
         }.get(ext, ext)
 
     def load(self, file, *args, not_exist_ok=False, **kargv):
