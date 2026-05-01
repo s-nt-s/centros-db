@@ -22,6 +22,17 @@ re_sp = re.compile(r"\s+")
 re_anexo = re.compile(r"^Anexo (\d+)([a-z])?\. (.+)$")
 
 
+def get_text(n: Tag):
+    if n is None:
+        return None
+    txt = n.get_text()
+    txt = re_sp.sub(" ", txt)
+    txt = txt.strip()
+    if len(txt) == 0:
+        return None
+    return txt
+
+
 @dataclass(frozen=True)
 class Anexo():
     num: int
@@ -201,10 +212,12 @@ class Concursazo(Concurso):
                 txt=bcm,
                 url="https://www.bocm.es/"+bcm.lower()
             )
-        for lg in self.home.select("fieldset legend a"):
-            if "anexos" not in lg.get_text().lower():
+        span: Tag = self.home.find("span", string=re.compile(r"^\s*Anexos\s*$"))
+        span.find_parent("div").find_parent("div")
+        for fld in self.home.select("div.component-accordion-item.my-accordion-item-class"):
+            lg = fld.select_one("span")
+            if "Anexos" != get_text(lg):
                 continue
-            fld = lg.find_parent("fieldset")
             for a in fld.select("ul li a"):
                 txt = re_sp.sub(" ", a.get_text()).strip()
                 m = re_anexo.match(txt)
@@ -321,6 +334,6 @@ class Concursillo(Concurso):
 
 
 if __name__ == "__main__":
-    for con in map(Concurso.build, (Concursazo.PROFESORES, )):#(Concursazo.MAESTROS, Concursazo.PROFESORES, Concursillo.MAESTROS, Concursillo.PROFESORES)):
+    for con in map(Concurso.build, (Concursazo.MAESTROS, Concursazo.PROFESORES, Concursillo.MAESTROS, Concursillo.PROFESORES)):
         for a in con.anexos.values():
             print(con.convocatoria, con.abr, a.num, a.url, len(a.centros))

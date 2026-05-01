@@ -48,34 +48,34 @@ CON = {
 }
 
 ANX = {
-    (Concursazo.MAE,  3): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2526_mae_ane3_ceip.pdf',
-    (Concursazo.MAE,  4): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2526_mae_ane4_eso.pdf',
-    (Concursazo.MAE,  5): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2526_mae_ane5_british.pdf',
-    (Concursazo.MAE,  6): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2526_mae_ane6_bil.pdf',
-    (Concursazo.MAE,  7): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2526_mae_ane7_cepa.pdf',
-    (Concursazo.MAE,  8): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2526_mae_ane8_cepacp.pdf',
-    (Concursazo.MAE,  9): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2526_mae_ane9_eeii.pdf',
-    (Concursazo.MAE, 10): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2526_mae_ane10.pdf',
-    (Concursazo.MAE, 11): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2526_mae_ane11_tgd.pdf',
-    (Concursazo.MAE, 12): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2526_mae_ane12_educ_esp.pdf',
-    (Concursazo.MAE, 13): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2526_mae_ane13_compe.pdf',
-    (Concursazo.PRO, 15): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2025_sec_an15.pdf',
-    (Concursazo.PRO, 16): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2025_sec_an16.pdf',
-    (Concursazo.PRO, 17): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2025_sec_an17.pdf',
-    (Concursazo.PRO, 18): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2025_sec_an18.pdf',
-    (Concursazo.PRO, 19): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2025_sec_an19.pdf',
-    (Concursazo.PRO, 20): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2025_sec_an20.pdf',
-    (Concursazo.PRO, 21): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2025_sec_an21.pdf',
-    (Concursazo.PRO, 22): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2025_sec_an22.pdf',
-    (Concursazo.PRO, 23): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2025_sec_an23.pdf',
-    (Concursazo.PRO, 24): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2025_sec_an24.pdf',
-    (Concursazo.PRO, 25): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2025_sec_an25.pdf',
-    (Concursazo.PRO, 26): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2025_sec_an26.pdf',
-    (Concursazo.PRO, 27): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2025_sec_an27.pdf',
-    (Concursazo.PRO, 28): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2025_sec_an28.pdf',
-    (Concursazo.PRO, 29): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2025_sec_an29.pdf',
-    (Concursazo.PRO, 30): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2025_sec_an30.pdf',
-    (Concursazo.PRO, 31): 'https://www.comunidad.madrid/sites/default/files/doc/educacion/rh01/rh01_1896_2025_sec_an31.pdf',
+    (Concursazo.MAE,  3): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane3_ceip.pdf',
+    (Concursazo.MAE,  4): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane4_eso.pdf',
+    (Concursazo.MAE,  5): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane5_british.pdf',
+    (Concursazo.MAE,  6): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane6_bil.pdf',
+    (Concursazo.MAE,  7): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane7_cepa.pdf',
+    (Concursazo.MAE,  8): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane8_cepacp.pdf',
+    (Concursazo.MAE,  9): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane9_eeii.pdf',
+    (Concursazo.MAE, 10): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane10.pdf',
+    (Concursazo.MAE, 11): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane11_tgd.pdf',
+    (Concursazo.MAE, 12): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane12_educ_esp.pdf',
+    (Concursazo.MAE, 13): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane13_compe.pdf',
+    (Concursazo.PRO, 15): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an15.pdf',
+    (Concursazo.PRO, 16): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an16.pdf',
+    (Concursazo.PRO, 17): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an17.pdf',
+    (Concursazo.PRO, 18): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an18.pdf',
+    (Concursazo.PRO, 19): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an19.pdf',
+    (Concursazo.PRO, 20): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an20.pdf',
+    (Concursazo.PRO, 21): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an21.pdf',
+    (Concursazo.PRO, 22): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an22.pdf',
+    (Concursazo.PRO, 23): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an23.pdf',
+    (Concursazo.PRO, 24): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an24.pdf',
+    (Concursazo.PRO, 25): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an25.pdf',
+    (Concursazo.PRO, 26): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an26.pdf',
+    (Concursazo.PRO, 27): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an27.pdf',
+    (Concursazo.PRO, 28): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an28.pdf',
+    (Concursazo.PRO, 29): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an29.pdf',
+    (Concursazo.PRO, 30): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an30.pdf',
+    (Concursazo.PRO, 31): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an31.pdf',
 }
 
 
@@ -105,7 +105,7 @@ def get_pro_anx(db: DBLite) -> Dict[str, Tuple[int]]:
 
 def set_cuerpo(db: DBLite):
     check_data(db, CON, f"CONCURSO where id=? and txt=? and url=? and convocatoria='{CON_YEAR}'")
-    check_data(db, ANX, 'CONCURSO_ANEXO where concurso=? and anexo=? and url=?')
+    check_data(db, ANX, 'CONCURSO_ANEXO where concurso=? and anexo=? and url like ?')
     check_data(db, ILLO, f"CONCURSO where id=? and txt=? and url=? and convocatoria='{ILLO_YEAR}'")
 
     def exe(sql: str):
