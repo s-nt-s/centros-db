@@ -264,7 +264,12 @@ class Api():
     def get_opendata(self):
         obj = {}
         for i in csvstr_to_dict(self.get_opendata_csv_as_str()):
-            obj[int(i['centro_codigo'])] = i
+            c = i.get('centro_codigo', i.get('CODIGO'))
+            if c is None:
+                raise ValueError(i)
+            if isinstance(c, str) and not c.isdecimal():
+                raise ValueError(i)
+            obj[int(c)] = i
         return obj
 
     @IdCache("cache/ids/", maxOld=5)

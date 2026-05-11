@@ -33,6 +33,73 @@ def get_text(n: Tag):
     return fix_char(txt) if len(txt) else None
 
 
+def _parse_k(k: str):
+    if k == "CODIGO":
+        return "centro_codigo"
+    if k == "CENTRO":
+        return "centro_nombre"
+    if k == "COD_TIPO":
+        return "centro_tipo_codigo"
+    if k == "TIPO_ABRV":
+        return "centro_tipo_desc_abreviada"
+    if k == "TIPO_EXT":
+        return "centro_tipo_descripcion"
+    if k == "TITULARIDAD":
+        return "centro_titularidad"
+    if k == "TITULAR":
+        return "centro_titular"
+    if k == "NIF_TITULAR":
+        return "nif_titular"
+    if k == "NIF_CENTRO":
+        return "nif_centro"
+    if k == "COD_DAT":
+        return "dat_codigo"
+    if k == "DAT":
+        return "dat_nombre"
+    if k == "CDTPVIA":
+        return "direccion_via_tipo"
+    if k == "DOMICILIO":
+        return "direccion_via_nombre"
+    if k == "NMVIAL":
+        return "direccion_numero"
+    if k == "CDPOSTAL":
+        return "direccion_codigo_postal"
+    if k == "CDMUNI":
+        return "municipio_codigo"
+    if k == "MUNICIPIO":
+        return "municipio_nombre"
+    if k == "CDDISTRITO":
+        return "distrito_codigo"
+    if k == "DISTRITO":
+        return "distrito_nombre"
+    if k == "TELEFONO":
+        return "contacto_telefono1"
+    if k == "TELEFONO2":
+        return "contacto_telefono2"
+    if k == "TELEFONO3":
+        return "contacto_telefono3"
+    if k == "TELEFONO4":
+        return "contacto_telefono4"
+    if k == "E_MAIL":
+        return "contacto_email1"
+    if k == "E_MAIL2":
+        return "contacto_email2"
+    if k == "SITUACIÓN":
+        return "situacion"
+    if k == "FAX":
+        return "contacto_fax"
+    if k == "WEB":
+        return "contacto_web"
+    if k == "FECHA CONSTITUCIÓN":
+        return "fecha_constitucion"
+    if k == "UTM_X":
+        return "direccion_coor_x"
+    if k == "UTM_Y":
+        return "direccion_coor_y"
+    k = unidecode(k).lower()
+    return k
+
+
 def _parse(k: str, v: str):
     if v is None:
         return None
@@ -732,7 +799,12 @@ class OpenDataCentro(NamedTuple):
     def build(obj: Dict):
         if obj is None:
             return None
-        return OpenDataCentro(**{unidecode(k).lower(): _parse(k, v) for k, v in obj.items()})
+        new_obj = {}
+        for k, v in obj.items():
+            k = _parse_k(k)
+            v =  _parse(k, v)
+            new_obj[k] = v
+        return OpenDataCentro(**new_obj)
 
     @cache
     def get_latlon(self) -> LatLon:
