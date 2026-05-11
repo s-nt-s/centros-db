@@ -3617,6 +3617,33 @@
         "7582": {
           "_": "B\u00e1sico A2",
           "cdEnsenanza": {
+            "3059": {
+              "_": "Coreano",
+              "cdEspecialidad": {
+                "3060": {
+                  "_": "Presencial Anual Diurno",
+                  "cdEspecialidadII": {
+                    "3062": {
+                      "_": "A2.1"
+                    },
+                    "3063": {
+                      "_": "A2.2"
+                    }
+                  }
+                },
+                "3061": {
+                  "_": "Presencial Anual Vespertino",
+                  "cdEspecialidadII": {
+                    "3064": {
+                      "_": "A2.1"
+                    },
+                    "3065": {
+                      "_": "A2.2"
+                    }
+                  }
+                }
+              }
+            },
             "7583": {
               "_": "Alem\u00e1n",
               "cdEspecialidad": {
@@ -7490,6 +7517,9 @@
                   "cdEspecialidadII": {
                     "2548": {
                       "_": "B2.1"
+                    },
+                    "3058": {
+                      "_": "B2.2"
                     }
                   }
                 },
