@@ -99,15 +99,24 @@ def check_col_query(*args):
 
 @logme
 def insert_tipos(db: DBLite):
+    ko: list[tuple[str, str]] = []
     for k, v in sorted(API.get_form()['cdGenerico'].items()):
-        rows = API.search_centros(cdGenerico=k)
-        if len(rows) == 0:
-            continue
-        abr = must_one((x.tipo for x in rows))
-        db.insert("TIPO", id=k, txt=unupper(v, rstrip=". "), abr=abr)
-        KWV["tipo"][abr] = k
-        multi_insert_centro(db, rows)
+        try:
+            _insert_tipo(db, k, v)
+        except ValueError:
+            ko.append((k, v))
+    for k, v in ko:
+        _insert_tipo(db, k, v)
 
+
+def _insert_tipo(db: DBLite, k: str, v: str):
+    rows = API.search_centros(cdGenerico=k)
+    if len(rows) == 0:
+        return
+    abr = must_one((x.tipo for x in rows), log_prefix=f"cdGenerico={k} {v}")
+    db.insert("TIPO", id=k, txt=unupper(v, rstrip=". "), abr=abr)
+    KWV["tipo"][abr] = k
+    multi_insert_centro(db, rows)
 
 @logme
 def insert_queries(db: DBLite):

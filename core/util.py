@@ -11,15 +11,16 @@ def hashme(s):
     return sha1(str(s).encode("utf-8")).hexdigest()
 
 
-def must_one(arr):
+def must_one(arr, log_prefix=None):
     arr = set(arr)
+    msg = f"{log_prefix or ''} Must one but is".strip()
     if len(arr) == 0:
-        raise ValueError("Must one but is empty")
+        raise ValueError(f"{msg} empty")
     if len(arr) > 1:
-        raise ValueError("Must one but is more: "+", ".join(sorted(arr)))
+        raise ValueError(f"{msg} more: "+", ".join(sorted(arr)))
     val = arr.pop()
     if val is None:
-        raise ValueError("Must one but is None")
+        raise ValueError(f"{msg} None")
     return val
 
 

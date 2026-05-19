@@ -12,6 +12,7 @@ from bs4 import Tag, BeautifulSoup
 from time import sleep
 from pathlib import Path
 from os import environ
+from datetime import datetime
 
 MONTH = ('ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic')
 
@@ -20,6 +21,7 @@ SPAIN_PROXY = environ.get("SPAIN_PROXY")
 
 re_sp = re.compile(r"\s+")
 re_anexo = re.compile(r"^Anexo (\d+)([a-z])?\. (.+)$")
+re_reso = re.compile(r"^\s*resoluci[oó]n\s+de\s+(\d+)\s+de\s+(\w+)\s+de\s+(\d+)(.*)$", flags=re.I)
 
 
 def get_text(n: Tag):
@@ -87,6 +89,17 @@ class Anexo():
         return tuple(sorted(ctr))
 
 
+def _get_concurso_url(url: str):
+    w = Web()
+    year = datetime.now().year
+    for y in (year, None, year-1):
+        new_url = f"{url}-{y}-{y+1}" if y else str(url)
+        w.get(new_url)
+        if w.response.status_code == 200:
+            return new_url
+    return url
+
+
 class Concurso(ABC):
 
     @staticmethod
@@ -100,12 +113,23 @@ class Concurso(ABC):
     def __init__(self, url):
         self.url = url
 
-    @cached_property
-    def home(self):
+    @property
+    def __w(self):
         w = Web()
         if SPAIN_PROXY is not None:
             w.s.proxies = {"http": SPAIN_PROXY, "https": SPAIN_PROXY}
-        return w.get(self.url)
+        return w
+
+    @cached_property
+    def home(self):
+        return self.__w.get(self.url)
+
+    @cached_property
+    def doc_home(self):
+        for a in self.home.select("#read-speaker div.content-body a[href]"):
+            txt = get_text(a)
+            if txt == "Documentación de interés":
+                return self.__w.get(a.attrs["href"])
 
     @cached_property
     def convocatoria(self):
@@ -161,8 +185,8 @@ class Concurso(ABC):
 
 
 class Concursazo(Concurso):
-    MAESTROS = "https://www.comunidad.madrid/servicios/educacion/concurso-traslados-maestros"
-    PROFESORES = "https://www.comunidad.madrid/servicios/educacion/concurso-traslados-profesores-secundaria-formacion-profesional-regimen-especial"
+    MAESTROS = _get_concurso_url("https://www.comunidad.madrid/servicios/educacion/concurso-traslados-maestros")
+    PROFESORES = _get_concurso_url("https://www.comunidad.madrid/servicios/educacion/concurso-traslados-profesores-secundaria-formacion-profesional-regimen-especial")
     MAE = "MAE"
     PRO = "PRO"
 
@@ -245,8 +269,8 @@ class Concursazo(Concurso):
 
 
 class Concursillo(Concurso):
-    MAESTROS = "https://www.comunidad.madrid/servicios/educacion/maestros-asignacion-destinos-provisionales-inicio-curso"
-    PROFESORES = "https://www.comunidad.madrid/servicios/educacion/secundaria-fp-re-asignacion-destinos-provisionales-inicio-curso"
+    MAESTROS = _get_concurso_url("https://www.comunidad.madrid/educacion/maestros-asignacion-destinos-provisionales-inicio-curso")
+    PROFESORES = _get_concurso_url("https://www.comunidad.madrid/educacion/secundaria-fp-re-asignacion-destinos-provisionales-inicio-curso")
     MAE = "concursillo-magisterio"
     PRO = "concursillo"
 
@@ -277,7 +301,7 @@ class Concursillo(Concurso):
         if self.abr == Concursillo.MAE:
             return "0597"
 
-    def _anexos(self) -> Dict[int, Anexo]:
+    def _anexos_old(self) -> Dict[int, Anexo]:
         def _txt(n: Tag):
             n = BeautifulSoup(str(n.find_parent("li")), "html.parser")
             for x in n.findAll(["ul", "ol"]):
@@ -292,7 +316,6 @@ class Concursillo(Concurso):
         resoluciones = {}
         div: Tag = self.home.select_one("#instrucciones,#instrucciones-calendario")
         rsl: Tag
-        re_reso = re.compile(r"^\s*resoluci[oó]n\s+de\s+(\d+)\s+de\s+(\w+)\s+de\s+(\d+)(.*)$", flags=re.IGNORECASE)
         for rsl in div.findAll("a", string=re_reso):
             txt = re_sp.sub(r" ", rsl.get_text()).lower().strip()
             m = re_reso.match(txt)
@@ -332,8 +355,40 @@ class Concursillo(Concurso):
 
         return anexos
 
+    def _anexos(self) -> Dict[int, Anexo]:
+        anx = self._anexos_old()
+        if len(anx):
+            return anx
+        if self.doc_home is None:
+            raise ValueError("No se encuentra la página de documentación de interés")
+
+        def _iter_urls():
+            for a in self.doc_home.select("#normativa-aplicable a[href]"):
+                txt = get_text(a)
+                url = a.attrs["href"]
+                yield txt, url
+            for div in self.doc_home.select("div.node__content div.contenido"):
+                txt = get_text(div.select_one("div"))
+                links = list(div.select("div.archivos a[href]"))
+                if len(links) == 0:
+                    continue
+                if len(links) > 1:
+                    raise ValueError(f"Más de un enlace en {div}")
+                url = links[0].attrs["href"]
+                yield txt, url
+
+        for txt, url in _iter_urls():
+            m = re_reso.match(txt)
+            if m:
+                d, mes, y, tail = m.groups()
+                m = MONTH.index(mes[:3])+1
+                txt = f"Resolución {y}-{m:02d}-{int(d):02d} {tail}".strip()
+            print(txt, url)
+            # https://sede.comunidad.madrid/medias/anexoipdf-50/download
+
 
 if __name__ == "__main__":
-    for con in map(Concurso.build, (Concursazo.MAESTROS, Concursazo.PROFESORES, Concursillo.MAESTROS, Concursillo.PROFESORES)):
+    for con in map(Concurso.build, (Concursillo.MAESTROS, Concursillo.PROFESORES)): #(Concursazo.MAESTROS, Concursazo.PROFESORES, Concursillo.MAESTROS, Concursillo.PROFESORES)):
+        print(con.convocatoria, con.url)
         for a in con.anexos.values():
-            print(con.convocatoria, con.abr, a.num, a.url, len(a.centros))
+            print(con.abr, a.num, a.url, len(a.centros))
