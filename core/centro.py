@@ -33,6 +33,15 @@ def get_text(n: Tag):
     return fix_char(txt) if len(txt) else None
 
 
+def get_etapa_td(n: Tag):
+    txt = get_text(n)
+    if txt is None:
+        return None
+    return {
+        "Clav e": "Clave"
+    }.get(txt, txt)
+
+
 def _parse_k(k: str):
     if k == "CODIGO":
         return "centro_codigo"
@@ -539,7 +548,7 @@ class SoupCentro:
                     tlfs.append(m)
         return tuple(tlfs)
 
-    def __iter_strong_text(self) -> str:
+    def __iter_strong_text(self):
         for strong in self.soup.select("#capaDatIdentContent strong"):
             if strong.find(["strong", "td", "span"]):
                 continue
@@ -633,7 +642,7 @@ class SoupCentro:
             if len(re_sp.sub("", tr.get_text())) == 0:
                 continue
             tds = tr.findAll("td")
-            txt = tuple(map(get_text, tds))
+            txt = tuple(map(get_etapa_td, tds))
             if txt[0] in (None, "", "Etapa"):
                 continue
             etapa = Etapa(
