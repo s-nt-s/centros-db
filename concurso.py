@@ -32,10 +32,10 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-ILLO_YEAR = '2025-2026'
+ILLO_YEAR = '2026-2027'
 ILLO = {
-    (Concursillo.MAE, 'Maestros: Asignación de destinos provisionales en inicio de curso (2025-2026)'): 'https://www.comunidad.madrid/servicios/educacion/maestros-asignacion-destinos-provisionales-inicio-curso',
-    (Concursillo.PRO, 'Secundaria, FP y RE: Asignación de destinos provisionales en inicio de curso (2025-2026)'): 'https://www.comunidad.madrid/servicios/educacion/secundaria-fp-re-asignacion-destinos-provisionales-inicio-curso'
+    (Concursillo.MAE, 'Maestros: Asignación de destinos provisionales en inicio de curso (2026-2027)'): 'https://www.comunidad.madrid/educacion/maestros-asignacion-destinos-provisionales-inicio-curso-2026-2027',
+    (Concursillo.PRO, 'Secundaria, FP y RE: Asignación de destinos provisionales en inicio de curso (2026-2027)'): 'https://www.comunidad.madrid/educacion/secundaria-fp-re-asignacion-destinos-provisionales-inicio-curso-2026-2027'
 }
 
 CON_YEAR = '2025-2026'

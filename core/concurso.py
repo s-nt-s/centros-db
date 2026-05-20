@@ -12,6 +12,8 @@ from bs4 import Tag, BeautifulSoup
 from time import sleep
 from pathlib import Path
 from os import environ
+from datetime import datetime
+import requests
 
 MONTH = ('ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic')
 
@@ -20,6 +22,26 @@ SPAIN_PROXY = environ.get("SPAIN_PROXY")
 
 re_sp = re.compile(r"\s+")
 re_anexo = re.compile(r"^Anexo (\d+)([a-z])?\. (.+)$")
+re_reso1 = re.compile(r"^\s*resoluci[oó]n\s+de\s+(\d+)\s+de\s+(\w+)\s+de\s+(\d+)(.*)$", flags=re.I)
+re_reso2 = re.compile(r"^\s*resoluci[oó]n\s+de\s+(\d+)\s+de\s+(\d+)(.*)$", flags=re.I)
+
+def get_reso(txt: str, url: str, year: int):
+    m = re_reso1.match(txt)
+    if m:
+        d, mes, y, tail = m.groups()
+        m = MONTH.index(mes[:3])+1
+        txt = f"Resolución {y}-{m:02d}-{int(d):02d} {tail}".strip()
+        return txt, url
+    m = re_reso2.match(txt)
+    if m:
+        d, mes, tail = m.groups()
+        m = MONTH.index(mes[:3])+1
+        txt = f"Resolución {year}-{m:02d}-{int(d):02d} {tail}".strip()
+        return txt, url
+    m = re.match(r"https?://.*?/(BOCM-[\d\-]+)\.PDF$", url, flags=re.I)
+    if m:
+        bocm = m.group(1)
+        return 'Resolucción '+bocm.upper(), 'https://www.bocm.es/' + bocm.lower()
 
 
 def get_text(n: Tag):
@@ -33,6 +55,29 @@ def get_text(n: Tag):
     return txt
 
 
+def descargar_pdf(url, destino: Path):
+    response = requests.get(url, timeout=30)
+
+    response.raise_for_status()
+
+    content_type = response.headers.get("Content-Type", "").lower()
+
+    if "pdf" not in content_type:
+        raise ValueError(
+            f"El servidor no devolvió un PDF. Content-Type: {content_type}"
+        )
+
+    content = response.content
+
+    if not content.startswith(b"%PDF-"):
+        raise ValueError("El archivo no tiene cabecera PDF válida")
+
+    destino.write_bytes(content)
+
+    return True
+
+
+
 @dataclass(frozen=True)
 class Anexo():
     num: int
@@ -42,11 +87,16 @@ class Anexo():
 
     @cached_property
     def local_pdf(self):
-        if self.url.rsplit(".")[-1].lower() not in ("pdf",):
-            return None
-        return FM.resolve_path(
-            f"cache/pdf/{self.num:02}{self.letter or ''} - {self.txt[:30]} - {hashme(self.url)}.pdf"
-        )
+        if self.__is_pdf():
+            return FM.resolve_path(
+                f"cache/pdf/{self.num:02}{self.letter or ''} - {self.txt[:30]} - {hashme(self.url)}.pdf"
+            )
+    
+    def __is_pdf(self):
+        if self.url.rsplit(".")[-1].lower() in ("pdf",):
+            return True
+        if re.search(r"pdf(-\d+)?/download$", self.url):
+            return True
 
     @cached_property
     def content(self):
@@ -54,13 +104,14 @@ class Anexo():
             return ""
         if not isfile(self.local_pdf):
             FM.makedirs(self.local_pdf)
-            with Driver(browser="firefox") as WEB:
-                WEB.get(self.url)
-                sleep(5)
-                s = WEB.pass_cookies()
-                r = s.get(self.url)
-                with open(self.local_pdf, "wb") as f:
-                    f.write(r.content)
+            if descargar_pdf(self.url, self.local_pdf) is not True:
+                with Driver(browser="firefox") as WEB:
+                    WEB.get(self.url)
+                    sleep(5)
+                    s = WEB.pass_cookies()
+                    r = s.get(self.url)
+                    with open(self.local_pdf, "wb") as f:
+                        f.write(r.content)
         txt: str = FM.load(self.local_pdf)
         txt = txt.strip()
         return txt
@@ -87,6 +138,17 @@ class Anexo():
         return tuple(sorted(ctr))
 
 
+def _get_concurso_url(url: str):
+    w = Web()
+    year = datetime.now().year
+    for y in (year, None, year-1):
+        new_url = f"{url}-{y}-{y+1}" if y else str(url)
+        w.get(new_url)
+        if w.response.status_code == 200:
+            return new_url
+    return url
+
+
 class Concurso(ABC):
 
     @staticmethod
@@ -100,12 +162,27 @@ class Concurso(ABC):
     def __init__(self, url):
         self.url = url
 
-    @cached_property
-    def home(self):
+    @property
+    def __w(self):
         w = Web()
         if SPAIN_PROXY is not None:
             w.s.proxies = {"http": SPAIN_PROXY, "https": SPAIN_PROXY}
-        return w.get(self.url)
+        return w
+
+    @cached_property
+    def home(self):
+        return self.__w.get(self.url)
+
+    @cached_property
+    def doc_home(self):
+        for a in self.home.select("#read-speaker div.content-body a[href]"):
+            txt = get_text(a)
+            if txt == "Documentación de interés":
+                return self.__w.get(a.attrs["href"])
+
+    @cached_property
+    def year(self):
+        return int(self.convocatoria.split('-')[0])
 
     @cached_property
     def convocatoria(self):
@@ -161,8 +238,8 @@ class Concurso(ABC):
 
 
 class Concursazo(Concurso):
-    MAESTROS = "https://www.comunidad.madrid/servicios/educacion/concurso-traslados-maestros"
-    PROFESORES = "https://www.comunidad.madrid/servicios/educacion/concurso-traslados-profesores-secundaria-formacion-profesional-regimen-especial"
+    MAESTROS = _get_concurso_url("https://www.comunidad.madrid/servicios/educacion/concurso-traslados-maestros")
+    PROFESORES = _get_concurso_url("https://www.comunidad.madrid/servicios/educacion/concurso-traslados-profesores-secundaria-formacion-profesional-regimen-especial")
     MAE = "MAE"
     PRO = "PRO"
 
@@ -245,8 +322,8 @@ class Concursazo(Concurso):
 
 
 class Concursillo(Concurso):
-    MAESTROS = "https://www.comunidad.madrid/servicios/educacion/maestros-asignacion-destinos-provisionales-inicio-curso"
-    PROFESORES = "https://www.comunidad.madrid/servicios/educacion/secundaria-fp-re-asignacion-destinos-provisionales-inicio-curso"
+    MAESTROS = _get_concurso_url("https://www.comunidad.madrid/educacion/maestros-asignacion-destinos-provisionales-inicio-curso")
+    PROFESORES = _get_concurso_url("https://www.comunidad.madrid/educacion/secundaria-fp-re-asignacion-destinos-provisionales-inicio-curso")
     MAE = "concursillo-magisterio"
     PRO = "concursillo"
 
@@ -277,7 +354,7 @@ class Concursillo(Concurso):
         if self.abr == Concursillo.MAE:
             return "0597"
 
-    def _anexos(self) -> Dict[int, Anexo]:
+    def _anexos_old(self) -> Dict[int, Anexo]:
         def _txt(n: Tag):
             n = BeautifulSoup(str(n.find_parent("li")), "html.parser")
             for x in n.findAll(["ul", "ol"]):
@@ -292,17 +369,15 @@ class Concursillo(Concurso):
         resoluciones = {}
         div: Tag = self.home.select_one("#instrucciones,#instrucciones-calendario")
         rsl: Tag
-        re_reso = re.compile(r"^\s*resoluci[oó]n\s+de\s+(\d+)\s+de\s+(\w+)\s+de\s+(\d+)(.*)$", flags=re.IGNORECASE)
-        for rsl in div.findAll("a", string=re_reso):
+        for rsl in div.findAll("a", string=re_reso1):
             txt = re_sp.sub(r" ", rsl.get_text()).lower().strip()
-            m = re_reso.match(txt)
-            if m is None:
+            ok = get_reso(txt, rsl.attrs["href"], self.year)
+            if ok is None:
                 raise ValueError(txt)
-            d, mes, y, tail = m.groups()
-            m = MONTH.index(mes[:3])+1
-            txt = f"{y}-{m:02d}-{int(d):02d}"
-            rsl.string = re_reso.sub("Resolución "+txt+tail, rsl.string)
-            resoluciones[txt] = rsl
+            txt, url = ok
+            rsl.attrs["href"] = url
+            rsl.string = txt
+            resoluciones[rsl.string] = rsl
 
         def _add(a: Tag):
             url = a.attrs["href"]
@@ -332,8 +407,59 @@ class Concursillo(Concurso):
 
         return anexos
 
+    def _anexos(self) -> Dict[int, Anexo]:
+        anx = self._anexos_old()
+        if len(anx):
+            return anx
+        if self.doc_home is None:
+            raise ValueError("No se encuentra la página de documentación de interés")
+
+        def _iter_urls():
+            for a in self.doc_home.select("#normativa-aplicable a[href]"):
+                txt = get_text(a)
+                url = a.attrs["href"]
+                yield txt, url
+            for div in self.doc_home.select("div.node__content div.contenido"):
+                txt = get_text(div.select_one("div"))
+                links = list(div.select("div.archivos a[href]"))
+                if len(links) == 0:
+                    continue
+                if len(links) > 1:
+                    raise ValueError(f"Más de un enlace en {div}")
+                url = links[0].attrs["href"]
+                yield txt, url
+
+        anexos: dict[int, Anexo] = {}
+        arr: list[tuple[str, str]] = []
+        for txt, url in _iter_urls():
+            ok = get_reso(txt, url, self.year)
+            if ok:
+                if ok is not arr:
+                    arr.append(ok)
+                continue
+            txt = re.sub(r"\s*\.?\s*\(Anexo \w+\)\s*\.?\s*$", "", txt, flags=re.I)
+            a = Anexo(
+                num=len(anexos),
+                txt=txt,
+                url=url
+            )
+            if a.num in anexos:
+                logger.warning(f"Anexo duplicado {a.num}{a.letter or ''} {a.txt} {a.url}")
+                o: Anexo = anexos[a.num]
+                logger.warning(f"Anexo duplicado {o.num}{a.letter or ''} {o.txt} {o.url}")
+                continue
+            anexos[a.num] = a
+        for i, (txt, url) in enumerate(arr, start=-(len(arr)-1)):
+            anexos[i] = Anexo(
+                num=i,
+                txt=txt,
+                url=url
+            )
+        anexos = dict(sorted(anexos.items()))
+        return anexos
 
 if __name__ == "__main__":
     for con in map(Concurso.build, (Concursazo.MAESTROS, Concursazo.PROFESORES, Concursillo.MAESTROS, Concursillo.PROFESORES)):
+        print(con.convocatoria, con.url)
         for a in con.anexos.values():
-            print(con.convocatoria, con.abr, a.num, a.url, len(a.centros))
+            print(con.abr, a.num, a.txt, a.url, len(a.centros))
