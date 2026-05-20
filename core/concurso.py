@@ -445,7 +445,7 @@ class Concursillo(Concurso):
                 continue
             txt = re.sub(r"\s*\.?\s*\(Anexo \w+\)\s*\.?\s*$", "", txt, flags=re.I)
             a = Anexo(
-                num=len(anexos),
+                num=len(anexos)+1,
                 txt=txt,
                 url=url
             )
@@ -463,6 +463,7 @@ class Concursillo(Concurso):
             )
         anexos = dict(sorted(anexos.items()))
         return anexos
+
 
 if __name__ == "__main__":
     for con in map(Concurso.build, (
