@@ -31,19 +31,33 @@ re_anexo = re.compile(r"^Anexo (\d+)([a-z])?\. (.+)$")
 re_reso1 = re.compile(r"^\s*resoluci[oó]n\s+de\s+(\d+)\s+de\s+(\w+)\s+de\s+(\d+)(.*)$", flags=re.I)
 re_reso2 = re.compile(r"^\s*resoluci[oó]n\s+de\s+(\d+)\s+de\s+(\w+)\s*(.*)$", flags=re.I)
 
+
+def _clean_txt(txt: str):
+    bak = []
+    while len(bak) == 0 or txt != bak[-1]:
+        bak.append(txt)
+        txt = re.sub(r"\brecursos humanos\b", "RR.HH.", txt, flags=re.I)
+        txt = re.sub(r"\bdirección general\b", "D.G.", txt, flags=re.I)
+        txt = re.sub(r"^(Resolución \d+-\d+-\d+) de la D\.G\. de RR\.HH\.$", r"\1", txt, flags=re.I)
+        txt = re_sp.sub(" ", txt).strip()
+        if len(txt) == 0:
+            return bak[-1]
+    return txt
+
+
 def get_reso(txt: str, url: str, year: int):
     m = re_reso1.match(txt)
     if m:
         d, mes, y, tail = m.groups()
         m = MONTH.index(mes[:3])+1
         txt = f"Resolución {y}-{m:02d}-{int(d):02d} {tail}".strip()
-        return txt, url
+        return _clean_txt(txt), url
     m = re_reso2.match(txt)
     if m:
         d, mes, tail = m.groups()
         m = MONTH.index(mes[:3])+1
         txt = f"Resolución {year}-{m:02d}-{int(d):02d} {tail}".strip()
-        return txt, url
+        return _clean_txt(txt), url
     m = re.match(r"https?://.*?/(BOCM-[\d\-]+)\.PDF$", url, flags=re.I)
     if m:
         bocm = m.group(1).upper()
@@ -188,18 +202,20 @@ class Concurso(ABC):
 
     @cached_property
     def year(self):
-        return int(self.convocatoria.split('-')[0])
-
-    @cached_property
-    def convocatoria(self):
-        m = re.search(r"\b20\d\d-20\d\d\b", self.titulo)
+        m = re.search(r"\b(20\d\d)-(20\d\d)\b", self.titulo)
         if m is not None:
-            return m.group()
+            a, b = map(int, m.groups())
+            if (a+1) == b:
+                return a
         m = re.search(r" \((20\d\d)\)", self.titulo)
         if m is not None:
             y = int(m.group(1))
-            return f"{y}-{y+1}"
+            return y
         raise ValueError(f"No se encuentra convocatoria en {self.url} {self.titulo} -- {self.home.get_text()}")
+
+    @property
+    def convocatoria(self):
+        return f"{self.year}-{self.year+1}"
 
     @cached_property
     def titulo(self):
@@ -446,7 +462,7 @@ class Concursillo(Concurso):
             txt = re.sub(r"\s*\.?\s*\(Anexo \w+\)\s*\.?\s*$", "", txt, flags=re.I)
             a = Anexo(
                 num=len(anexos)+1,
-                txt=txt,
+                txt=_clean_txt(txt),
                 url=url
             )
             if a.num in anexos:
