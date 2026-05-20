@@ -2871,6 +2871,14 @@
                     }
                   }
                 },
+                "3066": {
+                  "_": "Presencial Anual Diurno Intensivo",
+                  "cdEspecialidadII": {
+                    "3067": {
+                      "_": "A1"
+                    }
+                  }
+                },
                 "7526": {
                   "_": "Semipresencial"
                 },
@@ -6194,6 +6202,14 @@
                     }
                   }
                 },
+                "3069": {
+                  "_": "Semipresencial Anual Vespertino Intensivo",
+                  "cdEspecialidadII": {
+                    "3070": {
+                      "_": "B1"
+                    }
+                  }
+                },
                 "7754": {
                   "_": "Semipresencial"
                 },
@@ -8801,6 +8817,9 @@
                   "cdEspecialidadII": {
                     "2971": {
                       "_": "B2.1"
+                    },
+                    "3068": {
+                      "_": "B2.2"
                     }
                   }
                 },

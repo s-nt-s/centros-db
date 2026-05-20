@@ -16,6 +16,12 @@ from datetime import datetime
 import requests
 
 MONTH = ('ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic')
+VERIFY = True
+
+if VERIFY is False:
+    import urllib3
+    urllib3.disable_warnings()
+
 
 logger = logging.getLogger(__name__)
 SPAIN_PROXY = environ.get("SPAIN_PROXY")
@@ -23,7 +29,7 @@ SPAIN_PROXY = environ.get("SPAIN_PROXY")
 re_sp = re.compile(r"\s+")
 re_anexo = re.compile(r"^Anexo (\d+)([a-z])?\. (.+)$")
 re_reso1 = re.compile(r"^\s*resoluci[oó]n\s+de\s+(\d+)\s+de\s+(\w+)\s+de\s+(\d+)(.*)$", flags=re.I)
-re_reso2 = re.compile(r"^\s*resoluci[oó]n\s+de\s+(\d+)\s+de\s+(\d+)(.*)$", flags=re.I)
+re_reso2 = re.compile(r"^\s*resoluci[oó]n\s+de\s+(\d+)\s+de\s+(\w+)\s*(.*)$", flags=re.I)
 
 def get_reso(txt: str, url: str, year: int):
     m = re_reso1.match(txt)
@@ -40,8 +46,8 @@ def get_reso(txt: str, url: str, year: int):
         return txt, url
     m = re.match(r"https?://.*?/(BOCM-[\d\-]+)\.PDF$", url, flags=re.I)
     if m:
-        bocm = m.group(1)
-        return 'Resolucción '+bocm.upper(), 'https://www.bocm.es/' + bocm.lower()
+        bocm = m.group(1).upper()
+        return bocm, 'https://www.bocm.es/' + bocm.lower()
 
 
 def get_text(n: Tag):
@@ -56,7 +62,7 @@ def get_text(n: Tag):
 
 
 def descargar_pdf(url, destino: Path):
-    response = requests.get(url, timeout=30)
+    response = requests.get(url, timeout=30, verify=VERIFY)
 
     response.raise_for_status()
 
@@ -139,7 +145,7 @@ class Anexo():
 
 
 def _get_concurso_url(url: str):
-    w = Web()
+    w = Web(verify=VERIFY)
     year = datetime.now().year
     for y in (year, None, year-1):
         new_url = f"{url}-{y}-{y+1}" if y else str(url)
@@ -164,7 +170,7 @@ class Concurso(ABC):
 
     @property
     def __w(self):
-        w = Web()
+        w = Web(verify=VERIFY)
         if SPAIN_PROXY is not None:
             w.s.proxies = {"http": SPAIN_PROXY, "https": SPAIN_PROXY}
         return w
@@ -433,7 +439,7 @@ class Concursillo(Concurso):
         arr: list[tuple[str, str]] = []
         for txt, url in _iter_urls():
             ok = get_reso(txt, url, self.year)
-            if ok:
+            if ok is not None:
                 if ok is not arr:
                     arr.append(ok)
                 continue
@@ -459,7 +465,12 @@ class Concursillo(Concurso):
         return anexos
 
 if __name__ == "__main__":
-    for con in map(Concurso.build, (Concursazo.MAESTROS, Concursazo.PROFESORES, Concursillo.MAESTROS, Concursillo.PROFESORES)):
+    for con in map(Concurso.build, (
+        #Concursazo.MAESTROS,
+        #Concursazo.PROFESORES,
+        Concursillo.MAESTROS,
+        Concursillo.PROFESORES
+    )):
         print(con.convocatoria, con.url)
         for a in con.anexos.values():
-            print(con.abr, a.num, a.txt, a.url, len(a.centros))
+            print(" ",con.abr, a.num, a.txt, a.url, len(a.centros))
