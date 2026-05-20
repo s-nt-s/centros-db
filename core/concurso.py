@@ -111,7 +111,7 @@ class Anexo():
             return FM.resolve_path(
                 f"cache/pdf/{self.num:02}{self.letter or ''} - {self.txt[:30]} - {hashme(self.url)}.pdf"
             )
-    
+
     def __is_pdf(self):
         if self.url.rsplit(".")[-1].lower() in ("pdf",):
             return True
@@ -211,7 +211,7 @@ class Concurso(ABC):
         if m is not None:
             y = int(m.group(1))
             return y
-        raise ValueError(f"No se encuentra convocatoria en {self.url} {self.titulo} -- {self.home.get_text()}")
+        raise ValueError(f"No se encuentra convocatoria en {self.url} {self.titulo}")
 
     @property
     def convocatoria(self):
