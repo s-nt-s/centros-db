@@ -68,8 +68,15 @@ def loadTsvCentros():
 TSV_CENTROS = loadTsvCentros()
 COD_MOVE = {
     28058020: 28701081,
-    28028143: 28010710
+    28028143: 28010710,
+    28701071: 28700623
 }
+
+def get_row_or_new_id(id: int):
+    row = TSV_CENTROS.get(id)
+    if row:
+        return row
+    return COD_MOVE.get(id)
 
 
 @logme
@@ -478,10 +485,13 @@ def insert_concurso(db: DBLite):
                 continue
             for c in anx.centros:
                 if c not in ok_cent:
-                    row = TSV_CENTROS.get(c)
-                    if row:
+                    row_or_id = get_row_or_new_id(c)
+                    if isinstance(row_or_id, int) and row_or_id in ok_cent:
+                        logger.warning(f"{row_or_id} <- {c} ¡Código renombrado! - concurso={con.abr} anexo={anx.num}) {anx.url}")
+                        c = row_or_id
+                    elif isinstance(row_or_id, dict):
                         logger.warning(f"{c} ha tenido que ser recuperado del tsv - concurso={con.abr} anexo={anx.num}) {anx.url}")
-                        db.insert("CENTRO", **row)
+                        db.insert("CENTRO", **row_or_id)
                         ok_cent.add(c)
                     else:
                         logger.warning(f"{c} no existe? - concurso={con.abr} anexo={anx.num}) {anx.url}")
@@ -494,15 +504,13 @@ def insert_concurso(db: DBLite):
                 )
 
     for c in (esp_dif - ok_cent):
-        new_id = COD_MOVE.get(c)
-        if new_id is not None and new_id in ok_cent:
-            logger.warning(f"{new_id} <- {c} ¡Código renombrado!")
-            esp_dif.add(new_id)
-            continue
-        row = TSV_CENTROS.get(c)
-        if row:
+        row_or_id = get_row_or_new_id(c)
+        if isinstance(row_or_id, int) and row_or_id in ok_cent:
+            logger.warning(f"{row_or_id} <- {c} ¡Código renombrado! (especial dificultad)")
+            esp_dif.add(row_or_id)
+        elif isinstance(row_or_id, dict):
             logger.warning(f"{c} ha tenido que ser recuperado del tsv (especial dificultad)")
-            db.insert("CENTRO", **row)
+            db.insert("CENTRO", **row_or_id)
             ok_cent.add(c)
         else:
             logger.warning(f"{c} no existe? (especial dificultad)")
