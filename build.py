@@ -69,8 +69,8 @@ TSV_CENTROS = loadTsvCentros()
 COD_MOVE = {
     28058020: 28701081,
     28028143: 28010710,
-    28701071: 28700623
 }
+
 
 def get_row_or_new_id(id: int):
     row = TSV_CENTROS.get(id)
