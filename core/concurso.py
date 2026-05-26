@@ -16,7 +16,7 @@ from datetime import datetime
 import requests
 
 MONTH = ('ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic')
-VERIFY = True
+VERIFY = False
 
 if VERIFY is False:
     import urllib3
@@ -134,6 +134,8 @@ class Anexo():
                         f.write(r.content)
         txt: str = FM.load(self.local_pdf)
         txt = txt.strip()
+        with open(self.local_pdf.suffix(".txt"), "w") as f:
+            f.write(txt)
         return txt
 
     def __get_centros(self):

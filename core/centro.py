@@ -1,4 +1,4 @@
-from dataclasses import dataclass, asdict, field, replace
+from dataclasses import dataclass, asdict, field, replace, fields
 from functools import cached_property, cache
 from typing import Dict, Tuple, NamedTuple, List, Union
 from aiohttp import ClientResponse, ClientSession
@@ -834,13 +834,42 @@ class Centro:
     municipio: str = None
     distrito: str = None
     cp: int = None
-    telefono: Tuple[int] = None
-    email: Tuple[str] = tuple()
+    telefono: Tuple[int, ...] = tuple()
+    email: Tuple[str, ...] = tuple()
     titularidad: str = None
-    fax: Tuple[int] = tuple()
+    fax: Tuple[int, ...] = tuple()
     _latlon: LatLon = field(repr=False, init=False, default=None)
-    _webs: Tuple[str] = field(repr=False, init=False, default=tuple())
+    _webs: Tuple[str, ...] = field(repr=False, init=False, default=tuple())
 
+    @classmethod
+    def build_from_dict(cls, obj: dict):
+        for k, v in list(obj.items()):
+            if isinstance(v, str):
+                v = v.strip()
+                if len(v) == 0:
+                    v = None
+            obj[k] = v
+            if v is None:
+                continue
+            for k in ("id", "cp"):
+                obj[k] = int(v)
+            if k in ("latitude", "longitude"):
+                obj[k] = float(v)
+            if k in ("telefono", "fax"):
+                obj[k] = tuple(map(int, v.split()))
+            if k in ("email", "webs"):
+                obj[k] = tuple(v.split())
+        for k in ("email", "fax", "telefono", "web"):
+            if obj[k] is None:
+                obj[k] = tuple()
+        c = cls(**{k.name: obj.get(k.name) for k in fields(cls)})
+        object.__setattr__(c, '_web', obj['web'])
+        _lat = obj.get("latitude")
+        _lon = obj.get("longitude")
+        if _lat is not None and _lon is not None:
+            object.__setattr__(c, '_latlon', LatLon(_lat, _lon))
+        return c
+    
     @classmethod
     def build(cls, head: Tuple, row: Tuple):
         obj = {h: _parse(h, c) for h, c in zip_longest(head, row)}

@@ -1,3 +1,11 @@
 {
-    "cSpell.language": "en,es-ES"
+    "cSpell.language": "en,es-ES",
+    "files.associations": {
+        "*.tsv": "tsv"
+    },
+    "[tsv]": {
+        "editor.insertSpaces": false,
+        "editor.tabSize": 4,
+        "editor.detectIndentation": false
+    }
 }

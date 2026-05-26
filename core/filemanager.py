@@ -8,6 +8,7 @@ import fitz
 from pytesseract import image_to_string
 from PIL import Image
 import re
+import csv
 
 from bs4 import BeautifulSoup, Tag
 
@@ -163,6 +164,11 @@ class FileManager:
             if len(plain_text) == 0 or startswith(all_text, "$QH[R", "$1(;2", ""):
                 return self.__load_pdf_ocr(file)
             return all_text
+        
+    def load_tsv(self, file, *args, **kwargs):
+        with open(file, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f, delimiter='\t')
+            return tuple(reader)
 
     def __load_pdf_ocr(self, file: Path):
         file_ocr = file.with_suffix(FileManager.OCR_SUFFIX)
