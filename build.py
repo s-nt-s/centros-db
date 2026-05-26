@@ -66,6 +66,10 @@ def loadTsvCentros():
 
 
 TSV_CENTROS = loadTsvCentros()
+COD_MOVE = {
+    28058020: 28701081,
+    28028143: 28010710
+}
 
 
 @logme
@@ -490,6 +494,11 @@ def insert_concurso(db: DBLite):
                 )
 
     for c in (esp_dif - ok_cent):
+        new_id = COD_MOVE.get(c)
+        if new_id is not None and new_id in ok_cent:
+            logger.warning(f"{new_id} <- {c} ¡Código renombrado!")
+            esp_dif.add(new_id)
+            continue
         row = TSV_CENTROS.get(c)
         if row:
             logger.warning(f"{c} ha tenido que ser recuperado del tsv (especial dificultad)")
