@@ -1,2 +1,2 @@
-id	tipo	titular	area	jornada	dificutlad	cp	latitud	longitud	nombre	telefono	email	web	domicilio	municipio	distrito
-28701196	038	COMUNIDAD DE MADRID	O	C	0	28440	40.680374	-4.108046	CET GUADARRAMA	919094209 918548328	cet.guadarrama@educa.madrid.org	www.educa2.madrid.org/web/cet-guadarrama	Carretera Nacional VI, Km 50, 300, 28440, Guadarrama, Madrid	Guadarrama
+id	tipo	titular	area	jornada	cp	latitud	longitud	nombre	telefono	email	web	domicilio	municipio	distrito
+28701196	038	COMUNIDAD DE MADRID	O	C	28440	40.680374	-4.108046	CET GUADARRAMA	919094209 918548328	cet.guadarrama@educa.madrid.org	www.educa2.madrid.org/web/cet-guadarrama	Carretera Nacional VI, Km 50, 300, 28440, Guadarrama, Madrid	Guadarrama

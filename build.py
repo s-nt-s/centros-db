@@ -45,6 +45,29 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def loadTsvCentros():
+    ctrs: dict[int, dict] = {}
+    for obj in FM.load("tsv/centro.tsv"):
+        for k, v in list(obj.items()):
+            if isinstance(v, str):
+                v = v.strip()
+                if len(v) == 0:
+                    v = None
+            if v is None:
+                del obj[k]
+                continue
+            obj[k] = v
+            if k in ("id", "cp"):
+                obj[k] = int(v)
+            if k in ("latitud", "longitud"):
+                obj[k] = float(v)
+        ctrs[obj['id']] = obj
+    return ctrs
+
+
+TSV_CENTROS = loadTsvCentros()
+
+
 @logme
 def build_db(db: DBLite, tcp_limit: int = 10):
     db.execute("sql/schema.sql")
@@ -451,8 +474,14 @@ def insert_concurso(db: DBLite):
                 continue
             for c in anx.centros:
                 if c not in ok_cent:
-                    logger.warning(f"{c} no existe? (concurso={con.abr} anexo={anx.num}) {anx.url}")
-                    continue
+                    row = TSV_CENTROS.get(c)
+                    if row:
+                        logger.warning(f"{c} ha tenido que ser recuperado del tsv - concurso={con.abr} anexo={anx.num}) {anx.url}")
+                        db.insert("CENTRO", **row)
+                        ok_cent.add(c)
+                    else:
+                        logger.warning(f"{c} no existe? - concurso={con.abr} anexo={anx.num}) {anx.url}")
+                        continue
                 db.insert(
                     "CONCURSO_ANEXO_CENTRO",
                     centro=c,
@@ -461,8 +490,13 @@ def insert_concurso(db: DBLite):
                 )
 
     for c in (esp_dif - ok_cent):
-        logger.warning(f"{c} no existe?")
-        continue
+        row = TSV_CENTROS.get(c)
+        if row:
+            logger.warning(f"{c} ha tenido que ser recuperado del tsv (especial dificultad)")
+            db.insert("CENTRO", **row)
+            ok_cent.add(c)
+        else:
+            logger.warning(f"{c} no existe? (especial dificultad)")
     esp_dif = esp_dif.intersection(ok_cent)
     update_centro(db, *tuple(sorted(esp_dif)), dificultad=1)
 
