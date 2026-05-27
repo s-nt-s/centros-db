@@ -68,7 +68,6 @@ def loadTsvCentros():
 TSV_CENTROS = loadTsvCentros()
 COD_MOVE = {
     28058020: 28701081,
-    28028143: 28010710,
 }
 
 
