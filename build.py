@@ -270,6 +270,7 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], _or: str = None):
             obj['longitud'] = row.latlon.longitude
         obj['titular'] = row.titular
         obj['web'] = tp_join(row.web)
+        obj['accesibilidad'] = tp_join(row.accesibilidad)
         obj['domicilio'] = parse_dir(row.domicilio)
         obj['jornada'] = JND[row.id]
         return obj

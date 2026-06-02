@@ -7,7 +7,7 @@ from urllib import parse
 import math
 from .web import Web, buildSoup, select_attr, DomNotFoundException
 from .cache import Cache
-from .utm_to_geo import utm_to_geo, LatLon
+from .utm_to_geo import UTM_TO_GEO, LatLon
 from .retry import retry
 import re
 import logging
@@ -26,6 +26,17 @@ logger = logging.getLogger(__name__)
 
 WEB = Web()
 SEP = " -> "
+
+
+def _join(*tps: tuple[tuple | None, ...]):
+    arr = []
+    for tp in tps:
+        if tp is None:
+            continue
+        for t in tp:
+            if t is not None and t not in arr:
+                arr.append(t)
+    return tuple(arr)
 
 
 def get_text(n: Tag):
@@ -580,7 +591,7 @@ class SoupCentro:
     def latlon(self) -> LatLon:
         if self.utm_ed50_huso_30_x_y is None:
             return None
-        latlon = utm_to_geo("ED50", 30, *self.utm_ed50_huso_30_x_y)
+        latlon = UTM_TO_GEO.to_geo(*self.utm_ed50_huso_30_x_y)
         if latlon is not None:
             return latlon.round(7)
 
@@ -819,7 +830,7 @@ class OpenDataCentro(NamedTuple):
     def get_latlon(self) -> LatLon:
         if None in (self.direccion_coor_x, self.direccion_coor_y):
             return None
-        latlon = utm_to_geo("ED50", 30, self.direccion_coor_x, self.direccion_coor_y)
+        latlon = UTM_TO_GEO.to_geo(self.direccion_coor_x, self.direccion_coor_y)
         if latlon is not None:
             return latlon.round(7)
 
@@ -838,6 +849,7 @@ class Centro:
     email: Tuple[str, ...] = tuple()
     titularidad: str = None
     fax: Tuple[int, ...] = tuple()
+    accesibilidad: Tuple[int, ...] = tuple()
     _latlon: LatLon = field(repr=False, init=False, default=None)
     _webs: Tuple[str, ...] = field(repr=False, init=False, default=tuple())
 
@@ -861,30 +873,24 @@ class Centro:
             fax=_get_telefono(obj['FAX']),
         )
 
-    def merge(self, o: Union[OpenDataCentro, Dict]):
-        if o is None:
-            return self
-        if isinstance(o, dict):
-            o = OpenDataCentro.build(o)
-        telefono = list(self.telefono)
-        email = list(self.email)
-        fax = list(self.fax)
-        for txt in (o.contacto_email1 or "", o.contacto_web or ""):
-            for m in re_mail.findall(txt):
-                m = m.lower()
-                if m not in email:
-                    email.append(m)
-        for t in _get_telefono(o.contacto_fax):
-            if t not in fax:
-                fax.append(t)
-        for tlf in (o.contacto_telefono1, o.contacto_telefono2, o.contacto_telefono3, o.contacto_telefono4):
-            for t in _get_telefono(tlf):
-                if t not in telefono and t not in fax:
-                    telefono.append(t)
-
-        c = replace(self, telefono=tuple(telefono), email=tuple(email), fax=tuple(fax))
-        object.__setattr__(c, '_latlon', o.get_latlon())
-        object.__setattr__(c, '_web', _get_web(o.contacto_web))
+    def replace(
+        self,
+        telefono: tuple[int, ...] = None,
+        email: tuple[str, ...] = None,
+        fax: tuple[int, ...] = None,
+        webs: tuple[str, ...] = None,
+        latlon: LatLon = None,
+        accesibilidad: tuple[int, ...] = None
+    ):
+        c = replace(
+            telefono=_join(self.telefono, telefono),
+            email=_join(self.email, email),
+            fax=_join(self.fax, fax),
+            accesibilidad=_join(self.accesibilidad, accesibilidad)
+        )
+        if self._latlon is None:
+            object.__setattr__(c, '_latlon', latlon)
+        object.__setattr__(c, '_web', _join(self._webs, webs))
         return c
 
     def _asdict(self):

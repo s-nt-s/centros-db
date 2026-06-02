@@ -19,6 +19,7 @@ from .cache import Cache
 from .retry import retry
 from .bulkrequests import BulkRequestsFileJob
 from .util import hashme, fix_char
+from .opendata import OpenData, CamCentro
 
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ re_sp = re.compile(r"\s+")
 
 JS_TIMEOUT = int(os.environ.get('JS_TIMEOUT', '600'))
 WEB = Web()
+OD = OpenData()
 
 
 def trim_null(s: str, is_null=tuple()):
@@ -260,18 +262,6 @@ class Api():
         r = requests.get("https://datos.comunidad.madrid/catalogo/dataset/c750856d-3166-4dac-8e80-d1b824c968b5/resource/28d60557-1d73-4281-ab08-6cfd3b2f5f83/download/centros_educativos.csv")
         return r.text
 
-    @cache
-    def get_opendata(self):
-        obj = {}
-        for i in csvstr_to_dict(self.get_opendata_csv_as_str()):
-            c = i.get('centro_codigo', i.get('CODIGO'))
-            if c is None:
-                raise ValueError(i)
-            if isinstance(c, str) and not c.isdecimal():
-                raise ValueError(i)
-            obj[int(c)] = i
-        return obj
-
     @IdCache("cache/ids/", maxOld=5)
     def search_ids(self, **data) -> Tuple[int]:
         r = self.__do_search(**data)
@@ -391,8 +381,25 @@ class Api():
 
     def __build_centro(self, head: Tuple, row: Tuple):
         c = Centro.build(head, row)
-        o = self.get_opendata().get(c.id)
-        c = c.merge(o)
+        cam = OD.cam_centros.get(c.id)
+        if cam is not None:
+            c = c.replace(
+                telefono=cam.telefono,
+                email=cam.email,
+                fax=cam.fax,
+                webs=cam.webs,
+                latlon=cam.latlon
+            )
+        mun = OD.find_mun_centro(*c.telefono, *c.fax, *c.email)
+        if mun is not None:
+            c = c.replace(
+                telefono=mun.telefono,
+                email=mun.email,
+                fax=mun.fax,
+                webs=(mun.url, ) if mun.url else None,
+                latlon=mun.latlon,
+                accesibilidad=mun.accesibilidad,
+            )
         return c
 
     @cached_property

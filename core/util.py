@@ -4,6 +4,11 @@ import functools
 import logging
 import re
 
+from collections import defaultdict
+from types import MappingProxyType
+from typing import TypeVar, Callable, Mapping, Optional
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -151,3 +156,59 @@ def unupper(s: str, rstrip=None):
         flags=re.IGNORECASE
     )
     return s
+
+
+T = TypeVar('T')
+K = TypeVar('K')
+V = TypeVar('V')
+
+
+def mk_dict_1_1(
+    *args: T,
+    get_k: Callable[[T], K | None],
+    get_v: Callable[[T], V | None],
+) -> Mapping[K, V]:
+    k_v: dict[K, set[V]] = defaultdict(set)
+    v_k: dict[V, set[K]] = defaultdict(set)
+
+    for a in args:
+        k = get_k(a)
+        v = get_v(a)
+        if k is None or v is None:
+            continue
+        k_v[k].add(v)
+        v_k[v].add(k)
+
+    d: dict[K, V] = {}
+    for k, vv in k_v.items():
+        if len(vv) != 1:
+            continue
+        v = vv.pop()
+        if len(v_k[v]) != 1:
+            continue
+        d[k] = v
+    return MappingProxyType(d)
+
+
+def mk_dict_n_1(
+    *args: T,
+    get_ks: Callable[[T], Tuple[K, ...] | None],
+    get_v: Optional[Callable[[T], V | None]] = None,
+) -> Mapping[K, V]:
+    k_v: dict[K, set[V]] = defaultdict(set)
+
+    for a in args:
+        ks = get_ks(a)
+        v = get_v(a) if get_v is not None else a
+        if ks is None or len(ks) == 0 or v is None:
+            continue
+        for k in ks:
+            k_v[k].add(v)
+
+    d: dict[K, V] = {}
+    for k, vv in k_v.items():
+        if len(vv) != 1:
+            continue
+        v = vv.pop()
+        d[k] = v
+    return MappingProxyType(d)

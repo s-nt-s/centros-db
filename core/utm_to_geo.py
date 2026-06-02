@@ -1,7 +1,8 @@
 import sys
 import pyproj
 from typing import NamedTuple
-
+from functools import cache
+from core.filemanager import FM
 
 ELIPSOIDE = "WGS84"
 
@@ -51,24 +52,51 @@ def get_epsg(datum, huso):
     return None
 
 
-def utm_to_geo(DATUM, HUSO, UTM_X, UTM_Y):
-    if HUSO is None or DATUM is None or UTM_X is None or UTM_Y is None:
-        return None
-    epsg = get_epsg(DATUM, HUSO)
-    if epsg is None:
-        return None
-    transformer = pyproj.Transformer.from_crs('epsg:' + str(epsg), 'epsg:4326')
-    lat, lon = transformer.transform(UTM_X, UTM_Y)
-    return LatLon(
-        latitude=lat,
-        longitude=lon
-    )
+class UtmToGeo:
+    def __init__(self, datum: str, huso: int):
+        self.__datum = datum
+        self.__huso = huso
+        self.__file = FM.resolve_path(f"cache/utm_to_geo_{self.__datum}_{self.__huso}.txt")
+        self.__cache: dict[tuple[int, int], tuple[float, float]] = {}
+        self.__load()
+
+    def __load(self):
+        self.__cache: dict[tuple[int, int], tuple[float, float]] = {}
+        if self.__file.is_file():
+            with open(self.__file, "r") as f:
+                for line in f:
+                    x, y, lat, lon = line.strip().split("\t")
+                    self.__cache[(int(x), int(y))] = (float(lat), float(lon))
+
+    def save(self):
+        with open(self.__file, "w") as f:
+            for (x, y), (lat, lon) in self.__cache.items():
+                f.write(f"{x}\t{y}\t{lat}\t{lon}\n")
+
+    def __file(self):
+        return FM.resolve_path(f"cache/utm_to_geo_{self.__datum}_{self.__huso}.txt")
+    
+    def to_geo(self, utm_x: int, utm_y: int) -> LatLon:
+        if (utm_x, utm_y) in self.__cache:
+            lat, lon = self.__cache[(utm_x, utm_y)]
+            return LatLon(latitude=lat, longitude=lon)
+        epsg = get_epsg(self.__datum, self.__huso)
+        if epsg is None:
+            return None
+        transformer = pyproj.Transformer.from_crs('epsg:' + str(epsg), 'epsg:4326')
+        lat, lon = transformer.transform(utm_x, utm_y)
+        self.__cache[(utm_x, utm_y)] = (lat, lon)
+        if len(self.__cache) % 100 == 0:
+            self.save()
+        return LatLon(latitude=lat, longitude=lon)
+
+UTM_TO_GEO = UtmToGeo("ED50", 30)
 
 
 if __name__ == "__main__":
     # ej: ED50 30 469656 4481719 = 40.4837353 -3.3593097
     argv = [int(a) if a.isdigit() else a for a in sys.argv[1:]]
-    latlon = utm_to_geo(*argv).round(7)
+    latlon = UTM_TO_GEO.to_geo(*argv).round(7)
     print(*argv)
     print("=")
     print(latlon)
