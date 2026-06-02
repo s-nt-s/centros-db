@@ -385,7 +385,7 @@ class OpenData():
 
     @cached_property
     def cam_centros(self):
-        return MappingProxyType({c.id: c for c in self.get_cam_centros()})
+        return MappingProxyType({c.codigo: c for c in self.get_cam_centros()})
 
     def get_cam_centros(self):
         centros: set[CamCentro] = set()

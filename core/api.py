@@ -387,7 +387,7 @@ class Api():
                 telefono=cam.telefono,
                 email=cam.email,
                 fax=cam.fax,
-                webs=cam.webs,
+                webs=cam.web,
                 latlon=cam.latlon
             )
         mun = OD.find_mun_centro(*c.telefono, *c.fax, *c.email)

@@ -883,6 +883,7 @@ class Centro:
         accesibilidad: tuple[int, ...] = None
     ):
         c = replace(
+            self,
             telefono=_join(self.telefono, telefono),
             email=_join(self.email, email),
             fax=_join(self.fax, fax),
@@ -890,7 +891,7 @@ class Centro:
         )
         if self._latlon is None:
             object.__setattr__(c, '_latlon', latlon)
-        object.__setattr__(c, '_web', _join(self._webs, webs))
+        object.__setattr__(c, '_webs', _join(self._webs, webs))
         return c
 
     def _asdict(self):
