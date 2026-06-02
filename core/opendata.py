@@ -354,6 +354,16 @@ class OpenData():
     # https://datos.madrid.es/dataset/202180-0-instalaciones-accesibles-no-muni
     MUN_ACCESIBLE = "https://datos.madrid.es/dataset/202180-0-instalaciones-accesibles-no-muni/resource/202180-5-instalaciones-accesibles-no-muni-csv/download/202180-5-instalaciones-accesibles-no-muni-csv.csv"
 
+    ACC = MappingProxyType({
+        0: "Instalación no accesible para personas con movilidad reducida",
+        1: "Instalación accesible para personas con movilidad reducida",
+        2: "Instalación parcialmente accesible para personas con movilidad reducida",
+        3: "Sin información sobre accesibilidad para personas con movilidad reducida",
+        4: "Lengua de signos",
+        5: "Señalización podotáctil",
+        6: "Bucle de inducción magnético"
+    })
+
     def __init__(self):
         self.__s = Session()
 
@@ -499,6 +509,8 @@ class OpenData():
         ll_dis: dict[LatLon, set[CodTxt]] = defaultdict(set)
         ll_bar: dict[LatLon, set[CodTxt]] = defaultdict(set)
         for c in centros:
+            if c.accesibilidad and any(a not in OpenData.ACC for a in c.accesibilidad):
+                raise ValueError(f"Accesibilidad desconocida {c.accesibilidad} en {c}")
             for cod in (c.barrio, c.distrito):
                 if cod is not None and cod.is_incomplete():
                     raise ValueError(f"Código incompleto en {c}")

@@ -24,6 +24,7 @@ CREATE TABLE JORNADA (
     txt TEXT NOT NULL
 );
 
+
 CREATE TABLE CENTRO (
     id            INTEGER NOT NULL PRIMARY KEY,
     area          TEXT REFERENCES AREA(id),
@@ -36,7 +37,6 @@ CREATE TABLE CENTRO (
     telefono      TEXT,
     email         TEXT,
     web           TEXT,
-    accesibilidad TEXT,
     domicilio     TEXT,
     municipio     TEXT NOT NULL,
     distrito      TEXT,

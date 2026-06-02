@@ -1,8 +1,8 @@
 import sys
 import pyproj
 from typing import NamedTuple
-from functools import cache
 from core.filemanager import FM
+import re
 
 ELIPSOIDE = "WGS84"
 
@@ -65,7 +65,7 @@ class UtmToGeo:
         if self.__file.is_file():
             with open(self.__file, "r") as f:
                 for line in f:
-                    x, y, lat, lon = line.strip().split("\t")
+                    x, y, lat, lon = re.sub(r"\.0\b", "", line.strip()).split("\t")
                     self.__cache[(int(x), int(y))] = (float(lat), float(lon))
 
     def save(self):

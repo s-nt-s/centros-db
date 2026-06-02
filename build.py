@@ -12,6 +12,7 @@ import logging
 from core.concurso import Concurso, Concursazo, Concursillo
 import re
 from core.geo import GEO
+from core.opendata import OpenData
 
 parser = argparse.ArgumentParser(
     description='Crea db a partir de '+Api.URL,
@@ -270,10 +271,12 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], _or: str = None):
             obj['longitud'] = row.latlon.longitude
         obj['titular'] = row.titular
         obj['web'] = tp_join(row.web)
-        obj['accesibilidad'] = tp_join(row.accesibilidad)
         obj['domicilio'] = parse_dir(row.domicilio)
         obj['jornada'] = JND[row.id]
         return obj
+
+    for k, v in OpenData.ACC.items():
+        db.insert("QUERY", id=f'accesibilidad={k}', txt=v)
 
     for row in rows:
         if row.id in DONE:
@@ -286,6 +289,13 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], _or: str = None):
             **to_dict(row),
             _or=_or
         )
+        for a in row.accesibilidad:
+            db.insert(
+                "QUERY_CENTRO",
+                query=f'accesibilidad={a}',
+                centro=row.id,
+                _or=_or
+            )
         for dif in row.educacion_diferenciada:
             db.insert(
                 "EDUCACION_DIFERENCIADA",
