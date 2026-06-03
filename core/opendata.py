@@ -88,16 +88,13 @@ def _tlf(*args: str | None):
             continue
         s = str(ori)
         s = re.sub(r"\.+", "", s).lower()
-        s = re.sub(r"extensi.n(es)? (\d{3}\b[;\s]*)+", "", s)
-        s = re.sub(r"^[^\d\+]+", "", s)
+        s = re.sub(r"(extensi.n(es)?|ext) (\d{3,4}[;\s$]*)+", "", s)
         s = re.sub(r"\b91-(\d{7})\b", r"91\1", s)
         s = re_sp.sub(r" ", s).strip()
 
         val = {
             "914 698 614 - 17": tuple(range(914698614, 914698617+1)),
             "913 980 300 - 345": tuple(range(913980300, 913980345+1)),
-            "915 061 860/1": (915061860, 915061861),
-            "915 885 100 / 06": (915885100, 915885106),
         }.get(s)
 
         if val is not None:
@@ -108,7 +105,7 @@ def _tlf(*args: str | None):
 
         s = re.sub(r"&amp;#13;", " ", s)
         s = re.sub(re.escape("(+34)"), " ", s)
-        spl = r"\b(?:" + "|".join((
+        spl = r"(\b|^)(?:" + "|".join((
             r"de \d+ a \d+",
             r"\d{1,2}:\d\d",
             r"prefijo 34 si",
@@ -116,26 +113,43 @@ def _tlf(*args: str | None):
             r"de \d+ a.os",
             r"365 d.as",
             r"24 h\w*",
-        )) + r")\b"
+            r"de \d+ a \d+ h(oras?)?\b",
+            r"de \w a \w de \d+ a h(oras?)?\b"
+        )) + r")(\b|$)"
         s = re.sub(spl, " ", s)
+        s = re.sub(r"^[^\d\+]+", "", s)
         s = re.sub(r"([a-záéíóúñń\s]+)", " ", s)
+
+        def _expand(m: re.Match[str]):
+            a, b = m.groups()
+            a = re_sp.sub("",  a)
+            b = re_sp.sub("",  b)
+            return a + " " + a[:-len(b)] + b
+
+        s = re.sub(r"\b(91(?:\s*\d){7})\s*/\s*(\d{1,4})\b", _expand, s)
+
         for x in re.split(r"\s*([;,\-/:\(\\?)])\s*", s):
-            if re.match(r"^("+'|'.join((
-                r"de \d+ a \d+ horas?",
-                r"de \w a \w de \d+ a \d+ horas?"
-            ))+")$", x):
-                continue
             no_sp = re_sp.sub(r"", x)
             if len(no_sp) == 0 or (len(no_sp) == 1 and not no_sp.isdecimal()):
                 continue
-            if no_sp in ("&amp;#13;", "112", "092", "010", "012", "020", "060", "0") or (len(no_sp)>3 and re.match(r"^\D+$", x)):
+            if no_sp in (
+                "+34",
+                "1111",
+                "112",
+                "092",
+                "010",
+                "012",
+                "020",
+                "060",
+                "0"
+            ) or (len(no_sp) > 3 and re.match(r"^\D+$", x)):
                 continue
             no_sp = re.sub(r"^\s*(00|\+)34\s*", "", no_sp)
             if re.search(r"\D", no_sp):
-                logger.warning(f"Teléfono mal formado {no_sp} <-- {x} <-- {ori}")
+                logger.warning(f"Teléfono mal formado {no_sp} <-- {x} <-- {s} <-- {ori}")
                 continue
             if len(no_sp) < 9:
-                logger.warning(f"Teléfono demasiado corto {no_sp} <-- {x} <-- {ori}")
+                logger.warning(f"Teléfono demasiado corto {no_sp} <-- {x} <-- {s} <-- {ori}")
                 continue
             t = int(no_sp)
             if t not in arr:
@@ -172,6 +186,8 @@ def _web(ori: str):
     web = re.sub(r"^\.+|\.+$", "", web)
     web = re.sub(r"\s+\.com\b", ".com", web)
     web = re.sub(r"\b(https?://www)\s+", r"\1", web)
+    if web in ("", "no tenemos", "http://no", "en proceso"):
+        return tuple()
     arr = []
     for w in map(str.lower, web.split()):
         w = re.sub(r"^https?://\s*|[/#\?]+$", "", w)
@@ -577,3 +593,4 @@ if __name__ == "__main__":
         913651271,
         "ies.sanisidro.madrid@educa.madrid.org"
     )
+    o.get_cam_centros()
