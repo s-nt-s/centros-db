@@ -471,7 +471,7 @@ class OpenData():
                 transporte=r['TRANSPORTE'],
                 descripcion=r['DESCRIPCION'],
                 accesibilidad=tuple(sorted(map(int, r['ACCESIBILIDAD'].split(",")))),
-                url=r['CONTENT-URL'],
+                url=r['CONTENT-URL'].split("://", 1)[-1],
                 via_nombre=r['NOMBRE-VIA'],
                 via_clase=r['CLASE-VIAL'],
                 via_num_tipo=r['TIPO-NUM'],
