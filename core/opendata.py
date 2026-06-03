@@ -83,9 +83,10 @@ def _number(s: str | None):
 
 def _tlf(*args: str | None):
     arr: list[int] = []
-    for s in args:
-        if s is None:
+    for ori in args:
+        if ori is None:
             continue
+        s = str(ori)
         s = re.sub(r"\.+", "", s).lower()
         s = re.sub(r"extensi.n(es)? (\d{3}\b[;\s]*)+", "", s)
         s = re.sub(r"^[^\d\+]+", "", s)
@@ -94,7 +95,9 @@ def _tlf(*args: str | None):
 
         val = {
             "914 698 614 - 17": tuple(range(914698614, 914698617+1)),
-            "913 980 300 - 345": tuple(range(913980300, 913980345+1))
+            "913 980 300 - 345": tuple(range(913980300, 913980345+1)),
+            "915 061 860/1": (915061860, 915061861),
+            "915 885 100 / 06": (915885100, 915885106),
         }.get(s)
 
         if val is not None:
@@ -103,7 +106,20 @@ def _tlf(*args: str | None):
                     arr.append(v)
             continue
 
-        for x in re.split(r"\s*([;\-/:\(\\?)]|&amp;#13;|\b(?:secretar.a|extensi.n(?:es)?|emergencias?)\b)\s*", s):
+        s = re.sub(r"&amp;#13;", " ", s)
+        s = re.sub(re.escape("(+34)"), " ", s)
+        spl = r"\b(?:" + "|".join((
+            r"de \d+ a \d+",
+            r"\d{1,2}:\d\d",
+            r"prefijo 34 si",
+            r"servicio \d+\s*h\w*",
+            r"de \d+ a.os",
+            r"365 d.as",
+            r"24 h\w*",
+        )) + r")\b"
+        s = re.sub(spl, " ", s)
+        s = re.sub(r"([a-záéíóúñń\s]+)", " ", s)
+        for x in re.split(r"\s*([;,\-/:\(\\?)])\s*", s):
             if re.match(r"^("+'|'.join((
                 r"de \d+ a \d+ horas?",
                 r"de \w a \w de \d+ a \d+ horas?"
@@ -112,14 +128,14 @@ def _tlf(*args: str | None):
             no_sp = re_sp.sub(r"", x)
             if len(no_sp) == 0 or (len(no_sp) == 1 and not no_sp.isdecimal()):
                 continue
-            if no_sp in ("&amp;#13;", "012", "060", "0") or (len(no_sp)>3 and re.match(r"^\D+$", x)):
+            if no_sp in ("&amp;#13;", "112", "092", "010", "012", "020", "060", "0") or (len(no_sp)>3 and re.match(r"^\D+$", x)):
                 continue
             no_sp = re.sub(r"^\s*(00|\+)34\s*", "", no_sp)
             if re.search(r"\D", no_sp):
-                logger.warning(f"Telefono mal formado {no_sp} <-- {x} <-- {s}")
+                logger.warning(f"Teléfono mal formado {no_sp} <-- {x} <-- {ori}")
                 continue
             if len(no_sp) < 9:
-                logger.warning(f"Telefono demasiado corto {no_sp} <-- {x} <-- {s}")
+                logger.warning(f"Teléfono demasiado corto {no_sp} <-- {x} <-- {ori}")
                 continue
             t = int(no_sp)
             if t not in arr:
@@ -248,8 +264,8 @@ class MunCentro(NamedTuple):
     telefono: tuple[int, ...]
     fax: tuple[int, ...]
     email: tuple[str, ...]
-    provincia: str
     descripcion_entidad: str | None
+    provincia: str | None
     horario: str | None
     equipamiento: str | None
     transporte: str | None
@@ -350,9 +366,12 @@ class OpenData():
     # Centros de la Escuela Oficial de Idiomas en Madrid 
     # https://datos.madrid.es/dataset/207037-0-idiomas-oficial
     MUN_EOI = "https://datos.madrid.es/dataset/207037-0-idiomas-oficial/resource/207037-5-idiomas-oficial-csv/download/207037-5-idiomas-oficial-csv.csv"
+    # Instalaciones accesibles municipales
+    # https://datos.madrid.es/dataset/202162-0-instalaciones-accesibles-municip
+    MUN_ACCESIBLE = "https://datos.madrid.es/dataset/202162-0-instalaciones-accesibles-municip/resource/202162-0-instalaciones-accesibles-municip-csv/download/202162-0-instalaciones-accesibles-municip-csv.csv"
     # Instalaciones accesibles no municipales
     # https://datos.madrid.es/dataset/202180-0-instalaciones-accesibles-no-muni
-    MUN_ACCESIBLE = "https://datos.madrid.es/dataset/202180-0-instalaciones-accesibles-no-muni/resource/202180-5-instalaciones-accesibles-no-muni-csv/download/202180-5-instalaciones-accesibles-no-muni-csv.csv"
+    NO_MUN_ACCESIBLE = "https://datos.madrid.es/dataset/202180-0-instalaciones-accesibles-no-muni/resource/202180-5-instalaciones-accesibles-no-muni-csv/download/202180-5-instalaciones-accesibles-no-muni-csv.csv"
 
     ACC = MappingProxyType({
         0: "Instalación no accesible para personas con movilidad reducida",
@@ -446,9 +465,6 @@ class OpenData():
         tuple(map(validate, centros))
         return tuple(sorted(centros, key=lambda c: c.codigo))
 
-    def get_mun_accesible(self):
-        self.__read_csv("mun_accesible.csv", OpenData.MUN_ACCESIBLE)
-
     @cache
     def get_mun_centros(self):
         centros: set[MunCentro] = set()
@@ -459,6 +475,8 @@ class OpenData():
             self.__read_csv("mun_eoi.csv", OpenData.MUN_EOI, encoding="windows-1250"),
             self.__read_csv("mun_sedes_1.csv", OpenData.MUN_SEDES_1, encoding="windows-1250"),
             self.__read_csv("mun_sedes_2.csv", OpenData.MUN_SEDES_2, encoding="windows-1250"),
+            self.__read_csv("mun_accesible.csv", OpenData.MUN_ACCESIBLE, encoding="windows-1250"),
+            self.__read_csv("no_mun_accesible.csv", OpenData.NO_MUN_ACCESIBLE, encoding="windows-1250"),
             pk='PK'
         ):
             tipo = _tipo(r['TIPO'])
@@ -471,7 +489,7 @@ class OpenData():
                 transporte=r['TRANSPORTE'],
                 descripcion=r['DESCRIPCION'],
                 accesibilidad=tuple(sorted(map(int, r['ACCESIBILIDAD'].split(",")))),
-                url=r['CONTENT-URL'],
+                url=r['CONTENT-URL'].split("://", 1)[-1],
                 via_nombre=r['NOMBRE-VIA'],
                 via_clase=r['CLASE-VIAL'],
                 via_num_tipo=r['TIPO-NUM'],
