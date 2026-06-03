@@ -93,6 +93,7 @@ def build_db(db: DBLite, tcp_limit: int = 10):
     insert_etapas(db)
     insert_all(db)
     insert_missing(db)
+    insert_accesibilidad(db)
 
     fix_tipo(db)
     fix_latlon(db)
@@ -103,6 +104,22 @@ def build_db(db: DBLite, tcp_limit: int = 10):
 
     insert_concurso(db)
     auto_fix(db)
+
+
+@logme
+def insert_accesibilidad(db: DBLite):
+    for k, v in OpenData.ACC.items():
+        db.insert("QUERY", id=f'accesibilidad={k}', txt=v)
+    ids = db.to_tuple("select id from centro")
+    for row in API.search_centros():
+        if row.id not in ids:
+            continue
+        for a in row.accesibilidad:
+            db.insert(
+                "QUERY_CENTRO",
+                query=f'accesibilidad={a}',
+                centro=row.id,
+            )
 
 
 @logme
@@ -275,9 +292,6 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], _or: str = None):
         obj['jornada'] = JND[row.id]
         return obj
 
-    for k, v in OpenData.ACC.items():
-        db.insert("QUERY", id=f'accesibilidad={k}', txt=v)
-
     for row in rows:
         if row.id in DONE:
             continue
@@ -289,13 +303,6 @@ def multi_insert_centro(db: DBLite, rows: Tuple[Centro], _or: str = None):
             **to_dict(row),
             _or=_or
         )
-        for a in row.accesibilidad:
-            db.insert(
-                "QUERY_CENTRO",
-                query=f'accesibilidad={a}',
-                centro=row.id,
-                _or=_or
-            )
         for dif in row.educacion_diferenciada:
             db.insert(
                 "EDUCACION_DIFERENCIADA",
