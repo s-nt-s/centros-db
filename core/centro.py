@@ -17,9 +17,9 @@ from itertools import zip_longest
 from .util import fix_char
 from unidecode import unidecode
 from core.geo import GEO
+from core.mail import MChecker
 
 re_sp = re.compile(r"\s+")
-re_mail = re.compile(r'[\w\.\-_]+@[\w\-_\.]+\.[\w\-_]+', re.IGNORECASE)
 re_coord = re.compile(r"&xIni=([\d\.]+)&yIni=([\d\.]+)")
 
 logger = logging.getLogger(__name__)
@@ -134,16 +134,6 @@ def _parse(k: str, v: str):
     if isinstance(v, str):
         v = fix_char(v)
     return v
-
-
-def _find_mails(*arr: str):
-    mails = []
-    for v in arr:
-        for m in re_mail.findall(v):
-            m = m.lower()
-            if m not in mails:
-                mails.append(m)
-    return tuple(mails)
 
 
 def _get_telefono(s: str) -> Tuple[int]:
@@ -544,7 +534,7 @@ class SoupCentro:
 
     @cached_property
     def email(self) -> Tuple[str]:
-        return _find_mails(
+        return MChecker.find_email(
             (self.inputs.get("tlMail") or ''),
             *self.__iter_strong_text()
         )
@@ -856,7 +846,7 @@ class Centro:
     @classmethod
     def build(cls, head: Tuple, row: Tuple):
         obj = {h: _parse(h, c) for h, c in zip_longest(head, row)}
-        mails = _find_mails(*row[head.index("EMAIL"):])
+        mails = MChecker.find_email(*row[head.index("EMAIL"):])
         titularidad = _find_titularidad(row[head.index("EMAIL2")+1:])
         return cls(
             area=obj['AREA TERRITORIAL'],

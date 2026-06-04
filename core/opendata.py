@@ -17,7 +17,6 @@ from core.mail import MChecker
 
 logger = logging.getLogger(__name__)
 re_sp = re.compile(r"\s+")
-re_mail = re.compile(r'[\w\.\-_]+@[\w\-_\.]+\.[\w\-_]+', re.I)
 
 
 def to_path(*args):
@@ -59,19 +58,6 @@ def _none_if(s, *arg):
     if s in arg:
         return None
     return s
-
-
-def _email(*args: str | None):
-    arr: list[str] = []
-    for a in args:
-        for e in map(str.lower, re_mail.findall(a or '')):
-            clean_e = MChecker.plain_address(e)
-            if clean_e != e:
-                if not MChecker.hasSmtpUtf8(e):
-                    e = clean_e
-            if e not in arr:
-                arr.append(e)
-    return tuple(arr)
 
 
 def _trim(s):
@@ -501,7 +487,7 @@ class OpenData():
                 telefono=_tlf(r['TELEFONO'], r['TELEFONO2'], r['TELEFONO3'], r['TELEFONO4']),
                 fax=_tlf(r['FAX']),
                 web=_web(r['WEB']),
-                email=_email(r['WEB'], r['E_MAIL'], r['E_MAIL2']),
+                email=MChecker.find_email(r['WEB'], r['E_MAIL'], r['E_MAIL2']),
                 latlon=get_latlon(
                     _number(r['UTM_X']),
                     _number(r['UTM_Y'])
@@ -571,7 +557,7 @@ class OpenData():
                 ),
                 telefono=_tlf(r['TELEFONO']),
                 fax=_tlf(r['FAX']),
-                email=_email(r['EMAIL']),
+                email=MChecker.find_email(r['EMAIL']),
                 tipo=tipo,
             )
             centros.add(c)
