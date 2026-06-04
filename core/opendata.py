@@ -19,6 +19,14 @@ re_sp = re.compile(r"\s+")
 re_mail = re.compile(r'[\w\.\-_]+@[\w\-_\.]+\.[\w\-_]+', re.I)
 
 
+def to_path(*args):
+    arr = []
+    for a in reversed(args):
+        if a is not None and a not in arr:
+            arr.append(a)
+    return " <-- ".join(arr)
+
+
 def can_be_none(tipo) -> bool:
     if tipo is type(None):
         return True
@@ -92,17 +100,6 @@ def _tlf(*args: str | None):
         s = re.sub(r"\b91-(\d{7})\b", r"91\1", s)
         s = re_sp.sub(r" ", s).strip()
 
-        val = {
-            "914 698 614 - 17": tuple(range(914698614, 914698617+1)),
-            "913 980 300 - 345": tuple(range(913980300, 913980345+1)),
-        }.get(s)
-
-        if val is not None:
-            for v in val:
-                if v not in arr:
-                    arr.append(v)
-            continue
-
         s = re.sub(r"&amp;#13;", " ", s)
         s = re.sub(re.escape("(+34)"), " ", s)
         spl = r"(\b|^)(?:" + "|".join((
@@ -142,10 +139,10 @@ def _tlf(*args: str | None):
                 return ""
             return m.group(2)
 
-        s = re.sub(r"(\b91\d \d{3} \d{3}\b)(\s*/\s*[\d\s]+)?", _find, s)
-        s = re.sub(r"(\b91 \d{3} \d{2} \d{2}\b)(\s*/\s*[\d\s]+)?", _find, s)
-        s = re.sub(r"(\b91 \d{3} \d{4}\b)(\s*/\s*[\d\s]+)?", _find, s)
-        s = re.sub(r"(\b91 \d{7}\b)(\s*/\s*[\d\s]+)?", _find, s)
+        s = re.sub(r"(\b91\d \d{3} \d{3}\b)(\s*[\-/]\s*[\d\s]+)?", _find, s)
+        s = re.sub(r"(\b91 \d{3} \d{2} \d{2}\b)(\s*[\-/]\s*[\d\s]+)?", _find, s)
+        s = re.sub(r"(\b91 \d{3} \d{4}\b)(\s*[\-/]\s*[\d\s]+)?", _find, s)
+        s = re.sub(r"(\b91 \d{7}\b)(\s*[\-/]\s*[\d\s]+)?", _find, s)
 
         for x in re.split(r"\s*([;,\-/:\(\\?)])\s*", s):
             no_sp = re_sp.sub(r"", x)
@@ -165,7 +162,7 @@ def _tlf(*args: str | None):
                 continue
             no_sp = re.sub(r"^\s*(00|\+)34\s*", "", no_sp)
             if re.search(r"\D", no_sp):
-                logger.warning(f"Teléfono mal formado {no_sp} <-- {x} <-- {s} <-- {ori}")
+                logger.warning(f"Teléfono mal formado {to_path(ori, s, x, no_sp)}")
                 continue
             arr_no_sp = [no_sp]
             if len(no_sp) == 18:
@@ -175,18 +172,21 @@ def _tlf(*args: str | None):
                 ]
             for no_sp in arr_no_sp:
                 if len(no_sp) < 9:
-                    logger.warning(f"Teléfono demasiado corto {no_sp} <-- {x} <-- {s} <-- {ori}")
+                    logger.warning(f"Teléfono demasiado corto {to_path(ori, s, x, no_sp)}")
                     continue
                 if len(no_sp) > 9:
-                    logger.warning(f"Teléfono demasiado largo {no_sp} <-- {x} <-- {s} <-- {ori}")
+                    logger.warning(f"Teléfono demasiado largo {to_path(ori, s, x, no_sp)}")
                     continue
                 if not no_sp.startswith(("9", "6", "7", "8")):
-                    logger.warning(f"Prefijo desconocido: {no_sp} <-- {x} <-- {s} <-- {ori}")
+                    logger.warning(f"Prefijo desconocido: {to_path(ori, s, x, no_sp)}")
+                    continue
+                if no_sp.startswith(("901", "902", "903")):
+                    logger.warning(f"Tarificación especial: {to_path(ori, s, x, no_sp)}")
                     continue
                 t = int(no_sp)
                 arr.append(t)
 
-    return tuple(dict.fromkeys(arr))
+    return tuple(sorted(dict.fromkeys(arr)))
 
 
 def _tipo(s: str | None):
