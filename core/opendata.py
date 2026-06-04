@@ -121,12 +121,31 @@ def _tlf(*args: str | None):
         s = re.sub(r"([a-záéíóúñń\s]+)", " ", s)
 
         def _expand(m: re.Match[str]):
-            a, b = m.groups()
+            a, b, c = m.groups()
             a = re_sp.sub("",  a)
             b = re_sp.sub("",  b)
-            return a + " " + a[:-len(b)] + b
+            return a + " / " + a[:-len(b)] + b + c
 
-        s = re.sub(r"\b(91(?:\s*\d){7})\s*/\s*(\d{1,4})\b", _expand, s)
+        #s = re.sub(r"\b(91(?:\s*\d){7})\s*/\s*([0-8]\d{2,4})\b(\s*[\D])", _expand, s)
+
+        def _find(m: re.Match[str]):
+            t1 = re_sp.sub("", m.group(1))
+            arr.append(int(t1))
+            t2 = re_sp.sub("", m.group(2) or '/')[1:]
+            if len(t2) == 0:
+                return ""
+            if len(t2) == 9:
+                arr.append(int(t2))
+                return ""
+            if len(t2) < 5:
+                arr.append(int(t1[:-len(t2)] + t2))
+                return ""
+            return m.group(2)
+
+        s = re.sub(r"(\b91\d \d{3} \d{3}\b)(\s*/\s*[\d\s]+)?", _find, s)
+        s = re.sub(r"(\b91 \d{3} \d{2} \d{2}\b)(\s*/\s*[\d\s]+)?", _find, s)
+        s = re.sub(r"(\b91 \d{3} \d{4}\b)(\s*/\s*[\d\s]+)?", _find, s)
+        s = re.sub(r"(\b91 \d{7}\b)(\s*/\s*[\d\s]+)?", _find, s)
 
         for x in re.split(r"\s*([;,\-/:\(\\?)])\s*", s):
             no_sp = re_sp.sub(r"", x)
@@ -148,13 +167,26 @@ def _tlf(*args: str | None):
             if re.search(r"\D", no_sp):
                 logger.warning(f"Teléfono mal formado {no_sp} <-- {x} <-- {s} <-- {ori}")
                 continue
-            if len(no_sp) < 9:
-                logger.warning(f"Teléfono demasiado corto {no_sp} <-- {x} <-- {s} <-- {ori}")
-                continue
-            t = int(no_sp)
-            if t not in arr:
+            arr_no_sp = [no_sp]
+            if len(no_sp) == 18:
+                arr_no_sp = [
+                    no_sp[:9],
+                    no_sp[9:]
+                ]
+            for no_sp in arr_no_sp:
+                if len(no_sp) < 9:
+                    logger.warning(f"Teléfono demasiado corto {no_sp} <-- {x} <-- {s} <-- {ori}")
+                    continue
+                if len(no_sp) > 9:
+                    logger.warning(f"Teléfono demasiado largo {no_sp} <-- {x} <-- {s} <-- {ori}")
+                    continue
+                if not no_sp.startswith(("9", "6", "7", "8")):
+                    logger.warning(f"Prefijo desconocido: {no_sp} <-- {x} <-- {s} <-- {ori}")
+                    continue
+                t = int(no_sp)
                 arr.append(t)
-    return tuple(arr)
+
+    return tuple(dict.fromkeys(arr))
 
 
 def _tipo(s: str | None):
