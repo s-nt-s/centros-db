@@ -12,6 +12,7 @@ from core.util import mk_dict_1_1, mk_dict_n_1
 from types import UnionType, MappingProxyType
 import typing
 from functools import cached_property, cache
+from core.mail import MChecker
 
 
 logger = logging.getLogger(__name__)
@@ -47,7 +48,7 @@ def validate(obj: NamedTuple):
         val = getattr(obj, f)
         tip = hints.get(f)
         if val is None and tip is not None and not can_be_none(tip):
-            e = f #f"{f} ({tip})"
+            e = str(f)  #f"{f} ({tip})"
             if e not in error:
                 error.append(e)
     if error:
@@ -64,6 +65,10 @@ def _email(*args: str | None):
     arr: list[str] = []
     for a in args:
         for e in map(str.lower, re_mail.findall(a or '')):
+            clean_e = MChecker.plain_address(e)
+            if clean_e != e:
+                if not MChecker.hasSmtpUtf8(e):
+                    e = clean_e
             if e not in arr:
                 arr.append(e)
     return tuple(arr)
@@ -186,7 +191,7 @@ def _tlf(*args: str | None):
                 t = int(no_sp)
                 arr.append(t)
 
-    return tuple(sorted(dict.fromkeys(arr)))
+    return tuple(dict.fromkeys(arr))
 
 
 def _tipo(s: str | None):

@@ -11,3 +11,4 @@ pymupdf==1.26.5
 pytesseract==0.3.13
 pillow==10.4.0
 shapely==2.1.2
+dnspython==2.8.0
