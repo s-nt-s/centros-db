@@ -237,43 +237,74 @@ def find_webs(ori: str):
         if "." not in w:
             logger.warning(f"Web mal formada {w} <-- {web}")
             continue
-        url = redirect_if_needed(w)
-        if url:
-            logger.info(f"{w} redirige a {url}")
-            w = url
+        new_url = redirect_if_needed(w) or w
+        if new_url != w:
+            logger.info(f"{w} redirige a {new_url}")
+            w = new_url
         if w not in arr:
             arr.append(w)
     return tuple(arr)
 
 
 def redirect_if_needed(w: str):
+    w = {
+        "www.educa2.madrid.org/web/ceip.larioja/inicio": "www.educa2.madrid.org/web/ceip.larioja",
+    }.get(w, w)
     if w not in (
         "iesjuandelacierva.es",
         "www.vmagerit.com",
+        "www.educa2.madrid.org/web/centro.eoi.embajadores.madrid/portada",
+        "www.educa2.madrid.org/web/centro.eoi.embajadores.madrid"
     ):
-        return None
-    url = resolve_url(f"https://{w}")
+        return w
+    url = resolve_url(w)
     if url is None:
-        return None
-    url = url.split("://", 1)[-1]
+        return w
     url = url.rstrip("/")
-    if url != w:
-        return url
+    return url
 
 
 @functools.cache
 def resolve_url(url: str, timeout: float = 10) -> str:
+    done: set[str] = set()
+    hasSchema = url.startswith(("https://", "http://"))
+    hashSlash = url[-1] == "/"
+    if not hasSchema:
+        url = f"https://{url}"
+    checkBody = url.split("://", 1)[-1] in (
+        "www.educa2.madrid.org/web/centro.eoi.embajadores.madrid",
+        "www.educa2.madrid.org/web/centro.eoi.embajadores.madrid/portada"
+    )
     try:
         with Session() as s:
-            r = s.head(
-                url,
+            done.add(url)
+            r = s.request(
+                method="GET" if checkBody else "HEAD",
+                url=url,
                 verify=False,
                 allow_redirects=True,
                 timeout=timeout,
             )
-            return r.url
+            done.add(r.url)
+            new_url = r.url
+            if checkBody:
+                m = re.search(
+                    r'<script type="text/javascript">\s*window\.location\.href\s*=\s*"(https?://[^"]+)"\s*;\s*</script>',
+                    r.text
+                )
+                if m:
+                    new_url = m.group(1)
+            if new_url:
+                if new_url not in done:
+                    new_url = resolve_url(new_url) or new_url
+                if not hasSchema:
+                    new_url = new_url.split("://", 1)[-1]
+                if not hashSlash:
+                    new_url = new_url.rstrip("/")
+            
+            return new_url
     except RequestException as e:
-        print(e)
+        logger.critical(str(e), exc_info=e)
         return None
     
 if __name__ == "__main__":
@@ -300,6 +331,9 @@ if __name__ == "__main__":
         www.educa2.madrid.org/web/ceip.larioja/inicio
         www.educa2.madrid.org/web/colegio_felipe_2
         www.educa2.madrid.org/web/centro.eoi.embajadores.madrid/portada
+        site.educa.madrid.org/eoi.embajadores.madrid
+        www.educa2.madrid.org/web/centro.cp.antoniomorenoro.madrid
+        www.educa2.madrid.org/web/centro.cp.colombia.madrid
     '''.strip().split()):
         url = redirect_if_needed(w)
         if url is not None:
