@@ -294,14 +294,14 @@ def resolve_url(url: str, timeout: float = 10) -> str:
                 )
                 if m:
                     new_url = m.group(1)
-            if new_url:
-                if new_url not in done:
-                    new_url = resolve_url(new_url) or new_url
-                if not hasSchema:
-                    new_url = new_url.split("://", 1)[-1]
-                if not hashSlash:
-                    new_url = new_url.rstrip("/")
-            
+            if new_url is None:
+                return None
+            if new_url not in done:
+                new_url = resolve_url(new_url) or new_url
+            if not hasSchema:
+                new_url = new_url.split("://", 1)[-1]
+            if not hashSlash:
+                new_url = new_url.rstrip("/")
             return new_url
     except RequestException as e:
         logger.critical(str(e), exc_info=e)
