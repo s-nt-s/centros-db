@@ -270,9 +270,6 @@ def resolve_url(url: str, timeout: float = 10) -> str:
                 verify=False,
                 allow_redirects=True,
                 timeout=timeout,
-                headers={
-                    "User-Agent": "Mozilla/5.0"
-                },
             )
             return r.url
     except RequestException as e:
