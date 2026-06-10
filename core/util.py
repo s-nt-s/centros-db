@@ -271,7 +271,8 @@ def resolve_url(url: str, timeout: float = 10):
     hashSlash = url[-1] == "/"
     if not hasSchema:
         url = f"https://{url}"
-    checkBody = url.split("://", 1)[-1] in (
+    name = url.split("://", 1)[-1].rstrip("/")
+    checkBody = name in (
         "www.educa2.madrid.org/web/centro.eoi.embajadores.madrid",
         "www.educa2.madrid.org/web/centro.eoi.embajadores.madrid/portada"
     )
