@@ -7,7 +7,7 @@ import re
 from bs4 import BeautifulSoup
 from .bulkrequests import BulkRequestsFileJob
 from aiohttp import ClientResponse, ClientSession
-from .util import to_set_tuple
+from .util import to_set_tuple, find_webs
 from typing import Tuple
 
 
@@ -147,13 +147,7 @@ class Colegio:
         web = self.__get_h3_div(r"\s*Página\s+Web\s*")
         if web is None:
             return tuple()
-        web = re.sub(r",?\s+|\s+[oó]\s+", " ", web).strip()
-        arr = []
-        for w in web.split():
-            w = re.sub(r"^https?://\s*|[/#\?]+$", "", w, flags=re.IGNORECASE)
-            if len(w) and w not in arr:
-                arr.append(w)
-        return tuple(arr)
+        return find_webs(web)
 
     @cached_property
     def email(self):

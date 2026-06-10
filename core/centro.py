@@ -14,7 +14,7 @@ import logging
 from requests.exceptions import ConnectionError
 from .bulkrequests import BulkRequestsFileJob
 from itertools import zip_longest
-from .util import fix_char
+from .util import fix_char, find_webs
 from unidecode import unidecode
 from core.geo import GEO
 from core.mail import MChecker
@@ -146,19 +146,6 @@ def _get_telefono(s: str) -> Tuple[int]:
     for t in s.split():
         if len(t) > 8 and t not in arr and t.isdigit():
             arr.append(int(t))
-    return tuple(arr)
-
-
-def _get_web(web: str) -> Tuple[str]:
-    if web is None:
-        return tuple()
-    web = re.sub(r",?\s+|\s+[oó]\s+", " ", web).strip()
-    arr = []
-    for w in web.split():
-        w = re.sub(r"^https?://\s*|[/#\?]+$", "", w, flags=re.IGNORECASE)
-        w = w.lower()
-        if len(w) and w not in arr:
-            arr.append(w)
     return tuple(arr)
 
 
@@ -528,9 +515,8 @@ class SoupCentro:
         web = self.inputs.get("tlWeb")
         if web is None:
             return tuple()
-        web = re.sub(r",?\s+|\s+[oó]\s+", " ", web).strip()
         web = fix_char(web)
-        return _get_web(web)
+        return find_webs(web)
 
     @cached_property
     def email(self) -> Tuple[str]:

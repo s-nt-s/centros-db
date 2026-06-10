@@ -8,7 +8,7 @@ from typing import NamedTuple, Union
 import re
 from unidecode import unidecode
 from core.utm_to_geo import UTM_TO_GEO, LatLon
-from core.util import mk_dict_1_1, mk_dict_n_1
+from core.util import mk_dict_1_1, mk_dict_n_1, find_webs
 from types import UnionType, MappingProxyType
 import typing
 from functools import cached_property, cache
@@ -199,29 +199,6 @@ def _codigo_postal(s: str | None):
         logger.warning(f"Codigo postal mal formado {s}")
         return None
     return int(s)
-
-
-def _web(ori: str):
-    if ori is None:
-        return tuple()
-    web = ori.lower()
-    web = re.sub(r",?\s+|\s+[oó]\s+", " ", web).strip()
-    web = re.sub(r"^\.+|\.+$", "", web)
-    web = re.sub(r"\s+\.com\b", ".com", web)
-    web = re.sub(r"\b(https?://www)\s+", r"\1", web)
-    if web in ("", "no tenemos", "http://no", "en proceso"):
-        return tuple()
-    arr = []
-    for w in map(str.lower, web.split()):
-        w = re.sub(r"^https?://\s*|[/#\?]+$", "", w)
-        if len(w) == 0:
-            continue
-        if "." not in w:
-            logger.warning(f"Web mal formada {w} <-- {web}")
-            continue
-        if w not in arr:
-            arr.append(w)
-    return tuple(arr)
 
 
 def get_latlon(x: int | float, y: int | float) -> LatLon:
@@ -486,7 +463,7 @@ class OpenData():
                 ),
                 telefono=_tlf(r['TELEFONO'], r['TELEFONO2'], r['TELEFONO3'], r['TELEFONO4']),
                 fax=_tlf(r['FAX']),
-                web=_web(r['WEB']),
+                web=find_webs(r['WEB']),
                 email=MChecker.find_email(r['WEB'], r['E_MAIL'], r['E_MAIL2']),
                 latlon=get_latlon(
                     _number(r['UTM_X']),

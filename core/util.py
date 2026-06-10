@@ -7,6 +7,9 @@ import re
 from collections import defaultdict
 from types import MappingProxyType
 from typing import TypeVar, Callable, Mapping, Optional
+from requests import Session, RequestException
+import urllib3
+urllib3.disable_warnings()
 
 
 logger = logging.getLogger(__name__)
@@ -212,3 +215,97 @@ def mk_dict_n_1(
         v = vv.pop()
         d[k] = v
     return MappingProxyType(d)
+
+
+
+def find_webs(ori: str):
+    if ori is None:
+        return tuple()
+    web = ori.lower()
+    web = re.sub(r",?\s+|\s+[oó]\s+", " ", web).strip()
+    web = re.sub(r"^\.+|\.+$", "", web)
+    web = re.sub(r"\s+\.com\b", ".com", web)
+    web = re.sub(r"\b(https?://www)\s+", r"\1", web)
+    if web in ("", "no tenemos", "http://no", "en proceso"):
+        return tuple()
+    arr = []
+    for w in web.split():
+        w = re.sub(r"/+index\.html?$", "", w)
+        w = re.sub(r"^https?://\s*|[/#\?]+$", "", w)
+        if len(w) == 0:
+            continue
+        if "." not in w:
+            logger.warning(f"Web mal formada {w} <-- {web}")
+            continue
+        url = redirect_if_needed(w)
+        if url:
+            logger.info(f"{w} redirige a {url}")
+            w = url
+        if w not in arr:
+            arr.append(w)
+    return tuple(arr)
+
+
+def redirect_if_needed(w: str):
+    if w not in (
+        "iesjuandelacierva.es",
+        "www.vmagerit.com",
+    ):
+        return None
+    url = resolve_url(f"https://{w}")
+    if url is None:
+        return None
+    url = url.split("://", 1)[-1]
+    url = url.rstrip("/")
+    if url != w:
+        return url
+
+
+@functools.cache
+def resolve_url(url: str, timeout: float = 10) -> str:
+    try:
+        with Session() as s:
+            r = s.head(
+                url,
+                verify=False,
+                allow_redirects=True,
+                timeout=timeout,
+                headers={
+                    "User-Agent": "Mozilla/5.0"
+                },
+            )
+            return r.url
+    except RequestException as e:
+        print(e)
+        return None
+    
+if __name__ == "__main__":
+    for w in map(str.strip, '''
+        site.educa.madrid.org/ies.anafrank.madrid
+        site.educa.madrid.org/ies.juanramonjimenez.madrid
+        site.educa.madrid.org/ies.becquer.moraleja
+        site.educa.madrid.org/cpm.joaquinturina.madrid
+        site.educa.madrid.org/cp.cristobalcolon.madrid
+        site.educa.madrid.org/cp.honduras.madrid
+        site.educa.madrid.org/cp.leopoldoalas.madrid
+        iesjuandelacierva.es
+        ies.garciamorato.madrid.educa.madrid.org
+        www.iessanfernando.com
+        www.vmagerit.com
+        www.resad.es
+        www.ceipciudaddezaragoza.org
+        site.educa.madrid.org/ies.vallecasuno.madrid
+        www.educa2.madrid.org/web/centro.cp.antoniodenebrija.madrid
+        www.educa2.madrid.org/web/centro.ies.juanadecastilla.madrid
+        www.educa2.madrid.org/web/centro.cepa.fuencarral.madrid
+        www.educa2.madrid.org/web/centro.cp.pinardesanjose.madrid
+        www.educa2.madrid.org/web/centro.eei.losgirasoles.madrid
+        www.educa2.madrid.org/web/ceip.larioja/inicio
+        www.educa2.madrid.org/web/colegio_felipe_2
+        www.educa2.madrid.org/web/centro.eoi.embajadores.madrid/portada
+    '''.strip().split()):
+        url = redirect_if_needed(w)
+        if url is not None:
+            print(w)
+            print(url)
+            print("")
