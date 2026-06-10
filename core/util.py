@@ -265,7 +265,7 @@ def redirect_if_needed(w: str):
 
 
 @functools.cache
-def resolve_url(url: str, timeout: float = 10) -> str:
+def resolve_url(url: str, timeout: float = 10):
     done: set[str] = set()
     hasSchema = url.startswith(("https://", "http://"))
     hashSlash = url[-1] == "/"
@@ -294,7 +294,7 @@ def resolve_url(url: str, timeout: float = 10) -> str:
                 )
                 if m:
                     new_url = m.group(1)
-            if new_url is None:
+            if not isinstance(new_url, str):
                 return None
             if new_url not in done:
                 new_url = resolve_url(new_url) or new_url
