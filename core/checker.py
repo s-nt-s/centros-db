@@ -106,6 +106,7 @@ URL_KO = tuple(map(str.strip, '''
 MAIL_FIX = {
     'cepa.torrelaguna@educa.madr': 'cepa.torrelaguna@educa.madrid.org',
     'cepa.sansebastian.@educa.madrid.org': 'cepa.sansebastian@educa.madrid.org',
+    'cepa.colmenarviejo@educa.ma': 'cepa.colmenarviejo@educa.madrid.org',
 }
 
 URL_FIX = {
