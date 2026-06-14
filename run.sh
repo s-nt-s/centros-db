@@ -2,6 +2,7 @@
 set -e
 cd "$(dirname "$0")"
 source .venv/bin/activate
+python3 dwn.py
 python3 build.py
 python3 readme.py
 cp out/db.sqlite out/db.bak.sqlite

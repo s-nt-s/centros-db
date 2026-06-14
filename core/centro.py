@@ -1,6 +1,6 @@
-from dataclasses import dataclass, asdict, field, replace, fields
+from dataclasses import dataclass, asdict, field, replace
 from functools import cached_property, cache
-from typing import Dict, Tuple, NamedTuple, List, Union
+from typing import Dict, Tuple, NamedTuple, List
 from aiohttp import ClientResponse, ClientSession
 from bs4 import BeautifulSoup, Tag
 from urllib import parse
@@ -14,10 +14,10 @@ import logging
 from requests.exceptions import ConnectionError
 from .bulkrequests import BulkRequestsFileJob
 from itertools import zip_longest
-from .util import fix_char, find_webs
+from .util import fix_char
 from unidecode import unidecode
 from core.geo import GEO
-from core.mail import MChecker
+from core.checker import MChecker, UChecker
 
 re_sp = re.compile(r"\s+")
 re_coord = re.compile(r"&xIni=([\d\.]+)&yIni=([\d\.]+)")
@@ -516,7 +516,7 @@ class SoupCentro:
         if web is None:
             return tuple()
         web = fix_char(web)
-        return find_webs(web)
+        return UChecker.find_urls(web)
 
     @cached_property
     def email(self) -> Tuple[str]:

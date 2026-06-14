@@ -7,7 +7,8 @@ import re
 from bs4 import BeautifulSoup
 from .bulkrequests import BulkRequestsFileJob
 from aiohttp import ClientResponse, ClientSession
-from .util import to_set_tuple, find_webs
+from .util import to_set_tuple
+from core.checker import UChecker
 from typing import Tuple
 
 
@@ -147,7 +148,7 @@ class Colegio:
         web = self.__get_h3_div(r"\s*Página\s+Web\s*")
         if web is None:
             return tuple()
-        return find_webs(web)
+        return UChecker.find_urls(web)
 
     @cached_property
     def email(self):

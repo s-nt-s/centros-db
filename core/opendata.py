@@ -8,11 +8,11 @@ from typing import NamedTuple, Union
 import re
 from unidecode import unidecode
 from core.utm_to_geo import UTM_TO_GEO, LatLon
-from core.util import mk_dict_1_1, mk_dict_n_1, find_webs
+from core.util import mk_dict_1_1, mk_dict_n_1
 from types import UnionType, MappingProxyType
 import typing
 from functools import cached_property, cache
-from core.mail import MChecker
+from core.checker import MChecker, UChecker
 
 
 logger = logging.getLogger(__name__)
@@ -463,7 +463,7 @@ class OpenData():
                 ),
                 telefono=_tlf(r['TELEFONO'], r['TELEFONO2'], r['TELEFONO3'], r['TELEFONO4']),
                 fax=_tlf(r['FAX']),
-                web=find_webs(r['WEB']),
+                web=UChecker.find_urls(r['WEB']),
                 email=MChecker.find_email(r['WEB'], r['E_MAIL'], r['E_MAIL2']),
                 latlon=get_latlon(
                     _number(r['UTM_X']),
