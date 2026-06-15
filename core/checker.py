@@ -215,12 +215,12 @@ class MailChecker:
 
     def __ehlo_features(self, mx: str):
         try:
-            with smtplib.SMTP(mx, 25, timeout=10) as smtp:
+            with smtplib.SMTP(mx, 25, timeout=30) as smtp:
                 smtp.ehlo()
                 features = tuple(k for k in smtp.esmtp_features.keys() if k != "size")
                 logger.info(f'{mx}: {", ".join(features)}')
                 return features
-        except smtplib.SMTPConnectError as e:
+        except (smtplib.SMTPConnectError, TimeoutError) as e:
             logger.critical(f"{mx} {e}")
         return tuple()
 
