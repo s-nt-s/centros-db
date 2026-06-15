@@ -8,6 +8,7 @@ from requests import Session
 from typing import NamedTuple
 from textwrap import dedent
 import hashlib
+from time import sleep
 
 
 def hash(s: str):
@@ -113,44 +114,57 @@ def is_ok(link: str):
     return False
 
 
+def iter_chunks(*args: str, size: int = 100):
+    arr: list[str] = []
+    for a in sorted(args):
+        arr.append(a)
+        if len(arr) == size:
+            yield tuple(arr)
+            arr = []
+    if arr:
+        yield tuple(arr)
+
+
 while TO_DO:
     TO_DO = TO_DO.difference(DONE)
     if len(TO_DO) == 0:
         continue
-    data = fetch(*TO_DO)
-    DONE = DONE.union(data.keys())
-    links: set[str] = set()
-    for u, i in data.items():
-        if i.url in DONE:
-            continue
-        if i.error:
-            print(i.error)
-        if not (200 <= i.status_code <= 299):
-            continue
-        links = links.union(i.links)
-        DONE.add(i.url)
-        c = URLS[u]
-        if u in ROOT:
-            ROOT.add(i.url)
-        URLS[i.url] = c
-        for lk in i.links:
-            URLS[lk] = c
-        if i.text:
-            FM.dump(
-                f"dwn/websites/{c}/{hash(i.url)}.md",
-                dedent(f'''
-                ---
-                centro: {c}
-                url: {i.url}
-                date: {i.timestamp}
-                status: {i.status_code}
-                content_type: {i.content_type}
-                ---
-                ''').strip()+"\n\n"+i.text
-            )
-        else:
-            print(f"[KO] {u}")
-    for link in links:
-        if is_ok(link):
-            print(f"[++] {link}")
-            TO_DO.add(link)
+    for chunk in iter_chunks(*TO_DO):
+        sleep(5)
+        data = fetch(*chunk)
+        DONE = DONE.union(data.keys())
+        links: set[str] = set()
+        for u, i in data.items():
+            if i.url in DONE:
+                continue
+            if i.error:
+                print(i.error)
+            if not (200 <= i.status_code <= 299):
+                continue
+            links = links.union(i.links)
+            DONE.add(i.url)
+            c = URLS[u]
+            if u in ROOT:
+                ROOT.add(i.url)
+            URLS[i.url] = c
+            for lk in i.links:
+                URLS[lk] = c
+            if i.text:
+                FM.dump(
+                    f"dwn/websites/{c}/{hash(i.url)}.md",
+                    dedent(f'''
+                    ---
+                    centro: {c}
+                    url: {i.url}
+                    date: {i.timestamp}
+                    status: {i.status_code}
+                    content_type: {i.content_type}
+                    ---
+                    ''').strip()+"\n\n"+i.text
+                )
+            else:
+                print(f"[KO] {u}")
+        for link in links:
+            if is_ok(link):
+                print(f"[++] {link}")
+                TO_DO.add(link)
