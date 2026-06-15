@@ -107,6 +107,7 @@ MAIL_FIX = {
     'cepa.torrelaguna@educa.madr': 'cepa.torrelaguna@educa.madrid.org',
     'cepa.sansebastian.@educa.madrid.org': 'cepa.sansebastian@educa.madrid.org',
     'cepa.colmenarviejo@educa.ma': 'cepa.colmenarviejo@educa.madrid.org',
+    'antonio.martinez.villar@mardid.org': 'antonio.martinez.villar@madrid.org',
 }
 
 URL_FIX = {
@@ -170,6 +171,7 @@ class MailChecker:
     def plain_address(self, a: str):
         return re_plain.sub(lambda m: PLAIN_CHAR[m.group()], a)
 
+    @cache
     def get_mx_hosts(self, domain: str):
         if domain not in self.__mx:
             self.__mx[domain] = self.__get_mx_hosts(domain)
@@ -233,9 +235,25 @@ class MailChecker:
                 if clean_e != e and not self.hasSmtpUtf8(e):
                     e = clean_e
                 e = MAIL_FIX.get(e, e)
+                if self.isDeprecate(e.split("@", 1)[-1]):
+                    continue
                 if e not in arr:
                     arr.append(e)
         return tuple(arr)
+
+    @cache
+    def isDeprecate(self, domain: str):
+        if not any((
+            domain.endswith('.mecd.es'),
+            domain.endswith('.mec.es'),
+            domain in ('terra.es',)
+        )):
+            return False
+        mxs = self.get_mx_hosts(domain)
+        if len(mxs) > 0:
+            return False
+        logger.warning(f"@{domain} ya no existe")
+        return True
 
     def isOk(self, mail: str):
         domain = mail.split("@", 1)[-1]
@@ -410,6 +428,11 @@ if __name__ == "__main__":
     import sys
     import logging
     logging.basicConfig(level=logging.INFO)
+    KO = (k for k in sys.argv[1:] if k not in MAIL_KO)
+    for m in MAIL_KO:
+        for u in MChecker.find_email(m):
+            continue
+    sys.exit()
     KO = (k for k in sys.argv[1:] if k not in URL_KO)
     for m in (sys.argv[1:] or URL_KO):
         for u in UChecker.find_urls(m):
