@@ -21,7 +21,7 @@ PLAIN_CHAR = {
     "ó": "o",
     "ú": "u"
 }
-
+URL_FAKE = ("", "no tenemos", "http://no", "en proceso", "http:")
 MAIL_KO = (
     'ceiplosjarales@telefonica.net',
     'antonio.martinez.villar@mardid.org',
@@ -283,11 +283,12 @@ class UrlChecker:
         return False
 
     def plain_url(self, ori: str | None):
-        if ori is None:
+        if ori is None or ori in URL_FAKE:
             return None
         url = ori.strip()
         url = re.sub(r"[/#\?]+$", "", url)
-        url = re.sub(r"^(https?:/)(www)", r"\1/\2", url)
+        url = re.sub(r"^(https?:/)(www|escuela)", r"\1/\2", url)
+        url = re.sub(r"^(https?://)?www,", r"\1www.", url)
         url = re.sub(r"^(https?://)?www\.eduda2\.madrid\.org", r"\1www.educa2.madrid.org", url)
         if len(url) == 0:
             return None
@@ -359,7 +360,8 @@ class UrlChecker:
         web = re.sub(r"^\.+|\.+$", "", web)
         web = re.sub(r"\s+\.com\b", ".com", web)
         web = re.sub(r"\b(https?://www)\s+", r"\1", web)
-        if web in ("", "no tenemos", "http://no", "en proceso"):
+
+        if web in URL_FAKE:
             return tuple()
         arr = []
         for w in web.split():
@@ -418,7 +420,7 @@ class UrlChecker:
                     new_url = self.resolve_url(new_url) or new_url
                 return new_url
         except RequestException as e:
-            logger.critical(str(e), exc_info=e)
+            logger.critical(f"{url} {e}")
             return None
 
 
