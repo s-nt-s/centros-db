@@ -231,6 +231,7 @@ class MailChecker:
         arr: list[str] = []
         for a in args:
             for e in map(str.lower, re_mail.findall(a or '')):
+                e = re.sub(r"@hotmaiil\.com", "@hotmail.com")
                 clean_e = self.plain_address(e)
                 if clean_e != e and not self.hasSmtpUtf8(e):
                     e = clean_e
@@ -316,19 +317,6 @@ class UrlChecker:
         normalized = prefix + "://" + URL_FIX.get(name, name)
         return normalized
 
-    def __domain_redirect(self, ori: str):
-        parsed = urlsplit(ori)
-        if self.__is_ok_host(parsed.netloc):
-            return ori
-        m = re.match(r"https?://([a-z\.]+)\.educa\.madrid\.org$", ori)
-        if m:
-            try_url = f"https://www.educa2.madrid.org/web/centro.{m.group(1)}"
-            new_url = self.resolve_url(try_url)
-            if new_url is not None:
-                logger.info(f"{ori} remplazado por a {new_url}")
-                return new_url
-        return None
-
     def get_real_target(self, ori: str):
         if ori not in self.__resolve:
             self.__resolve[ori] = self.__get_real_target(ori)
@@ -336,21 +324,22 @@ class UrlChecker:
 
     @cache
     def __get_real_target(self, ori: str):
-        new_url = self.__domain_redirect(ori)
-        if new_url is None:
-            logger.critical(f"DOMINIO no encontrado para {ori}")
-            return ori
-        w = new_url.split("://", 1)[-1]
+        m = re.match(r"https?://([a-z\.]+)\.educa\.madrid\.org$", ori)
+        if m and not self.__is_ok_host(urlsplit(ori).netloc):
+            try_url = f"https://www.educa2.madrid.org/web/centro.{m.group(1)}"
+            new_url = self.resolve_url(try_url)
+            if new_url is not None:
+                logger.info(f"{ori} remplazado por a {new_url}")
+                return new_url
+        w = ori.split("://", 1)[-1]
         if w not in (
             "iesjuandelacierva.es",
             "www.vmagerit.com",
             "www.educa2.madrid.org/web/centro.eoi.embajadores.madrid"
         ):
-            return new_url
-        url = self.resolve_url(new_url)
-        if url is None:
-            return new_url
-        return url
+            return ori
+        url = self.resolve_url(ori)
+        return url or ori
 
     def find_urls(self, ori: str) -> tuple[str, ...]:
         if ori is None:

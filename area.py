@@ -13,7 +13,6 @@ from core.filemanager import FM
 from shapely.ops import unary_union
 
 
-
 parser = argparse.ArgumentParser(
     description='Crear ficheros GeoJSON',
 )
