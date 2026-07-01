@@ -416,7 +416,7 @@ class OpenData():
             reader = csv.DictReader(f, delimiter=";")
             lst_rows: list[dict] = []
             for r in reader:
-                r = {unidecode(k): _trim(v) for k, v in r.items()}
+                r = {unidecode(k): _trim(v) for k, v in r.items() if k is not None}
                 if all((v is None for v in r.values())):
                     continue
                 lst_rows.append(r)
