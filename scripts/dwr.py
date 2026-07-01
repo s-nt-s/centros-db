@@ -6,7 +6,6 @@ from requests import Session
 from core.dwr import DWR
 
 
-
 def trim(s: str | None):
     if s is None:
         return None
@@ -14,9 +13,6 @@ def trim(s: str | None):
     if len(s) == 0:
         return None
     return s
-
-
-S = Session()
 
 
 @cache
@@ -40,11 +36,11 @@ def select(sql: str, *args):
 
 
 URLS: dict[str, int] = {}
-for c, in select('''
-        select id from centro where web is not null and id in (
-            select centro from concurso_anexo_centro
-        )
-    '''):
-    d = DWR.get_total_alumnos(c)
-    if d:
-        print(c, d)
+code = tuple(c[0] for c in select('''
+    select id from centro where web is not null and id in (
+        select centro from concurso_anexo_centro
+    )
+'''))
+d = DWR.get_alumnos(*code)
+
+print(d)

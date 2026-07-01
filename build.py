@@ -13,6 +13,7 @@ from core.concurso import Concurso, Concursazo, Concursillo
 import re
 from core.geo import GEO
 from core.opendata import OpenData
+from core.dwr import DWR
 
 parser = argparse.ArgumentParser(
     description='Crea db a partir de '+Api.URL,
@@ -94,6 +95,7 @@ def build_db(db: DBLite, tcp_limit: int = 10):
     insert_all(db)
     insert_missing(db)
     insert_accesibilidad(db)
+    insert_alumnado(db)
 
     fix_tipo(db)
     fix_latlon(db)
@@ -119,6 +121,19 @@ def insert_accesibilidad(db: DBLite):
                 "QUERY_CENTRO",
                 query=f'accesibilidad={a}',
                 centro=row.id,
+            )
+
+@logme
+def insert_alumnado(db: DBLite):
+    ids = db.to_tuple("select id from centro")
+    for c, items in DWR.get_last_alumnos(*ids).items():
+        for i in items:
+            db.insert(
+                "ALUMNADO",
+                centro=c,
+                curso=i.year,
+                etapa=i.serie,
+                alumnado=i.value,
             )
 
 

@@ -139,6 +139,19 @@ CREATE TABLE PROYECTO (
         ON DELETE CASCADE
 );
 
+
+CREATE TABLE ALUMNADO (
+    centro   INTEGER NOT NULL,
+    curso    INTEGER NOT NULL,
+    etapa    TEXT NOT NULL,
+    alumnado INTEGER NOT NULL,
+    PRIMARY KEY (centro, curso, etapa),
+    CONSTRAINT fk_alumnado_centro
+        FOREIGN KEY (centro)
+        REFERENCES CENTRO(id)
+        ON DELETE CASCADE
+);
+
 CREATE TABLE CONCURSO (
     convocatoria TEXT NOT NULL,
     tipo TEXT NOT NULL,
