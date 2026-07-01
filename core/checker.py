@@ -231,7 +231,7 @@ class MailChecker:
         arr: list[str] = []
         for a in args:
             for e in map(str.lower, re_mail.findall(a or '')):
-                e = re.sub(r"@hotmaiil\.com", "@hotmail.com")
+                e = re.sub(r"@hotmaiil\.com", "@hotmail.com", e)
                 clean_e = self.plain_address(e)
                 if clean_e != e and not self.hasSmtpUtf8(e):
                     e = clean_e
