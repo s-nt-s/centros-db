@@ -13,6 +13,7 @@ from types import UnionType, MappingProxyType
 import typing
 from functools import cached_property, cache
 from core.checker import MChecker, UChecker
+from time import sleep
 
 
 logger = logging.getLogger(__name__)
@@ -404,17 +405,21 @@ class OpenData():
         self.__s = Session()
 
     @Cache("cache/opendata/{0}")
-    def __get_text(self, name: str, url: str, encoding: str = None):
+    def __get_text_csv(self, name: str, url: str, encoding: str = None, max_retries=2):
         logger.info(f"Descargando {name}")
         r = self.__s.get(url)
         if encoding:
             r.encoding = encoding
-        return r.text
+        content = r.text
+        if content.strip().upper().startswith("<HTML"):
+            if max_retries > 0:
+                sleep(10)
+                return self.__get_text_csv(name, url, encoding=encoding, max_retries=max_retries-1)
+            raise ValueError(f"NO CSV: {name} {url}")
+        return content
 
     def __read_csv(self, name: str, url: str, encoding: str = None):
-        content = self.__get_text(name, url, encoding=encoding)
-        if content.strip().upper().startswith("<HTML"):
-            raise ValueError(f"NO CSV: {name} {url}")
+        content = self.__get_text_csv(name, url, encoding=encoding)
         with StringIO(content) as f:
             reader = csv.DictReader(f, delimiter=";")
             lst_rows: list[dict] = []
