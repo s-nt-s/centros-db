@@ -334,8 +334,9 @@ def _join(name: str, *tps: tuple[dict], pk: str = None):
         return tuple()
     k = tuple(tps[0][0].keys())
     for t in tps[1:]:
-        if k != tuple(t[0].keys()):
-            raise ValueError(f'No coinciden cabeceras de {name}')
+        ki = tuple(t[0].keys())
+        if k != ki:
+            raise ValueError(f'No coinciden cabeceras de {name}: {k} != {ki}')
     if pk and pk not in k:
         raise ValueError(f'Columna clave {pk} no aparece en {name}')
     rows: list[tuple] = []
