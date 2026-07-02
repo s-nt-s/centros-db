@@ -413,6 +413,8 @@ class OpenData():
 
     def __read_csv(self, name: str, url: str, encoding: str = None):
         content = self.__get_text(name, url, encoding=encoding)
+        if content.strip().upper().startswith("<HTML"):
+            raise ValueError(f"NO CSV: {name} {url}")
         with StringIO(content) as f:
             reader = csv.DictReader(f, delimiter=";")
             lst_rows: list[dict] = []
