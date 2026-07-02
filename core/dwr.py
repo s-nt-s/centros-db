@@ -103,7 +103,9 @@ def _find_val(text: str, rgx: str):
         m = re.search(r"\b" + re.escape(s) + r'="([^"]+)"', text)
         if m is None:
             raise ValueError(text)
-        arr.append(m.group(1))
+        val = m.group(1)
+        val = val.encode("utf-8").decode("unicode_escape")
+        arr.append(val)
     return tuple(arr)
 
 
