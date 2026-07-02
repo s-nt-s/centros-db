@@ -103,11 +103,23 @@ def _find_val(text: str, rgx: str):
         m = re.search(r"\b" + re.escape(s) + r'="([^"]+)"', text)
         if m is None:
             raise ValueError(text)
-        val = m.group(1)
-        val = val.encode("utf-8").decode("unicode_escape")
+        val = _parse_val(m.group(1))
         arr.append(val)
     return tuple(arr)
 
+
+def _parse_val(val: str):
+    val = val.encode("utf-8").decode("unicode_escape")
+    for txt, r in {
+        "FP Básica": "^FPB$",
+        "FP Grado Médio": "^FP GM$",
+        "FP Grado Superior": "^FP GS$",
+        "Infantil 1º Ciclo": "^Infantil I Ciclo$",
+        "Infantil 2º Ciclo": "^Infantil II Ciclo$"
+    }.items():
+        if re.search(r, val):
+            return txt
+    return val
 
 def _iter_series(text: str, rgx: str):
     for s in re.findall(rgx+r"=([^;]+)", text):
