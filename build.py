@@ -126,7 +126,7 @@ def insert_accesibilidad(db: DBLite):
 @logme
 def insert_alumnado(db: DBLite):
     ids = db.to_tuple("select id from centro")
-    for c, items in DWR.get_last_alumnos(*ids).items():
+    for c, items in DWR.get_alumnos(*ids).items():
         for i in items:
             db.insert(
                 "ALUMNADO",

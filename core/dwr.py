@@ -178,16 +178,6 @@ class Dwr:
             xml=true
         """)
 
-    def get_last_alumnos(self, *codes: int):
-        rtn: dict[int, tuple[Item, ...]] = {}
-        for code, items in self.__alumnos.get(*codes).items():
-            if len(items) == 0:
-                continue
-            last_year = max(i.year for i in items)
-            last_items = tuple(i for i in items if i.year == last_year)
-            rtn[code] = last_items
-        return rtn
-
     def get_alumnos(self, *codes: int):
         return self.__alumnos.get(*codes)
 
