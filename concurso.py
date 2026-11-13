@@ -34,48 +34,48 @@ logger = logging.getLogger(__name__)
 
 ILLO_YEAR = '2026-2027'
 ILLO = {
-    (Concursillo.MAE, 'Maestros: Asignación de destinos provisionales en inicio de curso (2026-2027)'): 'https://www.comunidad.madrid/educacion/maestros-asignacion-destinos-provisionales-inicio-curso-2026-2027',
-    (Concursillo.PRO, 'Secundaria, FP y RE: Asignación de destinos provisionales en inicio de curso (2026-2027)'): 'https://www.comunidad.madrid/educacion/secundaria-fp-re-asignacion-destinos-provisionales-inicio-curso-2026-2027'
+    (Concursillo.MAE, 'Maestros: Asignación de destinos provisionales en inicio de curso (2026-2027)'): 'https://www.comunidad.madrid/educacion/maestros-asignacion-destinos-provisionales-inicio-curso-2026',
+    (Concursillo.PRO, 'Secundaria, FP y RE: Asignación de destinos provisionales en inicio de curso (2026-2027)'): 'https://www.comunidad.madrid/educacion/secundaria-fp-re-asignacion-destinos-provisionales-inicio-curso-2026'
 }
 
-CON_YEAR = '2025-2026'
-CON_MAE = 'https://www.comunidad.madrid/servicios/educacion/concurso-traslados-maestros'
-CON_PRO = 'https://www.comunidad.madrid/servicios/educacion/concurso-traslados-profesores-secundaria-formacion-profesional-regimen-especial'
+CON_YEAR = '2026-2027'
+CON_MAE = 'https://www.comunidad.madrid/educacion/concurso-traslados-maestros-2026'
+CON_PRO = 'https://www.comunidad.madrid/educacion/concurso-traslados-profesores-secundaria-formacion-profesional-regimen-especial-2026'
 
 CON = {
-    (Concursazo.MAE, 'Concurso de traslados de Maestros (2025)'): CON_MAE,
-    (Concursazo.PRO, 'Concurso de traslados de Profesores de Secundaria, Formación Profesional y Régimen Especial (2025)'): CON_PRO
+    (Concursazo.MAE, 'Concurso de traslados de Maestros (2026)'): CON_MAE,
+    (Concursazo.PRO, 'Concurso de traslados de Profesores de Secundaria, Formación Profesional y Régimen Especial (2026)'): CON_PRO
 }
 
 ANX = {
-    (Concursazo.MAE,  3): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane3_ceip.pdf',
-    (Concursazo.MAE,  4): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane4_eso.pdf',
-    (Concursazo.MAE,  5): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane5_british.pdf',
-    (Concursazo.MAE,  6): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane6_bil.pdf',
-    (Concursazo.MAE,  7): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane7_cepa.pdf',
-    (Concursazo.MAE,  8): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane8_cepacp.pdf',
-    (Concursazo.MAE,  9): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane9_eeii.pdf',
-    (Concursazo.MAE, 10): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane10.pdf',
-    (Concursazo.MAE, 11): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane11_tgd.pdf',
-    (Concursazo.MAE, 12): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane12_educ_esp.pdf',
-    (Concursazo.MAE, 13): 'https://www.comunidad.madrid/%/rh01_1896_2526_mae_ane13_compe.pdf',
-    (Concursazo.PRO, 15): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an15.pdf',
-    (Concursazo.PRO, 16): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an16.pdf',
-    (Concursazo.PRO, 17): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an17.pdf',
-    (Concursazo.PRO, 18): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an18.pdf',
-    (Concursazo.PRO, 19): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an19.pdf',
-    (Concursazo.PRO, 20): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an20.pdf',
-    (Concursazo.PRO, 21): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an21.pdf',
-    (Concursazo.PRO, 22): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an22.pdf',
-    (Concursazo.PRO, 23): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an23.pdf',
-    (Concursazo.PRO, 24): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an24.pdf',
-    (Concursazo.PRO, 25): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an25.pdf',
-    (Concursazo.PRO, 26): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an26.pdf',
-    (Concursazo.PRO, 27): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an27.pdf',
-    (Concursazo.PRO, 28): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an28.pdf',
-    (Concursazo.PRO, 29): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an29.pdf',
-    (Concursazo.PRO, 30): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an30.pdf',
-    (Concursazo.PRO, 31): 'https://www.comunidad.madrid/%/rh01_1896_2025_sec_an31.pdf',
+    (Concursazo.MAE,  3): 'https://sede.comunidad.madrid/medias/anexosprimaria314zip/download',
+    (Concursazo.MAE,  4): 'https://sede.comunidad.madrid/medias/anexo4iespdf-0/download',
+    (Concursazo.MAE,  5): 'https://sede.comunidad.madrid/medias/anexo5britishpdf/download',
+    (Concursazo.MAE,  6): 'https://sede.comunidad.madrid/medias/anexo6ceipiesbilinguespdf-0/download',
+    (Concursazo.MAE,  7): 'https://sede.comunidad.madrid/medias/anexo7cepapdf-0/download',
+    (Concursazo.MAE,  8): 'https://sede.comunidad.madrid/medias/anexo8cepapenitenciariospdf-0/download',
+    (Concursazo.MAE,  9): 'https://sede.comunidad.madrid/medias/anexo9eeipdf-0/download',
+    (Concursazo.MAE, 10): 'https://sede.comunidad.madrid/medias/anexo10eoeppdf/download',
+    (Concursazo.MAE, 11): 'https://sede.comunidad.madrid/medias/anexo11teapdf-0/download',
+    (Concursazo.MAE, 12): 'https://sede.comunidad.madrid/medias/anexo12ceipconeepdf-0/download',
+    (Concursazo.MAE, 13): 'https://sede.comunidad.madrid/medias/anexo13ceipcompensatoriapdf/download',
+    (Concursazo.PRO, 15): 'https://sede.comunidad.madrid/medias/anexo15iesseccionesyceipspdf/download',
+    (Concursazo.PRO, 16): 'https://sede.comunidad.madrid/medias/anexo16iesbilingueyceipsbilinguepdf/download',
+    (Concursazo.PRO, 17): 'https://sede.comunidad.madrid/medias/anexo17institutosdeensenanzasecundariaconseccionbilinguepdf/download',
+    (Concursazo.PRO, 18): 'https://sede.comunidad.madrid/medias/anexo18centroseoepgeneralesespecificosydeatenciontempranapdf/download',
+    (Concursazo.PRO, 19): 'https://sede.comunidad.madrid/medias/anexo19centrosdeeducaciondepersonasadultaspdf/download',
+    (Concursazo.PRO, 20): 'https://sede.comunidad.madrid/medias/anexo20centrosdeeducaciondepersonasadultasencentrospenitenciariospdf/download',
+    (Concursazo.PRO, 21): 'https://sede.comunidad.madrid/medias/anexo21centrosdeeducacionespecialpdf/download',
+    (Concursazo.PRO, 22): 'https://sede.comunidad.madrid/medias/anexo22escuelasoficialesdeidiomas2027pdf/download',
+    (Concursazo.PRO, 23): 'https://sede.comunidad.madrid/medias/anexo23centrosdemusicayartesescenicaspdf/download',
+    (Concursazo.PRO, 24): 'https://sede.comunidad.madrid/medias/anexo24centrosdeartesplasticasydisenopdf/download',
+    (Concursazo.PRO, 25): 'https://sede.comunidad.madrid/medias/anexo25codigosespecialidades0511y0590pdf/download',
+    (Concursazo.PRO, 26): 'https://sede.comunidad.madrid/medias/anexo26codigosdelasespecialidades0591aextinguiry0598pdf/download',
+    (Concursazo.PRO, 27): 'https://sede.comunidad.madrid/medias/anexo27codigosespecialidades0512y0592pdf/download',
+    (Concursazo.PRO, 28): 'https://sede.comunidad.madrid/medias/anexo28codigosespecialidades0593pdf/download',
+    (Concursazo.PRO, 29): 'https://sede.comunidad.madrid/medias/anexo29codigosespecialidades0594pdf/download',
+    (Concursazo.PRO, 30): 'https://sede.comunidad.madrid/medias/anexo30codigosespecialidades0513y0595pdf/download',
+    (Concursazo.PRO, 31): 'https://sede.comunidad.madrid/medias/anexo31codigosespecialidades0596pdf/download',
 }
 
 

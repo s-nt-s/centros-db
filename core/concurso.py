@@ -45,7 +45,7 @@ def _clean_txt(txt: str):
     return txt
 
 
-def get_reso(txt: str, url: str, year: int):
+def get_reso(txt: str, url: str, year: int) -> None | tuple[str, str]:
     m = re_reso1.match(txt)
     if m:
         d, mes, y, tail = m.groups()
@@ -62,6 +62,21 @@ def get_reso(txt: str, url: str, year: int):
     if m:
         bocm = m.group(1).upper()
         return bocm, 'https://www.bocm.es/' + bocm.lower()
+    boe_url = "https://www.boe.es/buscar/act.php?id="
+    m = re.match(r"https?://.*?[/=](BOE-A-[\d\-]+)(?:\.PDF)?$", url, flags=re.I)
+    if m:
+        boe = m.group(1).upper()
+        return boe, boe_url + boe
+    ref_boe: set[str] = set()
+    if re.match(r"https?://www.boe.es/eli/es/rd/\d+/\d+/\d+/\d+/con", url):
+        soup = Web(verify=VERIFY).get(url)
+        for n_txt in map(get_text, soup.select("div.metadatos dd")):
+            n_txt = (n_txt or '').upper()
+            if re.match(r"^BOE-A-(\d+)-(\d+)$", n_txt, flags=re.I):
+                ref_boe.add(n_txt)
+    if len(ref_boe) == 1:
+        boe = ref_boe.pop()
+        return boe, boe_url + boe
 
 
 def get_text(n: Tag):
@@ -161,8 +176,14 @@ class Anexo():
 def _get_concurso_url(url: str):
     w = Web(verify=VERIFY)
     year = datetime.now().year
+    urls: list[str] = []
     for y in (year, None, year-1):
-        new_url = f"{url}-{y}-{y+1}" if y else str(url)
+        if y:
+            urls.append(f"{url}-{y}")
+            urls.append(f"{url}-{y}-{y+1}")
+        else:
+            urls.append(url)
+    for new_url in urls:
         w.get(new_url)
         if w.response.status_code == 200:
             return new_url
@@ -197,7 +218,7 @@ class Concurso(ABC):
     def doc_home(self):
         for a in self.home.select("#read-speaker div.content-body a[href]"):
             txt = get_text(a)
-            if txt == "Documentación de interés":
+            if txt in ("Documentación de interés", "Documentos de interés"):
                 return self.__w.get(a.attrs["href"])
 
     @cached_property
@@ -260,8 +281,8 @@ class Concurso(ABC):
 
 
 class Concursazo(Concurso):
-    MAESTROS = _get_concurso_url("https://www.comunidad.madrid/servicios/educacion/concurso-traslados-maestros")
-    PROFESORES = _get_concurso_url("https://www.comunidad.madrid/servicios/educacion/concurso-traslados-profesores-secundaria-formacion-profesional-regimen-especial")
+    MAESTROS = _get_concurso_url("https://www.comunidad.madrid/educacion/concurso-traslados-maestros")
+    PROFESORES = _get_concurso_url("https://www.comunidad.madrid/educacion/concurso-traslados-profesores-secundaria-formacion-profesional-regimen-especial")
     MAE = "MAE"
     PRO = "PRO"
 
@@ -302,7 +323,7 @@ class Concursazo(Concurso):
             set_bocm.add(bcm)
         return tuple(sorted(set_bocm))
 
-    def _anexos(self) -> Dict[int, Anexo]:
+    def _anexos_old(self) -> Dict[int, Anexo]:
         anexos = {}
         tp_bocm = self._bocm()
         for i, bcm in enumerate(tp_bocm, start=-(len(tp_bocm)-1)):
@@ -311,8 +332,6 @@ class Concursazo(Concurso):
                 txt=bcm,
                 url="https://www.bocm.es/"+bcm.lower()
             )
-        span: Tag = self.home.find("span", string=re.compile(r"^\s*Anexos\s*$"))
-        span.find_parent("div").find_parent("div")
         for fld in self.home.select("div.component-accordion-item.my-accordion-item-class"):
             lg = fld.select_one("span")
             if "Anexos" != get_text(lg):
@@ -340,6 +359,70 @@ class Concursazo(Concurso):
                     logger.warning(f"Anexo duplicado {o.num}{a.letter or ''} {o.txt} {o.url}")
                     continue
                 anexos[a.num] = a
+        return anexos
+
+    def _anexos(self) -> Dict[int, Anexo]:
+        #anx = self._anexos_old()
+        #if len(anx):
+        #    return anx
+        if self.doc_home is None:
+            raise ValueError("No se encuentra la página de documentación de interés")
+
+        def _iter_urls():
+            for a in self.doc_home.select("#normativa-aplicable a[href]"):
+                txt = get_text(a)
+                url = a.attrs["href"]
+                yield txt, url
+            for div in self.doc_home.select("div.node__content div.contenido"):
+                txt = get_text(div.select_one("div"))
+                links = list(div.select("div.archivos a[href]"))
+                if len(links) == 0:
+                    continue
+                if len(links) > 1:
+                    raise ValueError(f"Más de un enlace en {div}")
+                url = links[0].attrs["href"]
+                yield txt, url
+        re_nx = re.compile(r"\s*\.?\s*\(Anexo (\d+)\)\s*\.?\s*$", flags=re.I)
+        done: set[tuple[str, str]] = set()
+        anexos: dict[int, Anexo] = {}
+        arr: list[tuple[str, str]] = []
+        for txt, url in _iter_urls():
+            ok = get_reso(txt, url, self.year)
+            if ok is not None:
+                if ok not in done:
+                    arr.append(ok)
+                done.add(ok)
+                continue
+            num = None
+            m = re_nx.search(txt)
+            if m is not None:
+                num = int(m.group(1))
+            txt = re_nx.sub("", txt)
+            txt = _clean_txt(txt)
+            if (txt, url) in done:
+                continue
+            done.add((txt, url))
+            if num is None:
+                arr.append((txt, url))
+                continue
+            a = Anexo(
+                num=num,
+                txt=txt,
+                url=url
+            )
+            if a.num in anexos:
+                logger.warning(f"Anexo duplicado {a.num}{a.letter or ''} {a.txt} {a.url}")
+                o: Anexo = anexos[a.num]
+                logger.warning(f"Anexo duplicado {o.num}{a.letter or ''} {o.txt} {o.url}")
+                continue
+            anexos[a.num] = a
+        for i, (txt, url) in enumerate(arr, start=-(len(arr)-1)):
+            anexos[i] = Anexo(
+                num=i,
+                txt=txt,
+                url=url
+            )
+        anexos = dict(sorted(anexos.items()))
         return anexos
 
 
@@ -483,11 +566,11 @@ class Concursillo(Concurso):
 
 if __name__ == "__main__":
     for con in map(Concurso.build, (
-        #Concursazo.MAESTROS,
-        #Concursazo.PROFESORES,
-        Concursillo.MAESTROS,
-        Concursillo.PROFESORES
+        Concursazo.MAESTROS,
+        Concursazo.PROFESORES,
+        #Concursillo.MAESTROS,
+        #Concursillo.PROFESORES
     )):
         print(con.convocatoria, con.url)
         for a in con.anexos.values():
-            print(" ",con.abr, a.num, a.txt, a.url, len(a.centros))
+            print(" ", con.abr, a.num, a.txt, a.url, len(a.centros))
